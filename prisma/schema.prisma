@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model user {
+  id              String  @id @default(cuid())
+  email           String  @unique
+  first_name      String
+  last_name       String
+  password        String?
+  google_id       String? @unique
+  role            String
+  profile_picture String?
+
+  // Activity tracking
+  last_login_at    DateTime?
+  last_activity_at DateTime?
+  login_count      Int       @default(0)
+
+  // Soft delete
+  deleted_at DateTime?
+
+  // audit fields
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  refresh_tokens refresh_token[]
+
+  // Indexes for performance 
+  @@index([email])
+  @@index([role])
+  @@index([created_at])
+  @@index([last_login_at])
+  @@index([deleted_at])
+  // Table name mapping 
+  @@map("users")
+}
+
+model refresh_token {
+  id         String @id @default(cuid())
+  user_id    String
+  token_hash String @unique
+
+  // Device information
+  ip_address String?
+  user_agent String?
+  device     String?
+
+  // Token lifecycle
+  is_active  Boolean   @default(true)
+  revoked_at DateTime?
+  expires_at DateTime
+  last_used  DateTime?
+
+  // Audit fields
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Foreign key relationship
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([user_id])
+  @@index([expires_at])
+  @@index([is_active])
+  @@index([token_hash])
+  // Table name in database
+  @@map("refresh_tokens")
+}
