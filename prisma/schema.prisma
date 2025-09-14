@@ -16,18 +16,16 @@ datasource db {
 
 model user {
   id              String  @id @default(cuid())
-  email           String  @unique
+  umindanao_email String  @unique
+  student_id      String  @unique
   first_name      String
   last_name       String
-  password        String?
   google_id       String? @unique
   role            String
   profile_picture String?
 
   // Activity tracking
   last_login_at    DateTime?
-  last_activity_at DateTime?
-  login_count      Int       @default(0)
 
   // Soft delete
   deleted_at DateTime?
@@ -40,7 +38,7 @@ model user {
   events         events[]
 
   // Indexes for performance 
-  @@index([email])
+  @@index([umindanao_email])
   @@index([role])
   @@index([created_at])
   @@index([last_login_at])

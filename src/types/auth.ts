@@ -34,3 +34,20 @@ export interface FetchUserInfoResult {
   email: string;
   role: string;
 }
+
+export type CreateUserTypes = {
+  umindanao_email: string;
+  student_id: string;
+  first_name: string;
+  last_name: string;
+  google_id?: string;
+  role: string;
+  profile_picture?: string;
+};
+
+export type updateUserTypes = {
+  student_id?: string;
+  first_name?: string;
+  last_name?: string;
+  role?: string;
+};
