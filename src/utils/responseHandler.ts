@@ -15,7 +15,7 @@ export const successResponse = (
   res: Response,
   statusCode: number,
   message: string,
-  data: any = null
+  data: unknown = null
 ): Response<SuccessResponse> => {
   return res.status(statusCode).json({
     success: true,
@@ -27,7 +27,7 @@ export const successResponse = (
 export const errorResponse = (
   res: Response,
   statusCode: number,
-  error: any
+  error: unknown
 ): Response<ErrorResponse> => {
   return res.status(statusCode).json({
     success: false,
