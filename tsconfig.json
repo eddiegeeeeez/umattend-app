@@ -32,13 +32,6 @@
     // "paths" is used to set up module resolution paths
     "paths": {
       "@/*": ["./src/*"],
-      "@configs/*": ["./src/configs/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@services/*": ["./src/v1/services/*"],
-      "@controllers/*": ["./src/v1/controllers/*"],
-      "@middlewares/*": ["./src/v1/middlewares/*"],
-      "@validators/*": ["./src/v1/validators/*"],
-      "@templates/*": ["src/templates/*"]
     },
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     "typeRoots": ["./src/@types", "./node_modules/@types"],

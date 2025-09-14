@@ -37,6 +37,7 @@ model user {
   updated_at DateTime @updatedAt
 
   refresh_tokens refresh_token[]
+  events         events[]
 
   // Indexes for performance 
   @@index([email])
@@ -78,4 +79,35 @@ model refresh_token {
   @@index([token_hash])
   // Table name in database
   @@map("refresh_tokens")
+}
+
+model events {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  department  String
+  location    String
+  all_day     Boolean   @default(false)
+  start_time  DateTime?
+  end_time    DateTime?
+  is_done     Boolean   @default(false)
+
+  form_fields Json
+
+  created_by String
+
+  // Audit fields
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Foreign key relationship
+  user user @relation(fields: [created_by], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([title])
+  @@index([start_time])
+  @@index([end_time])
+  @@index([created_by])
+  // Table name in database
+  @@map("events")
 }
