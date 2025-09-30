@@ -48,7 +48,7 @@ const googleCallback = async (req: Request, res: Response) => {
 
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 
-    //JWT Functions Here
+    //TODO: add JWT logics here
 
     return res.redirect(`${frontendUrl}`);
   } catch (error: unknown) {
