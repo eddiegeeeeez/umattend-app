@@ -3,7 +3,6 @@ import prisma from '../configs/prisma.config';
 import { hashRefreshToken } from '../utils/tokenHashing';
 import { v4 as uuidv4 } from 'uuid';
 import { AccessTokenPayload } from '../types/token';
-import '@/configs/dotenv.config';
 import { sign } from 'jsonwebtoken';
 
 export const generateAccessToken = (
