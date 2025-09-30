@@ -1,21 +1,35 @@
 {
   "name": "umattend-app",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "husky",
+    "pre-commit": "lint-staged",
+    "lint:server": "cd server && npm run lint",
+    "lint:client": "cd client && npm run lint",
+    "format:server": "cd server && npm run format",
+    "format:client": "cd client && npm run format",
+    "type-check:server": "cd server && npm run type-check",
+    "type-check:client": "cd client && tsc --noEmit"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "cd client && eslint --fix",
+      "cd server && eslint --fix",
+      "cd client && prettier --write",
+      "cd server && prettier --write"
+    ]
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/riomar0001/umattend-app.git"
   },
-  "keywords": [],
   "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/riomar0001/umattend-app/issues"
   },
-  "homepage": "https://github.com/riomar0001/umattend-app#readme"
+  "homepage": "https://github.com/riomar0001/umattend-app#readme",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.6",
+    "prettier": "^3.6.2"
+  }
 }

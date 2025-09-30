@@ -7,18 +7,14 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check .",
+    "format:check:ci": "./node_modules/.bin/prettier --check .",
     "type-check": "tsc --noEmit",
     "prepare": "husky",
     "pre-commit": "lint-staged",
     "prod": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "build": "tsc"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "eslint --fix",
-      "prettier --write"
-    ]
   },
   "keywords": [],
   "author": "",
