@@ -11,7 +11,7 @@ interface ErrorResponse {
   message: string;
 }
 
-export const successResponse = (
+export const HTTPSuccessResponse = (
   res: Response,
   statusCode: number,
   message: string,
@@ -24,7 +24,7 @@ export const successResponse = (
   });
 };
 
-export const errorResponse = (
+export const HTTPErrorResponse = (
   res: Response,
   statusCode: number,
   error: unknown

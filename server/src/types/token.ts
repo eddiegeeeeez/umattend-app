@@ -18,13 +18,13 @@ export interface RefreshTokenPayload {
 }
 export interface AccessTokenPayload {
   user_id: string;
-  student_id: string;
+  student_id: number;
   umindanao_email: string;
-  first_name: string;
-  last_name: string;
-  department: string;
-  program: string;
-  role: string;
+  first_name?: string;
+  last_name?: string;
+  department?: string;
+  program?: string;
+  role?: string;
   iat?: number;
   exp?: number;
 }

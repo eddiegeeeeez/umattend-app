@@ -37,11 +37,16 @@ export interface FetchUserInfoResult {
 
 export type CreateUserTypes = {
   umindanao_email: string;
-  student_id: string;
+  google_id: string;
+  role: string;
+};
+
+export type OnboardUserTypes = {
+  student_id: number;
   first_name: string;
   last_name: string;
-  google_id?: string;
-  role: string;
+  department: string;
+  program: string;
   profile_picture?: string;
 };
 

@@ -17,34 +17,47 @@ datasource db {
 model user {
   id              String  @id @default(cuid())
   umindanao_email String  @unique
-  student_id      String  @unique
-  first_name      String
-  last_name       String
   google_id       String? @unique
   role            String
-  profile_picture String?
+  done_onboarding Boolean @default(false)
 
-  // Activity tracking
-  last_login_at    DateTime?
+  last_login_at DateTime?
 
-  // Soft delete
   deleted_at DateTime?
 
-  // audit fields
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   refresh_tokens refresh_token[]
   events         events[]
+  student        student?
 
-  // Indexes for performance 
   @@index([umindanao_email])
   @@index([role])
   @@index([created_at])
   @@index([last_login_at])
   @@index([deleted_at])
-  // Table name mapping 
   @@map("users")
+}
+
+model student {
+  id              String  @id @default(cuid())
+  user_id         String  @unique
+  student_id      Int     @unique
+  first_name      String
+  last_name       String
+  department      String
+  program         String
+  profile_picture String?
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([department])
+  @@index([program])
+  @@map("students")
 }
 
 model refresh_token {
@@ -52,30 +65,24 @@ model refresh_token {
   user_id    String
   token_hash String @unique
 
-  // Device information
   ip_address String?
   user_agent String?
   device     String?
 
-  // Token lifecycle
   is_active  Boolean   @default(true)
   revoked_at DateTime?
   expires_at DateTime
   last_used  DateTime?
 
-  // Audit fields
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  // Foreign key relationship
   user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  // Indexes for performance
   @@index([user_id])
   @@index([expires_at])
   @@index([is_active])
   @@index([token_hash])
-  // Table name in database
   @@map("refresh_tokens")
 }
 
@@ -94,18 +101,14 @@ model events {
 
   created_by String
 
-  // Audit fields
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  // Foreign key relationship
   user user @relation(fields: [created_by], references: [id], onDelete: Cascade)
 
-  // Indexes for performance
   @@index([title])
   @@index([start_time])
   @@index([end_time])
   @@index([created_by])
-  // Table name in database
   @@map("events")
 }

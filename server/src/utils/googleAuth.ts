@@ -4,7 +4,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { URLSearchParams } from 'url';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_GOOGLE_STATE_SECRET = process.env.JWT_GOOGLE_STATE_SECRET;
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT = new OAuth2Client(GOOGLE_CLIENT_ID);
@@ -27,15 +27,15 @@ const generateGoogleAuthUrl = () => {
   const statePayload = {
     nonce,
     timestamp: Date.now(),
-    exp: Math.floor(Date.now() / 1000) + 5 * 60,
+    exp: Math.floor(Date.now() / 1000) + 1 * 60,
     codeVerifier,
   };
 
-  if (!JWT_SECRET) {
+  if (!JWT_GOOGLE_STATE_SECRET) {
     throw new Error('JWT_SECRET is not defined in environment variables');
   }
 
-  const state = jwt.sign(statePayload, JWT_SECRET);
+  const state = jwt.sign(statePayload, JWT_GOOGLE_STATE_SECRET);
 
   const url = `https://accounts.google.com/o/oauth2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_REDIRECT_URI}&scope=email%20profile&response_type=code&access_type=offline&prompt=consent&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
 
@@ -44,11 +44,11 @@ const generateGoogleAuthUrl = () => {
 
 const exchangeCodeForUserInfo = async (code: string, state: string) => {
   try {
-    if (!JWT_SECRET) {
+    if (!JWT_GOOGLE_STATE_SECRET) {
       throw new Error('JWT_SECRET is not defined in environment variables');
     }
 
-    const decoded = jwt.verify(state, JWT_SECRET) as JwtPayload;
+    const decoded = jwt.verify(state, JWT_GOOGLE_STATE_SECRET) as JwtPayload;
 
     const codeVerifier = decoded.codeVerifier;
 
@@ -144,11 +144,11 @@ const verifyGoogleToken = async (token: string) => {
 
 const validateState = (state: string) => {
   try {
-    if (!JWT_SECRET) {
+    if (!JWT_GOOGLE_STATE_SECRET) {
       throw new Error('JWT_SECRET is not defined in environment variables');
     }
 
-    const decoded = jwt.verify(state, JWT_SECRET) as JwtPayload;
+    const decoded = jwt.verify(state, JWT_GOOGLE_STATE_SECRET) as JwtPayload;
 
     if (!decoded.timestamp || !decoded.exp) {
       return false;
@@ -183,7 +183,7 @@ const validateRedirectUri = (GOOGLE_REDIRECT_URI: string) => {
   return process.env.GOOGLE_REDIRECT_URI === GOOGLE_REDIRECT_URI;
 };
 
-const auth = {
+const GoogleAuth = {
   generateGoogleAuthUrl,
   exchangeCodeForUserInfo,
   verifyGoogleToken,
@@ -191,4 +191,4 @@ const auth = {
   validateRedirectUri,
 };
 
-export default auth;
+export default GoogleAuth;
