@@ -1,7 +1,10 @@
 import authService from '../services/auth.service';
 import { Request, Response } from 'express';
 import GoogleAuth from '../../utils/googleAuth';
-import { HTTPErrorResponse } from '../../utils/responseHandler';
+import {
+  HTTPErrorResponse,
+  HTTPSuccessResponse,
+} from '../../utils/responseHandler';
 
 const googleAuth = async (req: Request, res: Response) => {
   try {
@@ -9,7 +12,6 @@ const googleAuth = async (req: Request, res: Response) => {
     return res.redirect(url);
   } catch (error: unknown) {
     console.log(error);
-
     return HTTPErrorResponse(
       res,
       500,
@@ -70,7 +72,6 @@ const googleCallback = async (req: Request, res: Response) => {
     return res.redirect(`${frontendUrl}`);
   } catch (error: unknown) {
     console.log(error);
-
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 
     return res.redirect(
@@ -81,7 +82,7 @@ const googleCallback = async (req: Request, res: Response) => {
   }
 };
 
-const logout = async (req: Request, res: Response) => {
+const logoutUser = async (req: Request, res: Response) => {
   try {
     const { refresh_token } = req.body;
     const cookieRefreshToken = req.cookies?.refresh_token;
@@ -89,25 +90,32 @@ const logout = async (req: Request, res: Response) => {
     const finalRefreshToken = refresh_token ?? cookieRefreshToken;
 
     if (finalRefreshToken) {
-      await authService.logoutUser(finalRefreshToken);
+      await authService.logoutUser(
+        finalRefreshToken,
+        req.ip as string,
+        req.headers['user-agent'] ?? ''
+      );
     }
 
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    if (req.cookies['refresh_token']) {
+      res.clearCookie('refresh_token');
+    }
 
-    res.json({
-      message: 'Logout successful',
-    });
-  } catch (error) {
-    res.status(400).json({
-      error: error.message,
-    });
+    if (req.cookies['access_token']) {
+      res.clearCookie('access_token');
+    }
+
+    return HTTPSuccessResponse(res, 200, 'Logged out successfully') as Response;
+  } catch (error: unknown) {
+    console.log(error);
+    return HTTPErrorResponse(res, 500, 'Logout failed') as Response;
   }
 };
 
 const authController = {
   googleAuth,
   googleCallback,
+  logoutUser,
 };
 
 export default authController;
