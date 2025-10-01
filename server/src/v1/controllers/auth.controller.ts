@@ -5,6 +5,8 @@ import {
   HTTPErrorResponse,
   HTTPSuccessResponse,
 } from '../../utils/responseHandler';
+import jwt from 'jsonwebtoken';
+import { AuthenticationError, NotFoundError } from '../../utils/customErrors';
 
 const googleAuth = async (req: Request, res: Response) => {
   try {
@@ -108,7 +110,62 @@ const logoutUser = async (req: Request, res: Response) => {
     return HTTPSuccessResponse(res, 200, 'Logged out successfully') as Response;
   } catch (error: unknown) {
     console.log(error);
-    return HTTPErrorResponse(res, 500, 'Logout failed') as Response;
+    if (process.env.NODE_ENV === 'DEVELOPMENT') {
+      if (error instanceof jwt.JsonWebTokenError) {
+        return HTTPErrorResponse(res, 400, error.message) as Response;
+      }
+    }
+
+    if (error instanceof jwt.TokenExpiredError) {
+      return HTTPErrorResponse(res, 401, 'Token Expire') as Response;
+    }
+
+    if (error instanceof AuthenticationError) {
+      return HTTPErrorResponse(res, 401, 'Authentication Error') as Response;
+    }
+
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, 'Not Found') as Response;
+    }
+
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
+  }
+};
+
+const refreshAccessToken = async (req: Request, res: Response) => {
+  try {
+    const { refresh_token } = req.cookies;
+
+    const accessToken = await authService.refreshAccessToken(refresh_token);
+
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Access Token Refreshed Successfully',
+      {
+        access_token: accessToken,
+      }
+    ) as Response;
+  } catch (error: unknown) {
+    if (process.env.NODE_ENV === 'DEVELOPMENT') {
+      if (error instanceof jwt.JsonWebTokenError) {
+        return HTTPErrorResponse(res, 400, error.message) as Response;
+      }
+    }
+
+    if (error instanceof jwt.TokenExpiredError) {
+      return HTTPErrorResponse(res, 401, 'Token Expire') as Response;
+    }
+
+    if (error instanceof AuthenticationError) {
+      return HTTPErrorResponse(res, 401, 'Authentication Error') as Response;
+    }
+
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, 'Not Found') as Response;
+    }
+
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -116,6 +173,7 @@ const authController = {
   googleAuth,
   googleCallback,
   logoutUser,
+  refreshAccessToken,
 };
 
 export default authController;
