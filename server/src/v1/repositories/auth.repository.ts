@@ -1,5 +1,5 @@
 import prisma from '../../configs/prisma.config';
-import { CreateUserTypes } from '@/types/auth';
+import { CreateUserTypes } from '@/v1/types/auth';
 
 interface UpdateUserTypes {
   google_id?: string;
@@ -37,10 +37,9 @@ const updateUser = async (user_id: string, updated_data: UpdateUserTypes) => {
 };
 
 const verifyRefreshToken = async (tokenID: string) => {
-  const refreshToken = await prisma.refresh_token.findUnique({
+  return await prisma.refresh_token.findUnique({
     where: { id: tokenID },
   });
-  return refreshToken;
 };
 
 const findRefreshToken = async (token_id: string) => {
@@ -54,7 +53,6 @@ const revokeRefreshToken = async (token_id: string) => {
   return await prisma.refresh_token.update({
     where: { id: token_id, is_active: true },
     data: { is_active: false, revoked_at: new Date() },
-    include: { user: { include: { student: true } } },
   });
 };
 

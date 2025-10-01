@@ -1,9 +1,22 @@
 import GoogleAuth from '../../utils/googleAuth.js';
 import authRepository from '../repositories/auth.repository.js';
-import Jwt from 'jsonwebtoken';
-import { generateAccessToken } from '@/utils/jwt.utils.js';
+import studentRepository from '../repositories/student.repository.js';
+import jwt from 'jsonwebtoken';
+import { generateAccessToken, generateRefreshToken } from '@/utils/jwt.utils';
+import {
+  EmptyTokenError,
+  AuthenticationError,
+  NotFoundError,
+} from '../../utils/customErrors';
+import { verifyHashedRefreshToken } from '../../utils/tokenHashing.js';
+import { RefreshTokenPayload } from '../interface/token.js';
+import { truncateIp } from '../../utils/truncateIP.js';
 
-const googleAuth = async (googleToken: string) => {
+const googleAuth = async (
+  googleToken: string,
+  ip_address: string,
+  userAgent: string
+) => {
   const googleUser = await GoogleAuth.verifyGoogleToken(googleToken);
 
   let user = await authRepository.findUserByGoogleId(googleUser.google_id);
@@ -28,10 +41,34 @@ const googleAuth = async (googleToken: string) => {
     }
   }
 
-  return user;
+  const student = await studentRepository.getStudentByUserId(user.id);
+
+  const access_token = generateAccessToken({
+    user_id: user.id,
+    umindanao_email: user.id,
+    role: user.id,
+    student_id: Number(student?.student_id),
+    first_name: student?.first_name,
+    last_name: student?.last_name,
+    department: student?.department,
+    program: student?.program,
+  });
+
+  const refresh_token = await generateRefreshToken(
+    user.id,
+    ip_address,
+    userAgent
+  );
+
+  return { access_token, refresh_token, user };
 };
 
-const googleAuthWithCode = async (code: string, state: string) => {
+const googleAuthWithCode = async (
+  code: string,
+  state: string,
+  ip_address: string,
+  userAgent: string
+) => {
   const googleUser = await GoogleAuth.exchangeCodeForUserInfo(code, state);
 
   let user = await authRepository.findUserByGoogleId(googleUser.google_id);
@@ -51,7 +88,26 @@ const googleAuthWithCode = async (code: string, state: string) => {
     }
   }
 
-  return user;
+  const student = await studentRepository.getStudentByUserId(user.id);
+
+  const access_token = generateAccessToken({
+    user_id: user.id,
+    umindanao_email: user.id,
+    role: user.id,
+    student_id: Number(student?.student_id),
+    first_name: student?.first_name,
+    last_name: student?.last_name,
+    department: student?.department,
+    program: student?.program,
+  });
+
+  const refresh_token = await generateRefreshToken(
+    user.id,
+    ip_address,
+    userAgent
+  );
+
+  return { access_token, refresh_token, user };
 };
 
 const refreshAccessToken = async (refreshToken: string) => {
@@ -61,7 +117,7 @@ const refreshAccessToken = async (refreshToken: string) => {
     throw new Error('Refresh token secret not configured');
   }
 
-  const decoded = Jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as {
+  const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as {
     id: string;
   };
 
@@ -90,10 +146,83 @@ const refreshAccessToken = async (refreshToken: string) => {
   return access_token;
 };
 
+const logoutUser = async (
+  refresh_token: string,
+  ip_address: string,
+  user_agent: string
+) => {
+  if (!refresh_token) {
+    throw new EmptyTokenError('Refresh token is required');
+  }
+
+  const SECRET = process.env.JWT_REFRESH_TOKEN_SECRET as string;
+
+  let verifyToken: RefreshTokenPayload;
+
+  let expiredAt: Date | undefined;
+
+  try {
+    verifyToken = jwt.verify(refresh_token, SECRET) as RefreshTokenPayload;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      expiredAt = error.expiredAt;
+
+      throw new jwt.TokenExpiredError('Refresh token has expired', expiredAt);
+    }
+
+    throw new AuthenticationError('Invalid refresh token format');
+  }
+
+  if (!verifyToken) {
+    throw new jwt.TokenExpiredError(
+      'Invalid or expired refresh token',
+      expiredAt ?? new Date()
+    );
+  }
+
+  const verifyTokenDBExist = await authRepository.verifyRefreshToken(
+    verifyToken.token_id
+  );
+
+  if (!verifyTokenDBExist) {
+    throw new NotFoundError('Refresh token not found');
+  }
+
+  if (!verifyTokenDBExist.is_active) {
+    throw new AuthenticationError('Refresh token has been revoked');
+  }
+
+  if (new Date(verifyTokenDBExist.expires_at) < new Date()) {
+    throw new jwt.TokenExpiredError(
+      'Refresh token has expired',
+      verifyTokenDBExist.expires_at
+    );
+  }
+
+  if (
+    verifyTokenDBExist.ip_address !== truncateIp(ip_address) ||
+    verifyTokenDBExist.user_agent !== user_agent
+  ) {
+    throw new AuthenticationError('Refresh token is not valid for this device');
+  }
+
+  const validateHashedToken = await verifyHashedRefreshToken(
+    refresh_token,
+    verifyTokenDBExist.token_hash
+  );
+
+  if (!validateHashedToken) {
+    throw new AuthenticationError('Invalid refresh token');
+  }
+
+  await authRepository.revokeRefreshToken(verifyToken.token_id);
+};
+
 const authServices = {
   googleAuth,
   googleAuthWithCode,
   refreshAccessToken,
+  logoutUser,
 };
 
 export default authServices;

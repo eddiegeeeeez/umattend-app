@@ -44,11 +44,28 @@ const googleCallback = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 400, 'Invalid state parameter') as Response;
     }
 
-    await authService.googleAuthWithCode(code as string, state as string);
+    const result = await authService.googleAuthWithCode(
+      code as string,
+      state as string,
+      req.ip as string,
+      req.headers['user-agent'] ?? ''
+    );
 
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 
-    //TODO: add JWT logics here
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 1 * 60 * 60 * 1000,
+    });
+
+    res.cookie('refresh_token', result.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3 * 24 * 60 * 60 * 1000,
+    });
 
     return res.redirect(`${frontendUrl}`);
   } catch (error: unknown) {
@@ -61,6 +78,30 @@ const googleCallback = async (req: Request, res: Response) => {
         'Google login failed'
       )}`
     );
+  }
+};
+
+const logout = async (req: Request, res: Response) => {
+  try {
+    const { refresh_token } = req.body;
+    const cookieRefreshToken = req.cookies?.refresh_token;
+
+    const finalRefreshToken = refresh_token ?? cookieRefreshToken;
+
+    if (finalRefreshToken) {
+      await authService.logoutUser(finalRefreshToken);
+    }
+
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+
+    res.json({
+      message: 'Logout successful',
+    });
+  } catch (error) {
+    res.status(400).json({
+      error: error.message,
+    });
   }
 };
 

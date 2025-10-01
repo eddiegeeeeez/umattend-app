@@ -2,8 +2,9 @@ import jwt from 'jsonwebtoken';
 import prisma from '../configs/prisma.config';
 import { hashRefreshToken } from '../utils/tokenHashing';
 import { v4 as uuidv4 } from 'uuid';
-import { AccessTokenPayload } from '../types/token';
+import { AccessTokenPayload } from '../v1/types/token';
 import { sign } from 'jsonwebtoken';
+import { GenerateTokenError } from '../utils/customErrors';
 
 export const generateAccessToken = (
   tokenPayload: AccessTokenPayload
@@ -11,7 +12,7 @@ export const generateAccessToken = (
   const SECRET = process.env.JWT_ACCESS_TOKEN_SECRET;
 
   if (!SECRET) {
-    throw new Error('JWT Access Token Secret is not defined.');
+    throw new GenerateTokenError('JWT Access Token Secret is not defined.');
   }
 
   const {
@@ -25,35 +26,21 @@ export const generateAccessToken = (
     role,
   } = tokenPayload;
 
-  if (
-    !user_id ||
-    !student_id ||
-    !umindanao_email ||
-    !first_name ||
-    !last_name ||
-    !department ||
-    !program ||
-    !role
-  ) {
-    throw new Error('Missing required token payload fields');
+  const requiredFields = [
+    user_id,
+    student_id,
+    umindanao_email,
+    first_name,
+    last_name,
+    department,
+    program,
+    role,
+  ];
+  if (requiredFields.some((field) => !field)) {
+    throw new GenerateTokenError('Missing required token payload fields');
   }
 
-  return sign(
-    {
-      user_id,
-      student_id,
-      umindanao_email,
-      first_name,
-      last_name,
-      department,
-      program,
-      role,
-    },
-    SECRET,
-    {
-      expiresIn: '1h',
-    }
-  );
+  return sign(tokenPayload, SECRET, { expiresIn: '1h' });
 };
 
 export const generateRefreshToken = async (
@@ -64,7 +51,7 @@ export const generateRefreshToken = async (
   const SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
 
   if (!SECRET) {
-    throw new Error('JWT refresh secret not defined');
+    throw new GenerateTokenError('JWT refresh secret not defined');
   }
 
   const token_id = uuidv4();
