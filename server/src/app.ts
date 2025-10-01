@@ -9,10 +9,12 @@ import helmet from 'helmet';
 import { errorHandler, notFound } from './v1/middlewares/error.middleware';
 import { cacheControl } from './v1/middlewares/cacheControl.middleware';
 
-//load environment variables
-import '@/configs/dotenv.config';
+import userRoutes from './v1/routes/user.routes';
+import authRoutes from './v1/routes/auth.routes';
+
 
 const app = express();
+
 
 // ---------- SECURITY & PERFORMANCE MIDDLEWARE ----------
 app.use(helmet());
@@ -48,6 +50,9 @@ app.get('/', (req: Request, res: Response) => {
     return res.json({ message: 'Hello World' });
   }
 });
+
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/user', userRoutes);
 
 // ---------- 404 HANDLER ----------
 app.use(notFound);

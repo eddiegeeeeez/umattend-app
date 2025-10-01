@@ -2,14 +2,15 @@ import jwt from 'jsonwebtoken';
 import prisma from '../configs/prisma.config';
 import { hashRefreshToken } from '../utils/tokenHashing';
 import { v4 as uuidv4 } from 'uuid';
-import { AccessTokenPayload } from '../v1/types/token';
-import { sign } from 'jsonwebtoken';
+import { AccessTokenPayloadTypes } from '../v1/types/token';
 import { GenerateTokenError } from '../utils/customErrors';
+import '../configs/dotenv.config';
 
 export const generateAccessToken = (
-  tokenPayload: AccessTokenPayload
+  tokenPayload: AccessTokenPayloadTypes
 ): string => {
   const SECRET = process.env.JWT_ACCESS_TOKEN_SECRET;
+  console.log(SECRET);
 
   if (!SECRET) {
     throw new GenerateTokenError('JWT Access Token Secret is not defined.');
@@ -17,30 +18,35 @@ export const generateAccessToken = (
 
   const {
     user_id,
-    student_id,
     umindanao_email,
+    role,
+    student_id,
     first_name,
     last_name,
     department,
     program,
-    role,
   } = tokenPayload;
 
+  console.log(tokenPayload);
+
   const requiredFields = [
-    user_id,
-    student_id,
-    umindanao_email,
-    first_name,
-    last_name,
-    department,
-    program,
-    role,
+    {
+      user_id,
+      umindanao_email,
+      role,
+      student_id,
+      first_name,
+      last_name,
+      department,
+      program,
+    },
   ];
+
   if (requiredFields.some((field) => !field)) {
     throw new GenerateTokenError('Missing required token payload fields');
   }
 
-  return sign(tokenPayload, SECRET, { expiresIn: '1h' });
+  return jwt.sign(tokenPayload, SECRET, { expiresIn: '1h' });
 };
 
 export const generateRefreshToken = async (

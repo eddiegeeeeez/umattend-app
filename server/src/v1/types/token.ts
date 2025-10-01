@@ -1,7 +1,13 @@
 export type AccessTokenPayloadTypes = {
   user_id: string;
-  email: string;
+  umindanao_email: string;
   role: string;
+  student_id?: number;
+  first_name?: string;
+  last_name?: string;
+  department?: string;
+  program?: string;
+  done_onboarding?: boolean;
 };
 
 export type RefreshTokenData = {
@@ -9,4 +15,3 @@ export type RefreshTokenData = {
   token_id: string;
   expires_at: Date;
 };
-

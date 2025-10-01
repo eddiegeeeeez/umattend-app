@@ -1,5 +1,3 @@
-
-
 export type CreateUserTypes = {
   umindanao_email: string;
   google_id: string;
@@ -21,3 +19,5 @@ export type updateUserTypes = {
   last_name?: string;
   role?: string;
 };
+
+

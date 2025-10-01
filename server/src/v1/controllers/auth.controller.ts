@@ -8,6 +8,7 @@ import {
 import jwt from 'jsonwebtoken';
 import { AuthenticationError, NotFoundError } from '../../utils/customErrors';
 
+
 const googleAuth = async (req: Request, res: Response) => {
   try {
     const url = GoogleAuth.generateGoogleAuthUrl();

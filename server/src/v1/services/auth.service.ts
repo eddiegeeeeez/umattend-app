@@ -73,6 +73,8 @@ const googleAuthWithCode = async (
 
   let user = await authRepository.findUserByGoogleId(googleUser.google_id);
 
+  console.log(user);
+
   if (!user) {
     const existingUser = await authRepository.findUserByEmail(googleUser.email);
 
@@ -92,13 +94,13 @@ const googleAuthWithCode = async (
 
   const access_token = generateAccessToken({
     user_id: user.id,
-    umindanao_email: user.id,
-    role: user.id,
-    student_id: Number(student?.student_id),
-    first_name: student?.first_name,
-    last_name: student?.last_name,
-    department: student?.department,
-    program: student?.program,
+    umindanao_email: user.umindanao_email,
+    role: user.role,
+    student_id: Number(student?.student_id) || 123456,
+    first_name: student?.first_name ?? '',
+    last_name: student?.last_name ?? '',
+    department: student?.department ?? '',
+    program: student?.program ?? '',
   });
 
   const refresh_token = await generateRefreshToken(
@@ -222,7 +224,7 @@ const authServices = {
   googleAuth,
   googleAuthWithCode,
   refreshAccessToken,
-  
+
   logoutUser,
 };
 

@@ -29,8 +29,7 @@ export interface RegistrationResult {
 
 export interface FetchUserInfoResult {
   id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
+  umindanao_email: string;
+  done_onboarding: boolean;
   role: string;
 }
