@@ -73,8 +73,6 @@ const googleAuthWithCode = async (
 
   let user = await authRepository.findUserByGoogleId(googleUser.google_id);
 
-  console.log(user);
-
   if (!user) {
     const existingUser = await authRepository.findUserByEmail(googleUser.email);
 
@@ -112,37 +110,77 @@ const googleAuthWithCode = async (
   return { access_token, refresh_token, user };
 };
 
-const refreshAccessToken = async (refreshToken: string) => {
-  const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+const refreshAccessToken = async (
+  refresh_token: string,
+  ip_address: string,
+  user_agent: string
+) => {
+  const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
 
   if (!REFRESH_TOKEN_SECRET) {
     throw new Error('Refresh token secret not configured');
   }
 
-  const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as {
-    id: string;
-  };
+  let token: RefreshTokenPayload;
 
-  const token = await authRepository.findRefreshToken(decoded.id);
+  let expiredAt: Date | undefined;
 
-  if (!token) {
-    throw new Error('Invalid refresh token');
+  try {
+    token = jwt.verify(
+      refresh_token,
+      REFRESH_TOKEN_SECRET
+    ) as RefreshTokenPayload;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      expiredAt = error.expiredAt;
+
+      throw new jwt.TokenExpiredError('Refresh token has expired', expiredAt);
+    }
+
+    throw new AuthenticationError('Invalid refresh token format');
   }
 
-  if (token.expires_at < new Date()) {
-    await authRepository.revokeRefreshToken(refreshToken);
-    throw new Error('Refresh token expired');
+  const verifyTokenDBExist = await authRepository.verifyRefreshToken(
+    token.token_id
+  );
+
+  if (!verifyTokenDBExist) {
+    throw new NotFoundError('Refresh token not found');
+  }
+
+  if (!verifyTokenDBExist.is_active) {
+    throw new AuthenticationError('Refresh token has been revoked');
+  }
+
+  if (new Date(verifyTokenDBExist.expires_at) < new Date()) {
+    throw new jwt.TokenExpiredError(
+      'Refresh token has expired',
+      verifyTokenDBExist.expires_at
+    );
+  }
+
+  if (
+    verifyTokenDBExist.ip_address !== truncateIp(ip_address) ||
+    verifyTokenDBExist.user_agent !== user_agent
+  ) {
+    throw new AuthenticationError('Refresh token is not valid for this device');
+  }
+
+  const user = await authRepository.getUserById(token.user_id);
+
+  if (!user) {
+    throw new NotFoundError('User not found');
   }
 
   const access_token = generateAccessToken({
-    user_id: token.user.id,
-    umindanao_email: token.user.id,
-    role: token.user.id,
-    student_id: token.user.student?.student_id as number,
-    first_name: token.user.student?.first_name as string,
-    last_name: token.user.student?.last_name as string,
-    department: token.user.student?.department as string,
-    program: token.user.student?.program as string,
+    user_id: user.id,
+    umindanao_email: user.id,
+    role: user.id,
+    student_id: user.student?.student_id as number,
+    first_name: user.student?.first_name as string,
+    last_name: user.student?.last_name as string,
+    department: user.student?.department as string,
+    program: user.student?.program as string,
   });
 
   return access_token;

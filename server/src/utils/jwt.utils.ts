@@ -10,7 +10,6 @@ export const generateAccessToken = (
   tokenPayload: AccessTokenPayloadTypes
 ): string => {
   const SECRET = process.env.JWT_ACCESS_TOKEN_SECRET;
-  console.log(SECRET);
 
   if (!SECRET) {
     throw new GenerateTokenError('JWT Access Token Secret is not defined.');
@@ -26,8 +25,6 @@ export const generateAccessToken = (
     department,
     program,
   } = tokenPayload;
-
-  console.log(tokenPayload);
 
   const requiredFields = [
     {

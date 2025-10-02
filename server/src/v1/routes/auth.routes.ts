@@ -7,7 +7,8 @@ const router = express.Router();
 
 router.get('/google', authController.googleAuth);
 router.get('/google/callback', oauthRateLimiter, authController.googleCallback);
-router.get('/refresh', authMiddleware, authController.refreshAccessToken);
+router.post('/refresh', authMiddleware, authController.refreshAccessToken);
 router.get('/logout', authMiddleware, authController.logoutUser);
+router.post('/exchange', authController.exhangeCodeForToken);
 
 export default router;

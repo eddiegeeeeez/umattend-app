@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/navigation';
 
@@ -14,20 +15,40 @@ const ProfilePage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
+    const exchangeCode = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const auth_code = params.get('auth_code');
 
-    try {
-      const decoded = jwtDecode(token) as { id: string; email: string };
-      setUser({ id: decoded.id, email: decoded.email });
-    } catch (err: unknown) {
-      console.log(err);
-      localStorage.removeItem('token');
-      router.push('/login');
-    }
+      if (!auth_code) return;
+
+      try {
+        const res = await axios.post('http://localhost:4000/api/v1/auth/exchange', { auth_code });
+
+        console.log(res.data);
+
+        const accessToken = res.data.data.access_token;
+        const refreshToken = res.data.data.refresh_token;
+
+        console.log(accessToken, refreshToken);
+        
+
+        // store tokens
+        localStorage.setItem('access_token', accessToken);
+        localStorage.setItem('refresh_token', refreshToken);
+
+        // decode user info from JWT
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const decoded = jwtDecode(accessToken) as any;
+        setUser({ id: decoded.sub, email: decoded.email });
+
+        // redirect after setting user
+        router.push('/');
+      } catch (err) {
+        console.error('Login failed:', err.response?.data || err.message);
+      }
+    };
+
+    exchangeCode();
   }, [router]);
 
   if (!user) return <div>Loading...</div>;

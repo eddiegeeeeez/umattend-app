@@ -28,6 +28,13 @@ const findUserByEmail = async (umindanao_email: string) => {
   });
 };
 
+const getUserById = async (user_id: string) => {
+  return await prisma.user.findUnique({
+    where: { id: user_id },
+    include: { student: true },
+  });
+};
+
 const updateUser = async (user_id: string, updated_data: UpdateUserTypes) => {
   return await prisma.user.update({
     where: { id: user_id },
@@ -64,6 +71,7 @@ const authRepository = {
   findRefreshToken,
   verifyRefreshToken,
   revokeRefreshToken,
+  getUserById,
 };
 
 export default authRepository;
