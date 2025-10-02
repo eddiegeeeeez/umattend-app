@@ -103,11 +103,7 @@ const logoutUser = async (req: Request, res: Response) => {
     const finalRefreshToken = refresh_token ?? cookieRefreshToken;
 
     if (finalRefreshToken) {
-      await authService.logoutUser(
-        finalRefreshToken,
-        req.ip as string,
-        req.headers['user-agent'] ?? ''
-      );
+      await authService.logoutUser(finalRefreshToken);
     }
 
     if (req.cookies['refresh_token']) {
@@ -148,18 +144,17 @@ const refreshAccessToken = async (req: Request, res: Response) => {
     const refresh_token = req.cookies.refresh_token ?? req.body.refresh_token;
 
     if (!refresh_token) {
-      return HTTPErrorResponse(res, 400, 'Refresh token is required') as Response;
+      return HTTPErrorResponse(
+        res,
+        400,
+        'Refresh token is required'
+      ) as Response;
     }
 
-    console.log("headers",req.headers['user-agent'] ?? '');
-    console.log("headers",req.ip as string);
-    
+    console.log('headers', req.headers['user-agent'] ?? '');
+    console.log('headers', req.ip as string);
 
-    const accessToken = await authService.refreshAccessToken(
-      refresh_token,
-      req.ip as string,
-      req.headers['user-agent'] ?? ''
-    );
+    const accessToken = await authService.refreshAccessToken(refresh_token);
 
     return HTTPSuccessResponse(
       res,
@@ -177,7 +172,6 @@ const refreshAccessToken = async (req: Request, res: Response) => {
     }
 
     console.log(error);
-    
 
     if (error instanceof jwt.TokenExpiredError) {
       return HTTPErrorResponse(res, 401, 'Token Expire') as Response;

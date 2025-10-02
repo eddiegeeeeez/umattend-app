@@ -4,7 +4,7 @@ import { hashRefreshToken } from '../utils/tokenHashing';
 import { v4 as uuidv4 } from 'uuid';
 import { AccessTokenPayloadTypes } from '../v1/types/token';
 import { GenerateTokenError } from '../utils/customErrors';
-import '../configs/dotenv.config';
+import { UAParser } from 'ua-parser-js';
 
 export const generateAccessToken = (
   tokenPayload: AccessTokenPayloadTypes
@@ -24,6 +24,7 @@ export const generateAccessToken = (
     last_name,
     department,
     program,
+    done_onboarding
   } = tokenPayload;
 
   const requiredFields = [
@@ -36,6 +37,7 @@ export const generateAccessToken = (
       last_name,
       department,
       program,
+      done_onboarding
     },
   ];
 
@@ -67,14 +69,22 @@ export const generateRefreshToken = async (
 
   const hashedToken = await hashRefreshToken(token);
 
+  const parser = new UAParser(user_agent);
+  const result = parser.getResult();
+
+  const device = result.device.model ?? result.device.type ?? 'Unknown';
+  const os = result.os.name ?? 'Unknown';
+  const browser = result.browser.name ?? 'Unknown';
+
   await prisma.refresh_token.create({
     data: {
       id: token_id,
       user_id,
       token_hash: hashedToken,
       ip_address: ip,
-      user_agent: user_agent || 'Unknown Device',
-      device: user_agent || 'Unknown Device',
+      device,
+      os,
+      browser,
       expires_at,
       last_used: new Date(),
     },

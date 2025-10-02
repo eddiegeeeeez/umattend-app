@@ -10,7 +10,6 @@ import {
 } from '../../utils/customErrors';
 import { verifyHashedRefreshToken } from '../../utils/tokenHashing.js';
 import { RefreshTokenPayload } from '../interface/token.js';
-import { truncateIp } from '../../utils/truncateIP.js';
 
 const googleAuth = async (
   googleToken: string,
@@ -112,8 +111,6 @@ const googleAuthWithCode = async (
 
 const refreshAccessToken = async (
   refresh_token: string,
-  ip_address: string,
-  user_agent: string
 ) => {
   const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
 
@@ -159,13 +156,6 @@ const refreshAccessToken = async (
     );
   }
 
-  if (
-    verifyTokenDBExist.ip_address !== truncateIp(ip_address) ||
-    verifyTokenDBExist.user_agent !== user_agent
-  ) {
-    throw new AuthenticationError('Refresh token is not valid for this device');
-  }
-
   const user = await authRepository.getUserById(token.user_id);
 
   if (!user) {
@@ -188,8 +178,6 @@ const refreshAccessToken = async (
 
 const logoutUser = async (
   refresh_token: string,
-  ip_address: string,
-  user_agent: string
 ) => {
   if (!refresh_token) {
     throw new EmptyTokenError('Refresh token is required');
@@ -237,13 +225,6 @@ const logoutUser = async (
       'Refresh token has expired',
       verifyTokenDBExist.expires_at
     );
-  }
-
-  if (
-    verifyTokenDBExist.ip_address !== truncateIp(ip_address) ||
-    verifyTokenDBExist.user_agent !== user_agent
-  ) {
-    throw new AuthenticationError('Refresh token is not valid for this device');
   }
 
   const validateHashedToken = await verifyHashedRefreshToken(
