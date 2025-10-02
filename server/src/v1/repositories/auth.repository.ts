@@ -1,5 +1,6 @@
 import prisma from '../../configs/prisma.config';
 import { CreateUserTypes } from '@/v1/types/auth';
+import redis from '../../configs/redis.config';
 
 interface UpdateUserTypes {
   google_id?: string;
@@ -63,15 +64,62 @@ const revokeRefreshToken = async (token_id: string) => {
   });
 };
 
+const createErrorCode = async (error_code: string, error_message: string) => {
+  return await redis.setex(
+    `error_code:${error_code}`,
+    60,
+    JSON.stringify({
+      error_message: error_message,
+    })
+  );
+};
+
+const getErrorCode = async (error_code: string) => {
+  return await redis.get(`error_code:${error_code}`);
+};
+
+const deleteErrorCode = async (error_code: string) => {
+  return await redis.del(`error_code:${error_code}`);
+};
+
+const createAuthCode = async (
+  auth_code: string,
+  access_token: string,
+  refresh_token: string
+) => {
+  return await redis.setex(
+    `auth_code:${auth_code}`,
+    60,
+    JSON.stringify({
+      access_token: access_token,
+      refresh_token: refresh_token,
+    })
+  );
+};
+
+const getAuthCode = async (auth_code: string) => {
+  return await redis.get(`auth_code:${auth_code}`);
+};
+
+const deleteAuthCode = async (auth_code: string) => {
+  return await redis.del(`auth_code:${auth_code}`);
+};
+
 const authRepository = {
   createUser,
   updateUser,
+  getUserById,
   findUserByEmail,
   findUserByGoogleId,
   findRefreshToken,
   verifyRefreshToken,
   revokeRefreshToken,
-  getUserById,
+  createErrorCode,
+  getErrorCode,
+  deleteErrorCode,
+  createAuthCode,
+  getAuthCode,
+  deleteAuthCode,
 };
 
 export default authRepository;

@@ -10,6 +10,9 @@ import {
 } from '../../utils/customErrors';
 import { verifyHashedRefreshToken } from '../../utils/tokenHashing.js';
 import { RefreshTokenPayload } from '../interface/token.js';
+import crypto from 'crypto';
+
+const sanitizeKey = (key: string) => key.replace(/[^a-zA-Z0-9:_-]/g, '');
 
 const googleAuth = async (
   googleToken: string,
@@ -109,9 +112,7 @@ const googleAuthWithCode = async (
   return { access_token, refresh_token, user };
 };
 
-const refreshAccessToken = async (
-  refresh_token: string,
-) => {
+const refreshAccessToken = async (refresh_token: string) => {
   const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
 
   if (!REFRESH_TOKEN_SECRET) {
@@ -176,9 +177,7 @@ const refreshAccessToken = async (
   return access_token;
 };
 
-const logoutUser = async (
-  refresh_token: string,
-) => {
+const logoutUser = async (refresh_token: string) => {
   if (!refresh_token) {
     throw new EmptyTokenError('Refresh token is required');
   }
@@ -239,12 +238,57 @@ const logoutUser = async (
   await authRepository.revokeRefreshToken(verifyToken.token_id);
 };
 
+const generateErrorCode = async (error_message: string) => {
+  const error_code = crypto.randomBytes(32).toString('hex');
+  await authRepository.createErrorCode(error_code, error_message);
+  return error_code;
+};
+
+const generateAuthCode = async (
+  access_token: string,
+  refresh_token: string
+) => {
+  const auth_code = crypto.randomBytes(32).toString('hex');
+  await authRepository.createAuthCode(auth_code, access_token, refresh_token);
+  return auth_code;
+};
+
+const getDataFromErrorCode = async (error_code: string) => {
+
+  const sanitizedErrorCode = sanitizeKey(error_code);
+
+  const error = await authRepository.getErrorCode(sanitizedErrorCode);
+
+  console.log(error);
+
+  if (!error) {
+    throw new NotFoundError('Error code not found');
+  }
+  await authRepository.deleteErrorCode(sanitizedErrorCode);
+  const { error_message } = JSON.parse(error);
+  return error_message;
+};
+
+const getDataFromAuthCode = async (auth_code: string) => {
+  const sanitizedAuthCode = sanitizeKey(auth_code);
+  const tokens = await authRepository.getAuthCode(sanitizedAuthCode);
+  if (!tokens) {
+    throw new NotFoundError('Auth code not found');
+  }
+  await authRepository.deleteAuthCode(sanitizedAuthCode);
+  const { access_token, refresh_token } = JSON.parse(tokens);
+  return { access_token, refresh_token };
+};
+
 const authServices = {
   googleAuth,
   googleAuthWithCode,
   refreshAccessToken,
-
   logoutUser,
+  generateErrorCode,
+  getDataFromErrorCode,
+  generateAuthCode,
+  getDataFromAuthCode,
 };
 
 export default authServices;

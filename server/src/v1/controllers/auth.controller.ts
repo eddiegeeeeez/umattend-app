@@ -7,8 +7,6 @@ import {
 } from '../../utils/responseHandler';
 import jwt from 'jsonwebtoken';
 import { AuthenticationError, NotFoundError } from '../../utils/customErrors';
-import crypto from 'crypto';
-import redis from '../../configs/redis.config';
 
 const googleAuth = async (req: Request, res: Response) => {
   try {
@@ -32,20 +30,27 @@ const googleCallback = async (req: Request, res: Response) => {
       req.originalUrl.split('?')[0]
     }`;
 
+    const frontendUrl = process.env.FRONTEND_URL;
+
     if (!code) {
-      return HTTPErrorResponse(
-        res,
-        400,
+      const error_code = authService.generateErrorCode(
         'Missing authorization code'
-      ) as Response;
+      );
+      return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
     }
 
     if (!GoogleAuth.validateRedirectUri(currentUri)) {
-      return HTTPErrorResponse(res, 400, 'Invalid redirect URI') as Response;
+      const error_code = await authService.generateErrorCode(
+        'Invalid redirect URI'
+      );
+      return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
     }
 
     if (!GoogleAuth.validateState(state as string)) {
-      return HTTPErrorResponse(res, 400, 'Invalid state parameter') as Response;
+      const error_code = await authService.generateErrorCode(
+        'Invalid state parameter'
+      );
+      return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
     }
 
     const result = await authService.googleAuthWithCode(
@@ -55,17 +60,9 @@ const googleCallback = async (req: Request, res: Response) => {
       req.headers['user-agent'] ?? ''
     );
 
-    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
-
-    const auth_code = crypto.randomBytes(32).toString('hex');
-
-    await redis.setex(
-      `auth_code:${auth_code}`,
-      60,
-      JSON.stringify({
-        access_token: result.access_token,
-        refresh_token: result.refresh_token,
-      })
+    const auth_code = await authService.generateAuthCode(
+      result.access_token,
+      result.refresh_token
     );
 
     res.cookie('access_token', result.access_token, {
@@ -84,14 +81,20 @@ const googleCallback = async (req: Request, res: Response) => {
 
     return res.redirect(`${frontendUrl}/profile/?auth_code=${auth_code}`);
   } catch (error: unknown) {
-    console.log(error);
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
 
-    return res.redirect(
-      `${frontendUrl}/error?message=${encodeURIComponent(
-        'Google login failed'
-      )}`
+    const error_code = await authService.generateErrorCode(
+      'Internal server error'
     );
+
+    if (error instanceof jwt.TokenExpiredError) {
+      const error_code = await authService.generateErrorCode(
+        'Internal server error'
+      );
+      return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
+    }
+
+    return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
   }
 };
 
@@ -151,9 +154,6 @@ const refreshAccessToken = async (req: Request, res: Response) => {
       ) as Response;
     }
 
-    console.log('headers', req.headers['user-agent'] ?? '');
-    console.log('headers', req.ip as string);
-
     const accessToken = await authService.refreshAccessToken(refresh_token);
 
     return HTTPSuccessResponse(
@@ -189,40 +189,48 @@ const refreshAccessToken = async (req: Request, res: Response) => {
   }
 };
 
-const exhangeCodeForToken = async (req: Request, res: Response) => {
+const exhangeCode = async (req: Request, res: Response) => {
   try {
     if (!req.body) {
       return HTTPErrorResponse(res, 400, 'Missing request body') as Response;
     }
 
-    const { auth_code } = req.body;
+    const { auth_code, error_code } = req.body;
 
-    console.log(auth_code);
-
-    if (!auth_code) {
-      return HTTPErrorResponse(res, 400, 'Missing auth code') as Response;
+    if (!auth_code && !error_code) {
+      return HTTPErrorResponse(res, 400, 'Missing exchange code') as Response;
     }
 
-    const tokens = await redis.get(`auth_code:${auth_code}`);
+    let response: object = {};
+    let response_message: string = '';
 
-    if (!tokens) {
-      return HTTPErrorResponse(
-        res,
-        400,
-        'Invalid or expired auth code'
-      ) as Response;
+    if (auth_code) {
+      const tokens = await authService.getDataFromAuthCode(auth_code);
+
+      const { access_token, refresh_token } = tokens;
+
+      response = { access_token, refresh_token };
+      response_message = 'Tokens retrieved';
     }
 
-    await redis.del(`auth_code:${auth_code}`);
+    if (error_code) {
+      const error_message = await authService.getDataFromErrorCode(error_code);
+      response_message = 'Error during authentication';
+      response = { error_message };
+    }
 
-    const { access_token, refresh_token } = JSON.parse(tokens);
-
-    return HTTPSuccessResponse(res, 200, 'Tokens retrieved', {
-      access_token,
-      refresh_token,
-    }) as Response;
+    return HTTPSuccessResponse(
+      res,
+      200,
+      response_message,
+      response
+    ) as Response;
   } catch (error: unknown) {
     console.log(error);
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, 'Not Found') as Response;
+    }
+
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
@@ -232,7 +240,7 @@ const authController = {
   googleCallback,
   logoutUser,
   refreshAccessToken,
-  exhangeCodeForToken,
+  exhangeCode,
 };
 
 export default authController;
