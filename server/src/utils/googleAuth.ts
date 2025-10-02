@@ -27,7 +27,7 @@ const generateGoogleAuthUrl = () => {
   const statePayload = {
     nonce,
     timestamp: Date.now(),
-    exp: Math.floor(Date.now() / 1000) + 1 * 60,
+    exp: Math.floor(Date.now() / 1000) + 5 * 60,
     codeVerifier,
   };
 
