@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { CustomError } from '@/v1/interface/error';
 
-
 export const errorHandler = (err: CustomError, req: Request, res: Response) => {
   const statusCode = err.statusCode ?? res.statusCode ?? 500;
 

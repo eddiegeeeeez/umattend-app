@@ -26,16 +26,10 @@ const googleAuthWithCode = async (
 ) => {
   const googleUser = await GoogleAuth.exchangeCodeForUserInfo(code, state);
 
-  console.log(googleUser);
-
   let user = await authRepository.findUserByGoogleId(googleUser.google_id);
 
   if (!user) {
-    console.log('Creating new user account');
-
     const student_id = Number(extractStudentID(googleUser.email));
-
-    console.log('student id:', student_id);
 
     user = await authRepository.createUser({
       umindanao_email: googleUser.email,
@@ -56,7 +50,7 @@ const googleAuthWithCode = async (
     umindanao_email: user.umindanao_email,
     role: user.role,
     student_id: Number(user.student?.student_id),
-    name: user.student?.name ?? '',
+    name: user.student?.name,
     department: user.student?.department ?? '',
     program: user.student?.program ?? '',
   });

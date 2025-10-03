@@ -12,9 +12,7 @@ import { cacheControl } from './v1/middlewares/cacheControl.middleware';
 import userRoutes from './v1/routes/user.routes';
 import authRoutes from './v1/routes/auth.routes';
 
-
 const app = express();
-
 
 // ---------- SECURITY & PERFORMANCE MIDDLEWARE ----------
 app.use(helmet());

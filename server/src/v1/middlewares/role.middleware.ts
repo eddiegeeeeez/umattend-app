@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { errorResponse } from '../../utils/responseHandler';
+import { HTTPErrorResponse } from '../../utils/responseHandler';
 
 export const checkRole =
   (...allowedRoles: string[]) =>
@@ -7,7 +7,7 @@ export const checkRole =
     const user = req.user;
 
     if (!user || !allowedRoles.includes(user.role)) {
-      errorResponse(
+      HTTPErrorResponse(
         res,
         403,
         'You do not have permission to access this resource'

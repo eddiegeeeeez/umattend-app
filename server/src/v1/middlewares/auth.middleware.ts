@@ -42,13 +42,15 @@ export const authMiddleware = async (
     const user = await prisma.user.findUnique({
       where: { id: decoded.user_id },
     });
-    
 
     if (!user) {
       return HTTPErrorResponse(res, 403, 'Invalid token') as Response;
     }
 
-    if (user.umindanao_email !== decoded.umindanao_email || user.role !== decoded.role) {
+    if (
+      user.umindanao_email !== decoded.umindanao_email ||
+      user.role !== decoded.role
+    ) {
       return HTTPErrorResponse(res, 403, 'Invalid token') as Response;
     }
 
