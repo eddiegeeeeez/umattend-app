@@ -9,7 +9,18 @@ interface UpdateUserTypes {
 
 const findUserByGoogleId = async (google_id: string) => {
   return await prisma.user.findUnique({
-    where: { google_id: google_id },
+    where: { google_id },
+    include: {
+      student: {
+        select: {
+          student_id: true,
+          name: true,
+          department: true,
+          program: true,
+          profile_picture: true,
+        },
+      },
+    },
   });
 };
 
@@ -19,7 +30,25 @@ const createUser = async (user_data: CreateUserTypes) => {
       umindanao_email: user_data.umindanao_email,
       google_id: user_data.google_id,
       role: user_data.role,
+      last_login_at: new Date(),
+      student: {
+        create: {
+          name: user_data.name,
+          student_id: user_data.student_id,
+          profile_picture: user_data.profile_picture,
+        },
+      },
     },
+    include: {
+      student: true,
+    },
+  });
+};
+
+const updateLastLogin = async (user_id: string) => {
+  return await prisma.user.update({
+    where: { id: user_id },
+    data: { last_login_at: new Date() },
   });
 };
 
@@ -111,6 +140,7 @@ const authRepository = {
   getUserById,
   findUserByEmail,
   findUserByGoogleId,
+  updateLastLogin,
   findRefreshToken,
   verifyRefreshToken,
   revokeRefreshToken,

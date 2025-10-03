@@ -33,7 +33,7 @@ const googleCallback = async (req: Request, res: Response) => {
     const frontendUrl = process.env.FRONTEND_URL;
 
     if (!code) {
-      const error_code = authService.generateErrorCode(
+      const error_code = await authService.generateErrorCode(
         'Missing authorization code'
       );
       return res.redirect(`${frontendUrl}/?error_code=${error_code}`);

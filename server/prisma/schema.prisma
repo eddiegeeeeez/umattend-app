@@ -44,11 +44,10 @@ model student {
   id              String  @id @default(cuid())
   user_id         String  @unique
   student_id      Int     @unique
-  first_name      String
-  last_name       String
-  department      String
-  program         String
-  profile_picture String?
+  name            String
+  department      String?
+  program         String?
+  profile_picture String
 
   user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -57,6 +56,7 @@ model student {
 
   @@index([department])
   @@index([program])
+  @@index([student_id])
   @@map("students")
 }
 

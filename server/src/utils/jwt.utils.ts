@@ -20,11 +20,10 @@ export const generateAccessToken = (
     umindanao_email,
     role,
     student_id,
-    first_name,
-    last_name,
+    name,
     department,
     program,
-    done_onboarding
+    done_onboarding,
   } = tokenPayload;
 
   const requiredFields = [
@@ -33,11 +32,10 @@ export const generateAccessToken = (
       umindanao_email,
       role,
       student_id,
-      first_name,
-      last_name,
+      name,
       department,
       program,
-      done_onboarding
+      done_onboarding,
     },
   ];
 

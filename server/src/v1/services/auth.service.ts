@@ -1,6 +1,5 @@
 import GoogleAuth from '../../utils/googleAuth.js';
 import authRepository from '../repositories/auth.repository.js';
-import studentRepository from '../repositories/student.repository.js';
 import jwt from 'jsonwebtoken';
 import { generateAccessToken, generateRefreshToken } from '@/utils/jwt.utils';
 import {
@@ -14,56 +13,10 @@ import crypto from 'crypto';
 
 const sanitizeKey = (key: string) => key.replace(/[^a-zA-Z0-9:_-]/g, '');
 
-const googleAuth = async (
-  googleToken: string,
-  ip_address: string,
-  userAgent: string
-) => {
-  const googleUser = await GoogleAuth.verifyGoogleToken(googleToken);
-
-  let user = await authRepository.findUserByGoogleId(googleUser.google_id);
-
-  if (!user) {
-    user = (await authRepository.findUserByEmail(
-      googleUser.email as string
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    )) as any;
-
-    if (user) {
-      user = await authRepository.updateUser(user.id, {
-        google_id: googleUser.google_id,
-        profile_picture: googleUser.profile_picture,
-      });
-    } else {
-      user = await authRepository.createUser({
-        umindanao_email: googleUser.email as string,
-        google_id: googleUser.google_id as string,
-        role: 'student',
-      });
-    }
-  }
-
-  const student = await studentRepository.getStudentByUserId(user.id);
-
-  const access_token = generateAccessToken({
-    user_id: user.id,
-    umindanao_email: user.id,
-    role: user.id,
-    student_id: Number(student?.student_id),
-    first_name: student?.first_name,
-    last_name: student?.last_name,
-    department: student?.department,
-    program: student?.program,
-  });
-
-  const refresh_token = await generateRefreshToken(
-    user.id,
-    ip_address,
-    userAgent
-  );
-
-  return { access_token, refresh_token, user };
-};
+function extractStudentID(email: string): string | null {
+  const match = email.match(/\.([0-9]+)@umindanao\.edu\.ph$/);
+  return match ? match[1] : null;
+}
 
 const googleAuthWithCode = async (
   code: string,
@@ -73,34 +26,39 @@ const googleAuthWithCode = async (
 ) => {
   const googleUser = await GoogleAuth.exchangeCodeForUserInfo(code, state);
 
+  console.log(googleUser);
+
   let user = await authRepository.findUserByGoogleId(googleUser.google_id);
 
   if (!user) {
-    const existingUser = await authRepository.findUserByEmail(googleUser.email);
+    console.log('Creating new user account');
 
-    if (existingUser) {
-      const error = new Error('ACCOUNT_LINKING_REQUIRED');
-      throw error;
-    } else {
-      user = await authRepository.createUser({
-        umindanao_email: googleUser.email,
-        google_id: googleUser.google_id,
-        role: 'student',
-      });
-    }
+    const student_id = Number(extractStudentID(googleUser.email));
+
+    console.log('student id:', student_id);
+
+    user = await authRepository.createUser({
+      umindanao_email: googleUser.email,
+      google_id: googleUser.google_id,
+      role: 'student',
+      student_id: student_id,
+      name: googleUser.name,
+      profile_picture: googleUser.profile_picture,
+    });
+
+    console.log(user);
   }
 
-  const student = await studentRepository.getStudentByUserId(user.id);
+  await authRepository.updateLastLogin(user.id);
 
   const access_token = generateAccessToken({
     user_id: user.id,
     umindanao_email: user.umindanao_email,
     role: user.role,
-    student_id: Number(student?.student_id) || 123456,
-    first_name: student?.first_name ?? '',
-    last_name: student?.last_name ?? '',
-    department: student?.department ?? '',
-    program: student?.program ?? '',
+    student_id: Number(user.student?.student_id),
+    name: user.student?.name ?? '',
+    department: user.student?.department ?? '',
+    program: user.student?.program ?? '',
   });
 
   const refresh_token = await generateRefreshToken(
@@ -157,24 +115,30 @@ const refreshAccessToken = async (refresh_token: string) => {
     );
   }
 
+  const validateHashedToken = await verifyHashedRefreshToken(
+    refresh_token,
+    verifyTokenDBExist.token_hash
+  );
+
+  if (!validateHashedToken) {
+    throw new AuthenticationError('Invalid refresh token');
+  }
+
   const user = await authRepository.getUserById(token.user_id);
 
   if (!user) {
     throw new NotFoundError('User not found');
   }
 
-  const access_token = generateAccessToken({
+  return generateAccessToken({
     user_id: user.id,
     umindanao_email: user.id,
     role: user.id,
     student_id: user.student?.student_id as number,
-    first_name: user.student?.first_name as string,
-    last_name: user.student?.last_name as string,
+    name: user.student?.name as string,
     department: user.student?.department as string,
     program: user.student?.program as string,
   });
-
-  return access_token;
 };
 
 const logoutUser = async (refresh_token: string) => {
@@ -254,7 +218,6 @@ const generateAuthCode = async (
 };
 
 const getDataFromErrorCode = async (error_code: string) => {
-
   const sanitizedErrorCode = sanitizeKey(error_code);
 
   const error = await authRepository.getErrorCode(sanitizedErrorCode);
@@ -281,7 +244,6 @@ const getDataFromAuthCode = async (auth_code: string) => {
 };
 
 const authServices = {
-  googleAuth,
   googleAuthWithCode,
   refreshAccessToken,
   logoutUser,
