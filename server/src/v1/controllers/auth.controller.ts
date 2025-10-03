@@ -7,6 +7,7 @@ import {
 } from '../../utils/responseHandler';
 import jwt from 'jsonwebtoken';
 import { AuthenticationError, NotFoundError } from '../../utils/customErrors';
+import { FRONTEND_URL, NODE_ENV } from '../../constants/app.constants';
 
 const googleAuth = async (req: Request, res: Response) => {
   try {
@@ -30,7 +31,7 @@ const googleCallback = async (req: Request, res: Response) => {
       req.originalUrl.split('?')[0]
     }`;
 
-    const frontendUrl = process.env.FRONTEND_URL;
+    const frontendUrl = FRONTEND_URL;
 
     if (!code) {
       const error_code = await authService.generateErrorCode(
@@ -67,21 +68,21 @@ const googleCallback = async (req: Request, res: Response) => {
 
     res.cookie('access_token', result.access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 1 * 60 * 60 * 1000,
     });
 
     res.cookie('refresh_token', result.refresh_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 3 * 24 * 60 * 60 * 1000,
     });
 
     return res.redirect(`${frontendUrl}/profile/?auth_code=${auth_code}`);
   } catch (error: unknown) {
-    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const frontendUrl = FRONTEND_URL ?? 'http://localhost:3000';
 
     const error_code = await authService.generateErrorCode(
       'Internal server error'
@@ -120,7 +121,7 @@ const logoutUser = async (req: Request, res: Response) => {
     return HTTPSuccessResponse(res, 200, 'Logged out successfully') as Response;
   } catch (error: unknown) {
     console.log(error);
-    if (process.env.NODE_ENV === 'DEVELOPMENT') {
+    if (NODE_ENV === 'DEVELOPMENT') {
       if (error instanceof jwt.JsonWebTokenError) {
         return HTTPErrorResponse(res, 400, error.message) as Response;
       }
@@ -165,7 +166,7 @@ const refreshAccessToken = async (req: Request, res: Response) => {
       }
     ) as Response;
   } catch (error: unknown) {
-    if (process.env.NODE_ENV === 'DEVELOPMENT') {
+    if (NODE_ENV === 'DEVELOPMENT') {
       if (error instanceof jwt.JsonWebTokenError) {
         return HTTPErrorResponse(res, 400, error.message) as Response;
       }

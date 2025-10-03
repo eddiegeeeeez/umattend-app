@@ -10,6 +10,7 @@ import {
 import { verifyHashedRefreshToken } from '../../utils/tokenHashing.js';
 import { RefreshTokenPayload } from '../interface/token.js';
 import crypto from 'crypto';
+import { JWT_REFRESH_TOKEN_SECRET } from '@/constants/jwt.constants.js';
 
 import { sanitizeKey, extractStudentID } from '@/utils/string.utils.js';
 
@@ -60,12 +61,6 @@ const googleAuthWithCode = async (
 };
 
 const refreshAccessToken = async (refresh_token: string) => {
-  const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
-
-  if (!REFRESH_TOKEN_SECRET) {
-    throw new Error('Refresh token secret not configured');
-  }
-
   let token: RefreshTokenPayload;
 
   let expiredAt: Date | undefined;
@@ -73,7 +68,7 @@ const refreshAccessToken = async (refresh_token: string) => {
   try {
     token = jwt.verify(
       refresh_token,
-      REFRESH_TOKEN_SECRET
+      JWT_REFRESH_TOKEN_SECRET
     ) as RefreshTokenPayload;
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
@@ -135,14 +130,15 @@ const logoutUser = async (refresh_token: string) => {
     throw new EmptyTokenError('Refresh token is required');
   }
 
-  const SECRET = process.env.JWT_REFRESH_TOKEN_SECRET as string;
-
   let verifyToken: RefreshTokenPayload;
 
   let expiredAt: Date | undefined;
 
   try {
-    verifyToken = jwt.verify(refresh_token, SECRET) as RefreshTokenPayload;
+    verifyToken = jwt.verify(
+      refresh_token,
+      JWT_REFRESH_TOKEN_SECRET
+    ) as RefreshTokenPayload;
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
       expiredAt = error.expiredAt;

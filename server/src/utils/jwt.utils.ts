@@ -5,16 +5,16 @@ import { v4 as uuidv4 } from 'uuid';
 import { AccessTokenPayloadTypes } from '../v1/types/token';
 import { GenerateTokenError } from '../utils/customErrors';
 import { UAParser } from 'ua-parser-js';
+import {
+  JWT_ACCESS_TOKEN_SECRET,
+  JWT_ACCESS_TOKEN_TTL,
+  JWT_REFRESH_TOKEN_SECRET,
+  JWT_REFRESH_TOKEN_TTL,
+} from '../constants/jwt.constants';
 
 export const generateAccessToken = (
   tokenPayload: AccessTokenPayloadTypes
 ): string => {
-  const SECRET = process.env.JWT_ACCESS_TOKEN_SECRET;
-
-  if (!SECRET) {
-    throw new GenerateTokenError('JWT Access Token Secret is not defined.');
-  }
-
   const {
     user_id,
     umindanao_email,
@@ -43,7 +43,11 @@ export const generateAccessToken = (
     throw new GenerateTokenError('Missing required token payload fields');
   }
 
-  return jwt.sign(tokenPayload, SECRET, { expiresIn: '1h' });
+  
+
+  return jwt.sign(tokenPayload, JWT_ACCESS_TOKEN_SECRET, {
+    expiresIn: `${JWT_ACCESS_TOKEN_TTL}h`,
+  } as jwt.SignOptions);
 };
 
 export const generateRefreshToken = async (
@@ -51,19 +55,17 @@ export const generateRefreshToken = async (
   ip: string,
   user_agent: string
 ) => {
-  const SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
-
-  if (!SECRET) {
-    throw new GenerateTokenError('JWT refresh secret not defined');
-  }
-
   const token_id = uuidv4();
 
-  const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expires_at = new Date(
+    Date.now() + Number(JWT_ACCESS_TOKEN_TTL) * 60 * 60 * 1000
+  );
 
-  const token = jwt.sign({ token_id, user_id }, SECRET, {
-    expiresIn: '7d',
-  });
+
+
+  const token = jwt.sign({ token_id, user_id }, JWT_REFRESH_TOKEN_SECRET, {
+    expiresIn: `${JWT_REFRESH_TOKEN_TTL}h`,
+  } as jwt.SignOptions);
 
   const hashedToken = await hashRefreshToken(token);
 

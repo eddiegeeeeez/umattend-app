@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../../configs/prisma.config';
 import { HTTPErrorResponse } from '@/utils/responseHandler';
-
+import { JWT_ACCESS_TOKEN_SECRET } from '@/constants/jwt.constants';
 /**
  * Middleware to authenticate user based on JWT token.
  * It checks for the presence of a Bearer token in the Authorization header,
@@ -23,17 +23,8 @@ export const authMiddleware = async (
 
   const token = authHeader.split(' ')[1];
 
-  const SECRET = process.env.JWT_ACCESS_TOKEN_SECRET as string;
-
-  if (!SECRET) {
-    return HTTPErrorResponse(
-      res,
-      500,
-      'Server configuration error'
-    ) as Response;
-  }
   try {
-    const decoded = jwt.verify(token, SECRET) as {
+    const decoded = jwt.verify(token, JWT_ACCESS_TOKEN_SECRET) as {
       user_id: string;
       umindanao_email: string;
       role: string;
