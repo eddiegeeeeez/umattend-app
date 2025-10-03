@@ -11,12 +11,7 @@ import { verifyHashedRefreshToken } from '../../utils/tokenHashing.js';
 import { RefreshTokenPayload } from '../interface/token.js';
 import crypto from 'crypto';
 
-const sanitizeKey = (key: string) => key.replace(/[^a-zA-Z0-9:_-]/g, '');
-
-function extractStudentID(email: string): string | null {
-  const match = email.match(/\.([0-9]+)@umindanao\.edu\.ph$/);
-  return match ? match[1] : null;
-}
+import { sanitizeKey, extractStudentID } from '@/utils/string.utils.js';
 
 const googleAuthWithCode = async (
   code: string,
