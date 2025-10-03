@@ -13,7 +13,7 @@ import crypto from 'crypto';
 import { JWT_REFRESH_TOKEN_SECRET } from '@/constants/jwt.constants.js';
 
 import { sanitizeKey, extractStudentID } from '@/utils/string.utils.js';
-
+import { sendEmail } from './email.service.js';
 const googleAuthWithCode = async (
   code: string,
   state: string,
@@ -36,12 +36,26 @@ const googleAuthWithCode = async (
       profile_picture: googleUser.profile_picture,
     });
 
+    await sendEmail(
+      googleUser.email,
+      'Welcome to UMAttend!',
+      `Hello ${googleUser.name},\n\nWelcome to UMAttend! We're excited to have you on board.\n\nBest regards,\nThe UMAttend Team`,
+      `<h1>Hello ${googleUser.name},</h1><p>Welcome to UMAttend! We're excited to have you on board.</p><p>Best regards,<br>The UMAttend Team</p>`
+    );
+
     console.log(user);
   }
 
   await authRepository.updateLoginAndProfile(
     user.id,
     googleUser.profile_picture
+  );
+
+  await sendEmail(
+    user.umindanao_email,
+    'New Login Alert',
+    `Hello ${user.student?.name},\n\nWe noticed a new login to your UMAttend account from IP address: ${ip_address} using ${userAgent}.\n\nIf this was you, no further action is needed. If you did not initiate this login, please secure your account immediately.\n\nBest regards,\nThe UMAttend Team`,
+    `<h1>Hello ${user.student?.name},</h1><p>We noticed a new login to your UMAttend account from IP address: ${ip_address} using ${userAgent}.</p><p>If this was you, no further action is needed. If you did not initiate this login, please secure your account immediately.</p><p>Best regards,<br>The UMAttend Team</p>`
   );
 
   const access_token = generateAccessToken({
