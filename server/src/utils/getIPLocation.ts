@@ -5,11 +5,29 @@ import axios from 'axios';
  * @param {string} ip - IP address to lookup
  * @returns {Promise<Object>} Location data with city, region, country
  */
-export const getLocationByIp = async (ip: string): Promise<object> => {
+
+interface LocationTypes {
+  ip: string;
+  city: string;
+  region: string;
+  country: string;
+}
+
+export const getLocationByIp = async (ip: string): Promise<LocationTypes> => {
   try {
+
+    console.log(ip);
+    
     const cleanIp = ip.replace('::ffff:', '');
 
+    console.log(cleanIp);
+    
+
     if (cleanIp === '127.0.0.1' || cleanIp === '::1') {
+
+      console.log('Local IP detected');
+      
+
       return {
         ip: cleanIp,
         city: 'Local',

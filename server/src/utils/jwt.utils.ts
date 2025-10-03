@@ -11,6 +11,7 @@ import {
   JWT_REFRESH_TOKEN_SECRET,
   JWT_REFRESH_TOKEN_TTL,
 } from '../constants/jwt.constants';
+import { getLocationByIp } from './getIPLocation';
 
 export const generateAccessToken = (
   tokenPayload: AccessTokenPayloadTypes
@@ -72,6 +73,12 @@ export const generateRefreshToken = async (
   const os = result.os.name ?? 'Unknown';
   const browser = result.browser.name ?? 'Unknown';
 
+  const { city, region, country } = await getLocationByIp(ip);
+
+  console.log(city);
+  console.log(region);
+  console.log(country);
+
   await prisma.refresh_token.create({
     data: {
       id: token_id,
@@ -81,6 +88,9 @@ export const generateRefreshToken = async (
       device,
       os,
       browser,
+      city,
+      region,
+      country,
       expires_at,
       last_used: new Date(),
     },
