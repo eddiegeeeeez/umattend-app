@@ -45,10 +45,20 @@ const createUser = async (user_data: CreateUserTypes) => {
   });
 };
 
-const updateLastLogin = async (user_id: string) => {
-  return await prisma.user.update({
+const updateLoginAndProfile = async (
+  user_id: string,
+  profile_picture: string
+) => {
+  await prisma.user.update({
     where: { id: user_id },
-    data: { last_login_at: new Date() },
+    data: {
+      last_login_at: new Date(),
+      student: {
+        update: {
+          profile_picture,
+        },
+      },
+    },
   });
 };
 
@@ -140,7 +150,7 @@ const authRepository = {
   getUserById,
   findUserByEmail,
   findUserByGoogleId,
-  updateLastLogin,
+  updateLoginAndProfile,
   findRefreshToken,
   verifyRefreshToken,
   revokeRefreshToken,

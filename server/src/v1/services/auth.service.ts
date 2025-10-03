@@ -39,7 +39,10 @@ const googleAuthWithCode = async (
     console.log(user);
   }
 
-  await authRepository.updateLastLogin(user.id);
+  await authRepository.updateLoginAndProfile(
+    user.id,
+    googleUser.profile_picture
+  );
 
   const access_token = generateAccessToken({
     user_id: user.id,
