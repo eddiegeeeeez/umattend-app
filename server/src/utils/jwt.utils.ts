@@ -43,8 +43,6 @@ export const generateAccessToken = (
     throw new GenerateTokenError('Missing required token payload fields');
   }
 
-  
-
   return jwt.sign(tokenPayload, JWT_ACCESS_TOKEN_SECRET, {
     expiresIn: `${JWT_ACCESS_TOKEN_TTL}h`,
   } as jwt.SignOptions);
@@ -60,8 +58,6 @@ export const generateRefreshToken = async (
   const expires_at = new Date(
     Date.now() + Number(JWT_ACCESS_TOKEN_TTL) * 60 * 60 * 1000
   );
-
-
 
   const token = jwt.sign({ token_id, user_id }, JWT_REFRESH_TOKEN_SECRET, {
     expiresIn: `${JWT_REFRESH_TOKEN_TTL}h`,

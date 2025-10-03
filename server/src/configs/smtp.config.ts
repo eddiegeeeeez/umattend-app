@@ -10,7 +10,7 @@ import {
 export const transporter = nodemailer.createTransport({
   host: MAIL_HOST,
   port: Number(MAIL_PORT),
-  secure: MAIL_SECURE === 'true', 
+  secure: MAIL_SECURE === 'true',
   auth: {
     user: MAIL_USER,
     pass: MAIL_PASS,
