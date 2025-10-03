@@ -54,8 +54,8 @@ const googleAuthWithCode = async (
   await sendEmail(
     user.umindanao_email,
     'New Login Alert',
-    `Hello ${user.student?.name},\n\nWe noticed a new login to your UMAttend account from IP address: ${ip_address} using ${userAgent}.\n\nIf this was you, no further action is needed. If you did not initiate this login, please secure your account immediately.\n\nBest regards,\nThe UMAttend Team`,
-    `<h1>Hello ${user.student?.name},</h1><p>We noticed a new login to your UMAttend account from IP address: ${ip_address} using ${userAgent}.</p><p>If this was you, no further action is needed. If you did not initiate this login, please secure your account immediately.</p><p>Best regards,<br>The UMAttend Team</p>`
+    `Hello ${user.student?.name ?? 'User'},\n\nWe noticed a new login to your UMAttend account from IP address: ${ip_address} using ${userAgent}.\n\nIf this was you, no further action is needed. If you did not initiate this login, please secure your account immediately.\n\nBest regards,\nThe UMAttend Team`,
+    `<h1>Hello ${user.student?.name ?? 'User'},</h1><p>We noticed a new login to your UMAttend account from IP address: ${ip_address} using ${userAgent}.</p><p>If this was you, no further action is needed. If you did not initiate this login, please secure your account immediately.</p><p>Best regards,<br>The UMAttend Team</p>`
   );
 
   const access_token = generateAccessToken({
