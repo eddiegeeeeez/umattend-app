@@ -15,19 +15,8 @@ interface LocationTypes {
 
 export const getLocationByIp = async (ip: string): Promise<LocationTypes> => {
   try {
-
-    console.log(ip);
-    
     const cleanIp = ip.replace('::ffff:', '');
-
-    console.log(cleanIp);
-    
-
     if (cleanIp === '127.0.0.1' || cleanIp === '::1') {
-
-      console.log('Local IP detected');
-      
-
       return {
         ip: cleanIp,
         city: 'Local',
