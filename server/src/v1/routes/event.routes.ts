@@ -4,7 +4,7 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = express.Router();
 
+router.post('/', eventController.addEvent);
 router.delete('/:eventId', authMiddleware, eventController.deleteEvent);
-
 
 export default router;
