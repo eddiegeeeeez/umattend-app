@@ -1,12 +1,12 @@
 import { Prisma } from '@prisma/client';
 import { AddEventInterface } from '../interface/event';
 import eventRepository from '../repositories/event.repository';
+import { FetchUserInfoResult } from '../interface/auth';
 
-const addEvent = async (event_data: AddEventInterface): Promise<boolean> => {
+const addEvent = async (event_data: AddEventInterface): Promise<FetchUserInfoResult|false> => {
   try {
     const event = await eventRepository.createEvent(event_data);
-    console.log(event);
-    return true;
+    return event.user;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {

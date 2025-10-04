@@ -20,7 +20,6 @@ const createEvent = async (event_data: AddEventInterface) => {
     },
     include: {
       user: true,
-      attendance: true,
     },
   });
 };
