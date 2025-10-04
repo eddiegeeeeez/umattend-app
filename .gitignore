@@ -68,3 +68,7 @@ temp/
 # Firebase files
 firebase-service-account.json
 /src/generated/prisma
+
+# SSH keys
+id_ed25519
+id_ed25519.pub
