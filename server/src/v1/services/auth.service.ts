@@ -51,8 +51,7 @@ const googleAuthWithCode = async (
     googleUser.profile_picture
   );
 
-
-  // Uncomment  if want to test the auth email notification  
+  // Uncomment  if want to test the auth email notification
   // await sendEmail(
   //   user.umindanao_email,
   //   'New Login Alert',
@@ -231,7 +230,7 @@ const getDataFromErrorCode = async (error_code: string) => {
   if (!error) {
     throw new NotFoundError('Error code not found');
   }
-  await authRepository.deleteErrorCode(sanitizedErrorCode);
+  // await authRepository.deleteErrorCode(sanitizedErrorCode);
   const { error_message } = JSON.parse(error);
   return error_message;
 };
@@ -242,7 +241,7 @@ const getDataFromAuthCode = async (auth_code: string) => {
   if (!tokens) {
     throw new NotFoundError('Auth code not found');
   }
-  await authRepository.deleteAuthCode(sanitizedAuthCode);
+  // await authRepository.deleteAuthCode(sanitizedAuthCode);
   const { access_token, refresh_token } = JSON.parse(tokens);
   return { access_token, refresh_token };
 };
