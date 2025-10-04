@@ -13,8 +13,20 @@ export const authRateLimiter = rateLimit({
 });
 
 export const registrationRateLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
+  windowMs: 15 * 60 * 1000,
   max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 429,
+    success: false,
+    message: 'Too many registration attempts. Please try again later.',
+  },
+});
+
+export const oauthRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

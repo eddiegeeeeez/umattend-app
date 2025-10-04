@@ -17,7 +17,7 @@ datasource db {
 model user {
   id              String  @id @default(cuid())
   umindanao_email String  @unique
-  google_id       String? @unique
+  google_id       String  @unique
   role            String
   done_onboarding Boolean @default(false)
 
@@ -28,9 +28,12 @@ model user {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  refresh_tokens refresh_token[]
-  events         events[]
-  student        student?
+  refresh_tokens      refresh_token[]
+  events              events[]
+  student             student?
+  attendance          attendance[]
+  attendance_check_in attendance[]    @relation("CheckInByUser")
+  attendance_check_ou attendance[]    @relation("CheckOutByUser")
 
   @@index([umindanao_email])
   @@index([role])
@@ -44,19 +47,20 @@ model student {
   id              String  @id @default(cuid())
   user_id         String  @unique
   student_id      Int     @unique
-  first_name      String
-  last_name       String
-  department      String
-  program         String
-  profile_picture String?
+  name            String
+  department      String?
+  program         String?
+  profile_picture String
 
   user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+  attendance attendance[]
 
   @@index([department])
   @@index([program])
+  @@index([student_id])
   @@map("students")
 }
 
@@ -66,8 +70,12 @@ model refresh_token {
   token_hash String @unique
 
   ip_address String?
-  user_agent String?
+  browser    String?
+  os         String?
   device     String?
+  city       String?
+  region     String?
+  country    String?
 
   is_active  Boolean   @default(true)
   revoked_at DateTime?
@@ -87,28 +95,60 @@ model refresh_token {
 }
 
 model events {
-  id          String    @id @default(cuid())
-  title       String
-  description String
-  department  String
-  location    String
-  all_day     Boolean   @default(false)
-  start_time  DateTime?
-  end_time    DateTime?
-  is_done     Boolean   @default(false)
+  id                 String    @id @default(cuid())
+  title              String
+  description        String
+  department         String
+  location           String
+  capacity           Int?
+  all_day            Boolean   @default(false)
+  start_time         DateTime?
+  end_time           DateTime?
+  check_out_required Boolean   @default(false)
+  is_done            Boolean   @default(false)
 
-  form_fields Json
+  form_fields Json?
 
   created_by String
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  user user @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  user       user         @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  attendance attendance[]
 
   @@index([title])
+  @@index([department])
+  @@index([location])
   @@index([start_time])
   @@index([end_time])
   @@index([created_by])
   @@map("events")
+}
+
+model attendance {
+  id           String    @id @default(cuid())
+  event_id     String
+  student_id   String
+  check_in_at  DateTime  @default(now())
+  check_out_at DateTime?
+
+  check_in_by  String
+  check_out_by String?
+
+  event             events  @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  student           student @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  check_in_by_user  user    @relation("CheckInByUser", fields: [check_in_by], references: [id], onDelete: Cascade)
+  check_out_by_user user?   @relation("CheckOutByUser", fields: [check_out_by], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       user?    @relation(fields: [userId], references: [id])
+  userId     String?
+
+  @@index([event_id])
+  @@index([student_id])
+  @@index([check_in_at])
+  @@index([check_out_at])
+  @@map("attendances")
 }

@@ -7,8 +7,8 @@ import {
   GOOGLE_CLIENT_SECRET,
   GOOGLE_REDIRECT_URI,
   GOOGLE_CLIENT,
-} from '../constants/google.constants';
-import { JWT_GOOGLE_STATE_SECRET } from '../constants/jwt.constants';
+} from '../../constants/google.constants';
+import { JWT_GOOGLE_STATE_SECRET } from '../../constants/jwt.constants';
 
 const generatePKCE = () => {
   const codeVerifier = crypto.randomBytes(32).toString('base64url');
@@ -37,7 +37,19 @@ const generateGoogleAuthUrl = () => {
 
   const state = jwt.sign(statePayload, JWT_GOOGLE_STATE_SECRET);
 
-  const url = `https://accounts.google.com/o/oauth2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_REDIRECT_URI}&scope=email%20profile&response_type=code&access_type=offline&prompt=consent&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+  const url = `
+  https://accounts.google.com/o/oauth2/auth?
+  client_id=${GOOGLE_CLIENT_ID}
+  &redirect_uri=${GOOGLE_REDIRECT_URI}
+  &scope=email%20profile
+  &response_type=code
+  &access_type=offline
+  &prompt=consent
+  &state=${state}
+  &code_challenge=${codeChallenge}
+  &code_challenge_method=S256
+  &hd=umindanao.edu.ph
+  `;
 
   return url;
 };
