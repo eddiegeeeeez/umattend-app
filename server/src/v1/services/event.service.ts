@@ -1,7 +1,4 @@
-import { Prisma } from '@prisma/client';
-import { AddEventInterface } from '../interface/event';
-import eventRepository from '../repositories/event.repository';
-import { FetchUserInfoResult } from '../interface/auth';
+import eventRespository from '../repositories/event.repository';
 
 const addEvent = async (event_data: AddEventInterface): Promise<FetchUserInfoResult|false> => {
   try {

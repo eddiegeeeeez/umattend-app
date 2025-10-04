@@ -51,7 +51,8 @@ const googleAuthWithCode = async (
     googleUser.profile_picture
   );
 
-  // Uncomment  if want to test the auth email notification
+
+  // Uncomment  if want to test the auth email notification  
   // await sendEmail(
   //   user.umindanao_email,
   //   'New Login Alert',
