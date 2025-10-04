@@ -43,8 +43,13 @@ const ProfilePage = () => {
 
         // redirect after setting user
         router.push('/');
-      } catch (err) {
-        console.error('Login failed:', err.response?.data || err.message);
+      } catch (err:unknown) {
+        if (typeof err === 'object' && err !== null && 'response' in err) {
+          // @ts-expect-error: err.response may exist on axios errors
+          console.error('Login failed:', err.response?.data || err.message);
+        } else {
+          console.error('Login failed:', (err as Error).message);
+        }
       }
     };
 

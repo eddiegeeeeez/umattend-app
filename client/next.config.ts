@@ -1,7 +1,18 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:4000/api/:path*'
+      }
+    ];
+  },
+
+  turbopack: {
+    root: __dirname // force Next.js to treat `client/` as the root
+  }
 };
 
 export default nextConfig;

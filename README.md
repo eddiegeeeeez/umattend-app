@@ -104,12 +104,36 @@ UMAttend is a comprehensive attendance management application designed to stream
 
 ## 🏃‍♂️ How to Run the Code
 
-### Development Mode
+### Quick Start (Recommended)
+
+**Start both servers at once:**
+
+```bash
+npm run dev
+```
+
+This will start both the frontend and backend servers concurrently with colored output.
+
+**Alternative methods:**
+
+```bash
+# Using concurrently package
+npm run dev:concurrent
+
+# Windows batch file (opens separate windows)
+start-dev.bat
+
+# Unix/Linux/Mac shell script
+./start-dev.sh
+```
+
+### Development Mode (Manual)
+
+If you prefer to run servers separately:
 
 1. **Start the Server** (Terminal 1):
 
    ```bash
-
    cd server
    npm run dev
    ```
@@ -119,7 +143,6 @@ UMAttend is a comprehensive attendance management application designed to stream
 2. **Start the Client** (Terminal 2):
 
    ```bash
-
    cd client
    npm run dev
    ```
@@ -127,6 +150,20 @@ UMAttend is a comprehensive attendance management application designed to stream
    Client will run on `http://localhost:3000`
 
 ### Production Mode
+
+**Build both projects:**
+
+```bash
+npm run build
+```
+
+**Start both servers in production:**
+
+```bash
+npm run start
+```
+
+**Manual approach:**
 
 1. **Build and Start Server**:
 
@@ -144,20 +181,24 @@ UMAttend is a comprehensive attendance management application designed to stream
    npm start
    ```
 
-### Using Scripts from Root
+### Available Root Scripts
 
 ```bash
-# Lint both client and server
-npm run lint:server
-npm run lint:client
+# Development
+npm run dev                 # Start both servers (recommended)
+npm run dev:concurrent      # Alternative using concurrently
+npm run dev:client          # Start only frontend
+npm run dev:server          # Start only backend
 
-# Format both client and server
-npm run format:server
-npm run format:client
+# Production
+npm run build               # Build both projects
+npm run start               # Start both servers in production
+npm run start:concurrent    # Alternative using concurrently
+npm run start:client        # Start only frontend
+npm run start:server        # Start only backend
 
-# Type check both
-npm run type-check:server
-npm run type-check:client
+# Installation
+npm run install:all         # Install all dependencies
 ```
 
 ## 🔧 Format Checking

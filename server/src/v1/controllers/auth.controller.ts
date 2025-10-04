@@ -68,14 +68,14 @@ const googleCallback = async (req: Request, res: Response) => {
 
     res.cookie('access_token', result.access_token, {
       httpOnly: true,
-      secure: NODE_ENV === 'production',
+      secure: NODE_ENV === 'PRODUCTION',
       sameSite: 'strict',
       maxAge: 1 * 60 * 60 * 1000,
     });
 
     res.cookie('refresh_token', result.refresh_token, {
       httpOnly: true,
-      secure: NODE_ENV === 'production',
+      secure: NODE_ENV === 'PRODUCTION',
       sameSite: 'strict',
       maxAge: 3 * 24 * 60 * 60 * 1000,
     });
