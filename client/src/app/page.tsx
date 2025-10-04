@@ -18,7 +18,7 @@ function LoginContent() {
   }, [router, searchParams]);
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:4000/api/v1/auth/google'; // backend auth URL
+    window.location.href = 'http://localhost:3000/api/v1/auth/google'; // backend auth URL
   };
 
   return (

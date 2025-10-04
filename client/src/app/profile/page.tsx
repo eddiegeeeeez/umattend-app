@@ -22,7 +22,7 @@ const ProfilePage = () => {
       if (!auth_code) return;
 
       try {
-        const res = await axios.post('http://localhost:4000/api/v1/auth/exchange', { auth_code });
+        const res = await axios.post('http://localhost:3000/api/v1/auth/exchange', { auth_code });
 
         console.log(res.data);
 

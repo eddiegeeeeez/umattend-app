@@ -9,10 +9,6 @@ const nextConfig: NextConfig = {
       }
     ];
   },
-
-  turbopack: {
-    root: __dirname // force Next.js to treat `client/` as the root
-  }
 };
 
 export default nextConfig;
