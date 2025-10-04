@@ -1,30 +1,33 @@
 import { Request, Response } from 'express';
-import { AddEventInterface } from '../interface/event';
 import {
   HTTPErrorResponse,
   HTTPSuccessResponse,
 } from '@/utils/responseHandler';
 import eventServices from '../services/event.service';
 import { sendEmail } from '../services/email.service';
-interface AddEventRequest extends Request {
-  body: {
-    event_data: AddEventInterface;
-  };
-}
+import { AddEventRequest } from '../interface/event';
 
-const addEvent = async (req: AddEventRequest, res: Response) => {
+const addEvent = async (req: Request, res: Response) => {
   try {
-    const { event_data } = req.body;
+    const { event_data } = req.body as AddEventRequest['body'];
+    const { umindanao_email, id } = req.user;
+
     if (!event_data) {
-      return HTTPErrorResponse(res, 400, 'Miising event_data in request body');
+      return HTTPErrorResponse(res, 400, 'Missing event_data in request body');
     }
-    const user = await eventServices.addEvent(event_data);
-    console.log(user);
-    if (!user) {
+
+    if (!umindanao_email) {
+      return HTTPErrorResponse(res, 401, 'Unauthorized');
+    }
+
+    await eventServices.addEvent({ ...event_data, created_by: id });
+
+    if (!umindanao_email) {
       return HTTPErrorResponse(res, 500, 'Failed to add event');
     }
 
-    sendEmail(user.umindanao_email, 'Event Successfully Created');
+    sendEmail(umindanao_email, 'Event Successfully Created');
+
     return HTTPSuccessResponse(res, 200, 'Event Created');
   } catch (error: unknown) {
     if (error instanceof Error) {

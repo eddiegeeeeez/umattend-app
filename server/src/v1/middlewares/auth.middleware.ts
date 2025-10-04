@@ -1,8 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import prisma from '../../configs/prisma.config';
 import { HTTPErrorResponse } from '@/utils/responseHandler';
 import { JWT_ACCESS_TOKEN_SECRET } from '@/constants/jwt.constants';
+import { FetchUserInfoResult } from '../interface/auth';
+
+declare global {
+  namespace Express {
+    interface Request {
+      user: {
+        id: string;
+        umindanao_email: string;
+        role: string;
+      };
+    }
+  }
+}
+
 /**
  * Middleware to authenticate user based on JWT token.
  * It checks for the presence of a Bearer token in the Authorization header,
@@ -30,26 +43,15 @@ export const authMiddleware = async (
       role: string;
     };
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.user_id },
-    });
-
-    if (!user) {
-      return HTTPErrorResponse(res, 403, 'Invalid token') as Response;
-    }
-
-    if (
-      user.umindanao_email !== decoded.umindanao_email ||
-      user.role !== decoded.role
-    ) {
+    if (!decoded) {
       return HTTPErrorResponse(res, 403, 'Invalid token') as Response;
     }
 
     req.user = {
-      id: user.id,
-      umindanao_email: user.umindanao_email,
-      role: user.role,
-    };
+      id: decoded.user_id,
+      umindanao_email: decoded.umindanao_email,
+      role: decoded.role,
+    } as FetchUserInfoResult;
 
     return next();
   } catch (error: unknown) {

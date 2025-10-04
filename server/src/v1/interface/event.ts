@@ -1,5 +1,6 @@
+import { Request } from 'express';
+
 export interface AddEventInterface {
-  id: string;
   title: string;
   description: string;
   department: string;
@@ -12,4 +13,10 @@ export interface AddEventInterface {
   is_done: boolean;
   form_fields?: {};
   created_by: string;
+}
+
+export interface AddEventRequest extends Request {
+  body: {
+    event_data: AddEventInterface;
+  };
 }
