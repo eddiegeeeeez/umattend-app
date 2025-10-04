@@ -1,12 +1,12 @@
 import { Response } from 'express';
 
-export interface SuccessResponse<T = unknown> {
+interface SuccessResponse<T = unknown> {
   success: true;
   message: string;
   data: T;
 }
 
-export interface ErrorResponse {
+interface ErrorResponse {
   success: false;
   message: string;
 }
