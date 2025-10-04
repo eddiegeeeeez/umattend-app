@@ -19,8 +19,6 @@ const ProfilePage = () => {
       const params = new URLSearchParams(window.location.search);
       const auth_code = params.get('auth_code');
 
-      if (!auth_code) return;
-
       try {
         const res = await axios.post('http://localhost:3000/api/v1/auth/exchange', { auth_code });
 
@@ -29,24 +27,17 @@ const ProfilePage = () => {
         const accessToken = res.data.data.access_token;
         const refreshToken = res.data.data.refresh_token;
 
-        console.log(accessToken, refreshToken);
-        
-
-        // store tokens
         localStorage.setItem('access_token', accessToken);
         localStorage.setItem('refresh_token', refreshToken);
 
-        // decode user info from JWT
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const decoded = jwtDecode(accessToken) as any;
         setUser({ id: decoded.sub, email: decoded.email });
-
-        // redirect after setting user
         router.push('/');
-      } catch (err:unknown) {
+      } catch (err: unknown) {
         if (typeof err === 'object' && err !== null && 'response' in err) {
-          // @ts-expect-error: err.response may exist on axios errors
-          console.error('Login failed:', err.response?.data || err.message);
+          const response = (err as { response?: { data?: unknown } }).response;
+          console.error('Login failed:', response?.data ?? (err instanceof Error ? err.message : String(err)));
         } else {
           console.error('Login failed:', (err as Error).message);
         }
