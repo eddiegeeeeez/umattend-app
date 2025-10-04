@@ -80,7 +80,7 @@ const googleCallback = async (req: Request, res: Response) => {
       maxAge: 3 * 24 * 60 * 60 * 1000,
     });
 
-    return res.redirect(`${frontendUrl}/profile/?auth_code=${auth_code}`);
+    return res.redirect(`${frontendUrl}/?auth_code=${auth_code}`);
   } catch (error: unknown) {
     const frontendUrl = FRONTEND_URL ?? 'http://localhost:3000';
 
