@@ -1,7 +1,5 @@
 import express from 'express';
-import eventController from '../controllers/event.controller';
-const router = express.Router();
 
-router.post('/', eventController.addEvent);
+const router = express.Router();
 
 export default router;
