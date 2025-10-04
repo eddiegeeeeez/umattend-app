@@ -9,7 +9,7 @@ const createEvent = async (event_data: AddEventInterface) => {
       description: event_data.description,
       department: event_data.department,
       location: event_data.location,
-      // capacity: event_data?.capacity,
+      capacity: event_data?.capacity,
       all_day: event_data.all_day,
       start_time: event_data.start_time,
       end_time: event_data.end_time,

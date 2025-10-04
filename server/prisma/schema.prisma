@@ -100,7 +100,7 @@ model events {
   description        String
   department         String
   location           String
-  // capacity           Int?
+  capacity           Int?
   all_day            Boolean   @default(false)
   start_time         DateTime?
   end_time           DateTime?
