@@ -4,9 +4,7 @@ import { HTTPErrorResponse } from '../../utils/responseHandler';
 export const checkRole =
   (...allowedRoles: string[]) =>
   (req: Request, res: Response, next: NextFunction): void => {
-    const user = req.user;
-
-    if (!user || !allowedRoles.includes(user.role)) {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
       HTTPErrorResponse(
         res,
         403,
