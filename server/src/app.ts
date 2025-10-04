@@ -44,7 +44,7 @@ app.use(
 // ---------- API ROUTES ----------
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
-app.use('/api/v1/events', eventRoutes);
+app.use('/api/v1/event', eventRoutes);
 
 // ---------- SERVE FRONTEND (only in production) ----------
 if (NODE_ENV === 'PRODUCTION') {
