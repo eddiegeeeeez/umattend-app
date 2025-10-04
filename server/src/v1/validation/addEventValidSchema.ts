@@ -3,7 +3,7 @@ export const EventValidSchema = {
     notEmpty: {
       errorMessage: 'Title is required',
     },
-    isInt: {
+    isString: {
       errorMessage: 'Title must be a string',
     },
     isLength: {
@@ -13,18 +13,17 @@ export const EventValidSchema = {
   },
   description: {
     notEmpty: {
-      errorMessage: 'Brief self-explanation cannot be empty',
+      errorMessage: 'Event description cannot be empty',
     },
     isString: {
-      errorMessage: 'Brief self-explanation must be a string',
+      errorMessage: 'Event description must be a string',
     },
     isLength: {
       options: { min: 20, max: 500 },
-      errorMessage:
-        'Brief self-explanation must be between 20 and 500 characters',
+      errorMessage: 'Event description must be between 20 and 500 characters',
     },
   },
-  college_department: {
+  department: {
     notEmpty: {
       errorMessage: 'College/Department cannot be empty',
     },
@@ -50,10 +49,9 @@ export const EventValidSchema = {
   },
   capacity: {
     optional: true,
-    isInt: {
-      errorMessage: 'Capacity must be a number',
-      options: { min: 1 },
-    },
+    notEmpty: { errorMessage: 'Capacity is required' },
+    isInt: { errorMessage: 'Capacity must be a number' },
+    toInt: true,
   },
   all_day: {
     notEmpty: {
@@ -90,14 +88,14 @@ export const EventValidSchema = {
     },
   },
   is_done: {
-    notEmpty: {
-      errorMessage: 'Is done field is required',
-    },
-    isBoolean: {
-      errorMessage: 'Is done must be a boolean',
+    isBoolean: { errorMessage: 'is_done must be boolean' },
+    toBoolean: true,
+    customSanitizer: {
+      options: (value: boolean) => value ?? false, // default false
     },
   },
   form_fields: {
+    optional: true,
     isArray: {
       options: { min: 1 },
       errorMessage: 'Form fields must be an array with at least one item',

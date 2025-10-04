@@ -1,12 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { HTTPErrorResponse } from '../../utils/responseHandler';
 
-export const onlyAdmin =
-  () =>
+export const checkRole =
+  (...allowedRoles: string[]) =>
   (req: Request, res: Response, next: NextFunction): void => {
-    const user = req.user;
-
-    if (user.role === 'admin') {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
       HTTPErrorResponse(
         res,
         403,
