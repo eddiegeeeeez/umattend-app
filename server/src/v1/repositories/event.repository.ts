@@ -1,5 +1,3 @@
-const eventRespository = {deleteEvent};
-export default eventRespository;
 import prisma from '@/configs/prisma.config';
 import { AddEventInterface } from '../interface/event';
 
