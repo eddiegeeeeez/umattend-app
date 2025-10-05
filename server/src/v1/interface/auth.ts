@@ -33,3 +33,12 @@ export interface FetchUserInfoResult {
   done_onboarding: boolean;
   role: string;
 }
+
+export interface OnboardedUserInfoResult {
+  id: string;
+  umindanao_email: string;
+  done_onboarding: boolean;
+  department?: string | null;
+  program?: string | null;
+  role: string;
+}

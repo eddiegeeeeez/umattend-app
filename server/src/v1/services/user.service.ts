@@ -1,6 +1,9 @@
 import userRepository from '../repositories/user.repository';
-import { NotFoundError } from '../../utils/customErrors';
-import { FetchUserInfoResult } from '../interface/auth';
+import { AuthenticationError, NotFoundError } from '../../utils/customErrors';
+import {
+  FetchUserInfoResult,
+  OnboardedUserInfoResult,
+} from '../interface/auth';
 
 const getUserById = async (user_id: string): Promise<FetchUserInfoResult> => {
   const user = await userRepository.findUserById(user_id);
@@ -16,8 +19,19 @@ const getUserById = async (user_id: string): Promise<FetchUserInfoResult> => {
   };
 };
 
+const checkIsUserDoneOnboarding = async (
+  user_id: string
+): Promise<OnboardedUserInfoResult | null> => {
+  const user = userRepository.isUserDoneOnboarding(user_id);
+  if (!user) {
+    throw new AuthenticationError('User not onboarded');
+  }
+  return user
+};
+
 const userService = {
   getUserById,
+  checkIsUserDoneOnboarding,
 };
 
 export default userService;
