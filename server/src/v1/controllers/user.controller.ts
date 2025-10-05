@@ -5,6 +5,8 @@ import {
   HTTPSuccessResponse,
 } from '@/utils/responseHandler';
 import { NotFoundError } from '../../utils/customErrors';
+import { generateAccessToken } from '@/utils/jwt.utils';
+import { NODE_ENV } from '@/constants/app.constants';
 
 const getUserById = async (req: Request, res: Response) => {
   try {
@@ -38,8 +40,24 @@ const onboardUser = async (req: Request, res: Response) => {
     if (!user) {
       return HTTPErrorResponse(res, 404, 'User not found') as Response;
     }
+    const access_token = generateAccessToken({
+      user_id: user.id,
+      umindanao_email: user.umindanao_email,
+      role: user.role,
+      student_id: Number(user.student?.student_id),
+      name: user.student?.name,
+      department: user.student?.department ?? '',
+      program: user.student?.program ?? '',
+    });
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: NODE_ENV === 'PRODUCTION',
+      sameSite: 'strict',
+      maxAge: 1 * 60 * 60 * 1000,
+    });
     return HTTPSuccessResponse(res, 200, 'User succesfully updated', {
-      user,
+      ...user,
+      access_token,
     }) as Response;
   } catch (error: unknown) {
     if (error instanceof Error) {

@@ -1,3 +1,5 @@
+import { GetStudentByIdInterface } from './student';
+
 export interface PasswordUpdateResult {
   updatedAt: Date;
   userId: string;
@@ -38,7 +40,6 @@ export interface OnboardedUserInfoResult {
   id: string;
   umindanao_email: string;
   done_onboarding: boolean;
-  department?: string | null;
-  program?: string | null;
   role: string;
+  student: GetStudentByIdInterface | null;
 }

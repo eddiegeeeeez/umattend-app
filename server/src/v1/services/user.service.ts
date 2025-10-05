@@ -1,5 +1,5 @@
 import userRepository from '../repositories/user.repository';
-import { AuthenticationError, NotFoundError } from '../../utils/customErrors';
+import { NotFoundError } from '../../utils/customErrors';
 import {
   FetchUserInfoResult,
   OnboardedUserInfoResult,
@@ -19,8 +19,6 @@ const getUserById = async (user_id: string): Promise<FetchUserInfoResult> => {
   };
 };
 
-
-
 const onboardUser = async (
   user_id: string,
   department: string,
@@ -31,11 +29,10 @@ const onboardUser = async (
     throw new NotFoundError('User not found');
   }
   return user;
-  
 };
 const userService = {
   getUserById,
-  onboardUser
+  onboardUser,
 };
 
 export default userService;

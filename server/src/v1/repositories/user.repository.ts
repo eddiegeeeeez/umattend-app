@@ -6,8 +6,6 @@ const findUserById = async (user_id: string) => {
   });
 };
 
-
-
 const onboardUser = async (
   user_id: string,
   department: string,
@@ -29,12 +27,7 @@ const onboardUser = async (
       done_onboarding: true,
       umindanao_email: true,
       role: true,
-      student: {
-        select: {
-          department: true,
-          program: true,
-        },
-      },
+      student: true,
     },
   });
 
@@ -42,13 +35,7 @@ const onboardUser = async (
     return null;
   }
 
-  // Flatten the student fields
-  const { student, ...rest } = user;
-
-  return {
-    ...rest,
-    ...student,
-  };
+  return user;
 };
 
 const userRepository = {
