@@ -44,6 +44,7 @@ const onboardUser = async (req: Request, res: Response) => {
       user_id: user.id,
       umindanao_email: user.umindanao_email,
       role: user.role,
+      done_onboarding: user.done_onboarding,
       student_id: Number(user.student?.student_id),
       name: user.student?.name,
       department: user.student?.department ?? '',
