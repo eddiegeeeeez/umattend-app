@@ -1,6 +1,6 @@
 import authService from '../services/auth.service';
 import { Request, Response } from 'express';
-import GoogleAuth from "../services/google.service";
+import GoogleAuth from '../services/google.service';
 import {
   HTTPErrorResponse,
   HTTPSuccessResponse,
@@ -8,6 +8,10 @@ import {
 import jwt from 'jsonwebtoken';
 import { AuthenticationError, NotFoundError } from '../../utils/customErrors';
 import { FRONTEND_URL, NODE_ENV } from '../../constants/app.constants';
+import {
+  JWT_ACCESS_TOKEN_TTL,
+  JWT_REFRESH_TOKEN_TTL,
+} from '@/constants/jwt.constants';
 
 const googleAuth = async (req: Request, res: Response) => {
   try {
@@ -70,14 +74,14 @@ const googleCallback = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: NODE_ENV === 'PRODUCTION',
       sameSite: 'strict',
-      maxAge: 1 * 60 * 60 * 1000,
+      maxAge: Number(JWT_ACCESS_TOKEN_TTL) * 60 * 60 * 1000,
     });
 
     res.cookie('refresh_token', result.refresh_token, {
       httpOnly: true,
       secure: NODE_ENV === 'PRODUCTION',
       sameSite: 'strict',
-      maxAge: 3 * 24 * 60 * 60 * 1000,
+      maxAge: Number(JWT_REFRESH_TOKEN_TTL) * 60 * 60 * 1000,
     });
 
     return res.redirect(`${frontendUrl}/?auth_code=${auth_code}`);
