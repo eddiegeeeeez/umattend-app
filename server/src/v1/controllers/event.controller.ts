@@ -167,7 +167,12 @@ const createCheckInEvent = async (
 ): Promise<Response> => {
   try {
     const user_id = req.params.user_id;
-    const umindanao_email = req.user.umindanao_email;
+
+    const { umindanao_email, done_onboarding } = req.user;
+
+    if (!done_onboarding) {
+      throw new ForbiddenError('User has not completed onboarding');
+    }
 
     const { student_id, event_id } = req.body;
 
@@ -214,10 +219,16 @@ const createCheckInEvent = async (
       checked_in_by: checkIn.check_in_by,
     };
 
-    sendEmail(umindanao_email, 'Check-in Successful');
+    // sendEmail(umindanao_email, 'Check-in Successful');
 
     return HTTPSuccessResponse(res, 200, 'Check-in successful', responseData);
   } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof ForbiddenError) {
+      return HTTPErrorResponse(res, 403, error.message);
+    }
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }

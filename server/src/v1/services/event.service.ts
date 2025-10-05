@@ -67,18 +67,9 @@ const createCheckInEvent = async (
     if (!userExists) {
       throw new NotFoundError('User not found');
     }
-    const userOnboarded = await userRepository.isOnBoardUser(userId);
-    if (!userOnboarded) {
-      throw new ForbiddenError('User has not completed onboarding');
-    }
+
     return eventRepository.createCheckInEvent(userId, attendance_data);
   } catch (error: unknown) {
-    if (error instanceof ForbiddenError) {
-      throw new ForbiddenError('User has not completed onboarding');
-    }
-    if (error instanceof NotFoundError) {
-      throw new NotFoundError('User not found');
-    }
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
         throw new Error('Unique constraint failed');

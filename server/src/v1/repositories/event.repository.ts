@@ -1,3 +1,4 @@
+import { NotFoundError } from '@/utils/customErrors';
 import prisma from '../../configs/prisma.config';
 import { AddEventInterface, AddCheckInInterface } from '../interface/event';
 
@@ -55,7 +56,7 @@ const createCheckInEvent = async (
     });
 
     if (!event) {
-      throw new Error('Event not found');
+      throw new NotFoundError('Event not found');
     }
 
     if (event.is_done) {
@@ -67,7 +68,7 @@ const createCheckInEvent = async (
     });
 
     if (!student) {
-      throw new Error('Student not found');
+      throw new NotFoundError('Student not found');
     }
 
     const existingCheckIn = await tx.attendance.findFirst({
