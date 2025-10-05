@@ -26,5 +26,11 @@ router.put(
   checkSchema(EventValidSchema),
   eventController.updateEvent
 );
+router.post(
+  `/check_in/:user_id`,
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  eventController.createCheckInEvent
+);
 
 export default router;

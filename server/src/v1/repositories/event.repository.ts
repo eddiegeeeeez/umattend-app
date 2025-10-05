@@ -1,5 +1,5 @@
 import prisma from '../../configs/prisma.config';
-import { AddEventInterface } from '../interface/event';
+import { AddEventInterface, AddCheckInInterface } from '../interface/event';
 
 const createEvent = async (event_data: AddEventInterface) => {
   return await prisma.events.create({
@@ -44,11 +44,66 @@ const getEventDetails = async (eventId: string) => {
   });
 };
 
+const createCheckInEvent = async (
+  userId: string,
+  attendance_data: AddCheckInInterface
+) => {
+  const { event_id, student_id, check_in_at, check_in_by } = attendance_data;
+  return await prisma.$transaction(async (tx) => {
+    const event = await tx.events.findUnique({
+      where: { id: event_id },
+    });
+
+    if (!event) {
+      throw new Error('Event not found');
+    }
+
+    if (event.is_done) {
+      throw new Error('Event has already ended');
+    }
+
+    const student = await tx.student.findUnique({
+      where: { id: student_id },
+    });
+
+    if (!student) {
+      throw new Error('Student not found');
+    }
+
+    const existingCheckIn = await tx.attendance.findFirst({
+      where: {
+        event_id,
+        student_id,
+      },
+    });
+
+    if (existingCheckIn) {
+      throw new Error('Student already checked in for this event');
+    }
+
+    return await tx.attendance.create({
+      data: {
+        event_id,
+        student_id,
+        check_in_by,
+        check_in_at: check_in_at || new Date().toISOString(),
+        userId,
+      },
+      include: {
+        event: true,
+        student: true,
+        check_in_by_user: true,
+      },
+    });
+  });
+};
+
 const eventRepository = {
   createEvent,
   deleteEvent,
   updateEvent,
   getEventDetails,
+  createCheckInEvent,
 };
 
 export default eventRepository;

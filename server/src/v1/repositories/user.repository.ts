@@ -38,9 +38,23 @@ const onboardUser = async (
   return user;
 };
 
+const isOnBoardUser = async (user_id: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: user_id },
+    select: { done_onboarding: true },
+  });
+
+  if (!user?.done_onboarding) {
+    return false;
+  }
+
+  return true;
+};
+
 const userRepository = {
   findUserById,
   onboardUser,
+  isOnBoardUser,
 };
 
 export default userRepository;

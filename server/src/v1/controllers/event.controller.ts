@@ -161,10 +161,76 @@ const updateEvent = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
+const createCheckInEvent = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const user_id = req.params.user_id;
+    const umindanao_email = req.user.umindanao_email;
+
+    const { student_id, event_id } = req.body;
+
+    if (!student_id || !event_id) {
+      return HTTPErrorResponse(
+        res,
+        400,
+        'student_id and event_id are required'
+      );
+    }
+
+    const check_in_data = {
+      student_id: student_id,
+      event_id: event_id,
+      check_in_by: req.user.id,
+      check_in_at: new Date().toISOString(),
+    };
+
+    if (!check_in_data) {
+      return HTTPErrorResponse(
+        res,
+        400,
+        'Missing check_in_data in request body'
+      );
+    }
+
+    const checkIn = await eventServices.createCheckInEvent(
+      user_id,
+      check_in_data
+    );
+
+    if (!umindanao_email) {
+      return HTTPErrorResponse(res, 401, 'Unauthorized');
+    }
+
+    if (!checkIn) {
+      return HTTPErrorResponse(res, 400, 'Failed to create check-in');
+    }
+
+    const responseData = {
+      event_id: checkIn.event_id,
+      event_name: checkIn.event.title,
+      checked_in_at: checkIn.check_in_at,
+      checked_in_by: checkIn.check_in_by,
+    };
+
+    sendEmail(umindanao_email, 'Check-in Successful');
+
+    return HTTPSuccessResponse(res, 200, 'Check-in successful', responseData);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    console.error('Unexpected error checking in', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+  }
+};
+
 const eventController = {
   addEvent,
   deleteEvent,
   updateEvent,
+  createCheckInEvent,
 };
 
 export default eventController;
