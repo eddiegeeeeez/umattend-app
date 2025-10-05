@@ -88,6 +88,7 @@ export const EventValidSchema = {
     },
   },
   is_done: {
+    optional: true,
     isBoolean: { errorMessage: 'is_done must be boolean' },
     toBoolean: true,
     customSanitizer: {
