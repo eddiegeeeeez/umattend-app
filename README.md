@@ -6,10 +6,10 @@ A modern attendance management system built with **Next.js** (client) and **Expr
 
 UMAttend is a comprehensive attendance management application designed to streamline event attendance tracking for University of Mindanao.
 
-
 ### Tech Stack
 
 **Frontend:**
+
 - Next.js 15 with Turbopack
 - React 19
 - TypeScript
@@ -17,6 +17,7 @@ UMAttend is a comprehensive attendance management application designed to stream
 - Radix UI Components
 
 **Backend:**
+
 - Express.js
 - TypeScript
 - Prisma ORM
@@ -36,23 +37,27 @@ UMAttend is a comprehensive attendance management application designed to stream
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/riomar0001/umattend-app.git
    cd umattend-app
    ```
 
 2. **Install root dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Setup Server**
+
    ```bash
    cd server
    npm install
    ```
 
 4. **Setup Client**
+
    ```bash
    cd ../client
    npm install
@@ -61,7 +66,9 @@ UMAttend is a comprehensive attendance management application designed to stream
 5. **Environment Configuration**
 
    **Server Environment** (`server/.env`):
+
    ```env
+
    # Database
    DATABASE_URL="postgresql://username:password@localhost:5432/umattend"
    DIRECT_URL="postgresql://username:password@localhost:5432/umattend"
@@ -80,12 +87,15 @@ UMAttend is a comprehensive attendance management application designed to stream
    ```
 
    **Client Environment** (`client/.env.local`):
+
    ```env
+
    NEXT_PUBLIC_API_URL="http://localhost:5000"
    NEXT_PUBLIC_GOOGLE_CLIENT_ID="your-google-client-id"
    ```
 
 6. **Database Setup**
+
    ```bash
    cd server
    npx prisma migrate dev
@@ -94,25 +104,69 @@ UMAttend is a comprehensive attendance management application designed to stream
 
 ## 🏃‍♂️ How to Run the Code
 
-### Development Mode
+### Quick Start (Recommended)
+
+**Start both servers at once:**
+
+```bash
+npm run dev
+```
+
+This will start both the frontend and backend servers concurrently with colored output.
+
+**Alternative methods:**
+
+```bash
+# Using concurrently package
+npm run dev:concurrent
+
+# Windows batch file (opens separate windows)
+start-dev.bat
+
+# Unix/Linux/Mac shell script
+./start-dev.sh
+```
+
+### Development Mode (Manual)
+
+If you prefer to run servers separately:
 
 1. **Start the Server** (Terminal 1):
+
    ```bash
    cd server
    npm run dev
    ```
+
    Server will run on `http://localhost:5000`
 
 2. **Start the Client** (Terminal 2):
+
    ```bash
    cd client
    npm run dev
    ```
+
    Client will run on `http://localhost:3000`
 
 ### Production Mode
 
+**Build both projects:**
+
+```bash
+npm run build
+```
+
+**Start both servers in production:**
+
+```bash
+npm run start
+```
+
+**Manual approach:**
+
 1. **Build and Start Server**:
+
    ```bash
    cd server
    npm run build
@@ -120,26 +174,31 @@ UMAttend is a comprehensive attendance management application designed to stream
    ```
 
 2. **Build and Start Client**:
+
    ```bash
    cd client
    npm run build
    npm start
    ```
 
-### Using Scripts from Root
+### Available Root Scripts
 
 ```bash
-# Lint both client and server
-npm run lint:server
-npm run lint:client
+# Development
+npm run dev                 # Start both servers (recommended)
+npm run dev:concurrent      # Alternative using concurrently
+npm run dev:client          # Start only frontend
+npm run dev:server          # Start only backend
 
-# Format both client and server
-npm run format:server
-npm run format:client
+# Production
+npm run build               # Build both projects
+npm run start               # Start both servers in production
+npm run start:concurrent    # Alternative using concurrently
+npm run start:client        # Start only frontend
+npm run start:server        # Start only backend
 
-# Type check both
-npm run type-check:server
-npm run type-check:client
+# Installation
+npm run install:all         # Install all dependencies
 ```
 
 ## 🔧 Format Checking
@@ -149,7 +208,9 @@ This project uses **Husky** for pre-commit hooks with **lint-staged** to ensure 
 ### Available Commands
 
 **Server** (`cd server`):
+
 ```bash
+
 npm run lint          # Check for linting errors
 npm run lint:fix      # Auto-fix linting errors
 npm run format        # Format code with Prettier
@@ -158,7 +219,9 @@ npm run type-check    # TypeScript type checking
 ```
 
 **Client** (`cd client`):
+
 ```bash
+
 npm run lint          # Next.js linting
 npm run lint:fix      # Auto-fix Next.js linting errors
 npm run format        # Format code with Prettier
@@ -167,6 +230,7 @@ npm run type-check    # TypeScript type checking
 ```
 
 ### Manual Format Check
+
 ```bash
 # Check all files formatting
 npm run format:server && npm run format:client
@@ -178,6 +242,7 @@ npm run lint:server && npm run lint:client && npm run type-check:server && npm r
 ## 📚 Resources
 
 ### Documentation
+
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Express.js Guide](https://expressjs.com/en/guide/routing.html)
 - [Prisma Documentation](https://www.prisma.io/docs/)
@@ -185,7 +250,9 @@ npm run lint:server && npm run lint:client && npm run type-check:server && npm r
 - [TailwindCSS Documentation](https://tailwindcss.com/docs)
 
 ### Project Structure
-```
+
+```plaintext
+
 umattend-app/
 ├── client/                 # Next.js Frontend
 │   ├── src/
@@ -212,21 +279,24 @@ umattend-app/
 ```
 
 ### API Endpoints
+
 - **Authentication**: `/api/v1/auth/*`
 - **Users**: `/api/v1/users/*`
 - **Events**: `/api/v1/events/*`
 - **Students**: `/api/v1/students/*`
 
 ### Contributing
+
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on:
+
 - Branching strategy
 - Commit message format
 - Code style guidelines
 - Pre-push checklist
 
 ### Development Tools
+
 - **ESLint**: Code linting and quality
 - **Prettier**: Code formatting
 - **TypeScript**: Type safety
 - **Prisma Studio**: Database management UI
-

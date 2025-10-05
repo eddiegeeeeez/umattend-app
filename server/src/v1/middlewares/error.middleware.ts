@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { CustomError } from '@/types/error';
-
+import { CustomError } from '@/v1/interface/error';
+import { NODE_ENV } from '../../constants/app.constants';
 
 export const errorHandler = (err: CustomError, req: Request, res: Response) => {
   const statusCode = err.statusCode ?? res.statusCode ?? 500;
@@ -8,10 +8,10 @@ export const errorHandler = (err: CustomError, req: Request, res: Response) => {
   const response = {
     success: false,
     message:
-      process.env.NODE_ENV === 'DEVELOPMENT'
+      NODE_ENV === 'DEVELOPMENT'
         ? err.message
         : 'Something went wrong. Please try again later.',
-    ...(process.env.NODE_ENV === 'DEVELOPMENT' && {
+    ...(NODE_ENV === 'DEVELOPMENT' && {
       stack: err.stack,
     }),
   };

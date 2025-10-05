@@ -2,58 +2,51 @@ import jwt from 'jsonwebtoken';
 import prisma from '../configs/prisma.config';
 import { hashRefreshToken } from '../utils/tokenHashing';
 import { v4 as uuidv4 } from 'uuid';
-import { AccessTokenPayload } from '../types/token';
-import { sign } from 'jsonwebtoken';
+import { AccessTokenPayloadTypes } from '../v1/types/token';
+import { GenerateTokenError } from '../utils/customErrors';
+import { UAParser } from 'ua-parser-js';
+import {
+  JWT_ACCESS_TOKEN_SECRET,
+  JWT_ACCESS_TOKEN_TTL,
+  JWT_REFRESH_TOKEN_SECRET,
+  JWT_REFRESH_TOKEN_TTL,
+} from '../constants/jwt.constants';
+import { getLocationByIp } from './getIPLocation';
 
 export const generateAccessToken = (
-  tokenPayload: AccessTokenPayload
+  tokenPayload: AccessTokenPayloadTypes
 ): string => {
-  const SECRET = process.env.JWT_ACCESS_TOKEN_SECRET;
-
-  if (!SECRET) {
-    throw new Error('JWT Access Token Secret is not defined.');
-  }
-
   const {
     user_id,
-    student_id,
     umindanao_email,
-    first_name,
-    last_name,
+    role,
+    student_id,
+    name,
     department,
     program,
-    role,
+    done_onboarding,
   } = tokenPayload;
 
-  if (
-    !user_id ||
-    !student_id ||
-    !umindanao_email ||
-    !first_name ||
-    !last_name ||
-    !department ||
-    !program ||
-    !role
-  ) {
-    throw new Error('Missing required token payload fields');
-  }
-
-  return sign(
+  const requiredFields = [
     {
       user_id,
-      student_id,
       umindanao_email,
-      first_name,
-      last_name,
+      role,
+      student_id,
+      name,
       department,
       program,
-      role,
+      done_onboarding,
     },
-    SECRET,
-    {
-      expiresIn: '1h',
-    }
-  );
+  ];
+
+  if (requiredFields.some((field) => !field)) {
+    throw new GenerateTokenError('Missing required token payload fields');
+  }
+
+  return jwt.sign(tokenPayload, JWT_ACCESS_TOKEN_SECRET, {
+    expiresIn: `${JWT_ACCESS_TOKEN_TTL}h`,
+  } as jwt.SignOptions);
 };
 
 export const generateRefreshToken = async (
@@ -61,21 +54,30 @@ export const generateRefreshToken = async (
   ip: string,
   user_agent: string
 ) => {
-  const SECRET = process.env.JWT_REFRESH_TOKEN_SECRET;
-
-  if (!SECRET) {
-    throw new Error('JWT refresh secret not defined');
-  }
-
   const token_id = uuidv4();
 
-  const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expires_at = new Date(
+    Date.now() + Number(JWT_ACCESS_TOKEN_TTL) * 60 * 60 * 1000
+  );
 
-  const token = jwt.sign({ token_id, user_id }, SECRET, {
-    expiresIn: '7d',
-  });
+  const token = jwt.sign({ token_id, user_id }, JWT_REFRESH_TOKEN_SECRET, {
+    expiresIn: `${JWT_REFRESH_TOKEN_TTL}h`,
+  } as jwt.SignOptions);
 
   const hashedToken = await hashRefreshToken(token);
+
+  const parser = new UAParser(user_agent);
+  const result = parser.getResult();
+
+  const device = result.device.model ?? result.device.type ?? 'Unknown';
+  const os = result.os.name ?? 'Unknown';
+  const browser = result.browser.name ?? 'Unknown';
+
+  const { city, region, country } = await getLocationByIp(ip);
+
+  console.log(city);
+  console.log(region);
+  console.log(country);
 
   await prisma.refresh_token.create({
     data: {
@@ -83,8 +85,12 @@ export const generateRefreshToken = async (
       user_id,
       token_hash: hashedToken,
       ip_address: ip,
-      user_agent: user_agent || 'Unknown Device',
-      device: user_agent || 'Unknown Device',
+      device,
+      os,
+      browser,
+      city,
+      region,
+      country,
       expires_at,
       last_used: new Date(),
     },

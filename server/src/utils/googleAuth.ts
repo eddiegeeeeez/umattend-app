@@ -1,14 +1,14 @@
-import { OAuth2Client } from 'google-auth-library';
 import axios from 'axios';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { URLSearchParams } from 'url';
-
-const JWT_GOOGLE_STATE_SECRET = process.env.JWT_GOOGLE_STATE_SECRET;
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const CLIENT = new OAuth2Client(GOOGLE_CLIENT_ID);
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+import {
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  GOOGLE_REDIRECT_URI,
+  GOOGLE_CLIENT,
+} from '../constants/google.constants';
+import { JWT_GOOGLE_STATE_SECRET } from '../constants/jwt.constants';
 
 const generatePKCE = () => {
   const codeVerifier = crypto.randomBytes(32).toString('base64url');
@@ -27,7 +27,7 @@ const generateGoogleAuthUrl = () => {
   const statePayload = {
     nonce,
     timestamp: Date.now(),
-    exp: Math.floor(Date.now() / 1000) + 1 * 60,
+    exp: Math.floor(Date.now() / 1000) + 5 * 60,
     codeVerifier,
   };
 
@@ -104,9 +104,9 @@ const exchangeCodeForUserInfo = async (code: string, state: string) => {
 
 const verifyGoogleToken = async (token: string) => {
   try {
-    const ticket = await CLIENT.verifyIdToken({
+    const ticket = await GOOGLE_CLIENT.verifyIdToken({
       idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
@@ -126,7 +126,7 @@ const verifyGoogleToken = async (token: string) => {
       throw new Error('Token expired');
     }
 
-    if (payload.aud !== process.env.GOOGLE_CLIENT_ID) {
+    if (payload.aud !== GOOGLE_CLIENT_ID) {
       throw new Error('Invalid audience');
     }
 
@@ -136,8 +136,8 @@ const verifyGoogleToken = async (token: string) => {
       name: payload.name,
       profile_picture: payload.picture,
     };
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   } catch (error) {
-    console.log(error);
     throw new Error('Invalid Google token');
   }
 };
@@ -166,9 +166,8 @@ const validateState = (state: string) => {
     }
 
     return true;
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   } catch (error) {
-    console.log(error);
-
     return false;
   }
 };
@@ -180,7 +179,7 @@ const validateRedirectUri = (GOOGLE_REDIRECT_URI: string) => {
     );
   }
 
-  return process.env.GOOGLE_REDIRECT_URI === GOOGLE_REDIRECT_URI;
+  return GOOGLE_REDIRECT_URI === GOOGLE_REDIRECT_URI;
 };
 
 const GoogleAuth = {

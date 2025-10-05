@@ -1,7 +1,13 @@
 import authService from '../services/auth.service';
 import { Request, Response } from 'express';
 import GoogleAuth from '../../utils/googleAuth';
-import { HTTPErrorResponse } from '../../utils/responseHandler';
+import {
+  HTTPErrorResponse,
+  HTTPSuccessResponse,
+} from '../../utils/responseHandler';
+import jwt from 'jsonwebtoken';
+import { AuthenticationError, NotFoundError } from '../../utils/customErrors';
+import { FRONTEND_URL, NODE_ENV } from '../../constants/app.constants';
 
 const googleAuth = async (req: Request, res: Response) => {
   try {
@@ -9,7 +15,6 @@ const googleAuth = async (req: Request, res: Response) => {
     return res.redirect(url);
   } catch (error: unknown) {
     console.log(error);
-
     return HTTPErrorResponse(
       res,
       500,
@@ -26,47 +31,217 @@ const googleCallback = async (req: Request, res: Response) => {
       req.originalUrl.split('?')[0]
     }`;
 
-    console.log(currentUri);
+    const frontendUrl = FRONTEND_URL;
 
     if (!code) {
-      return HTTPErrorResponse(
-        res,
-        400,
+      const error_code = await authService.generateErrorCode(
         'Missing authorization code'
-      ) as Response;
+      );
+      return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
     }
 
     if (!GoogleAuth.validateRedirectUri(currentUri)) {
-      return HTTPErrorResponse(res, 400, 'Invalid redirect URI') as Response;
+      const error_code = await authService.generateErrorCode(
+        'Invalid redirect URI'
+      );
+      return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
     }
 
     if (!GoogleAuth.validateState(state as string)) {
-      return HTTPErrorResponse(res, 400, 'Invalid state parameter') as Response;
+      const error_code = await authService.generateErrorCode(
+        'Invalid state parameter'
+      );
+      return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
     }
 
-    await authService.googleAuthWithCode(code as string, state as string);
+    const result = await authService.googleAuthWithCode(
+      code as string,
+      state as string,
+      req.ip as string,
+      req.headers['user-agent'] ?? ''
+    );
 
-    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const auth_code = await authService.generateAuthCode(
+      result.access_token,
+      result.refresh_token
+    );
 
-    //TODO: add JWT logics here
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: NODE_ENV === 'PRODUCTION',
+      sameSite: 'strict',
+      maxAge: 1 * 60 * 60 * 1000,
+    });
 
-    return res.redirect(`${frontendUrl}`);
+    res.cookie('refresh_token', result.refresh_token, {
+      httpOnly: true,
+      secure: NODE_ENV === 'PRODUCTION',
+      sameSite: 'strict',
+      maxAge: 3 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.redirect(`${frontendUrl}/?auth_code=${auth_code}`);
+  } catch (error: unknown) {
+    const frontendUrl = FRONTEND_URL ?? 'http://localhost:3000';
+
+    const error_code = await authService.generateErrorCode(
+      'Internal server error'
+    );
+
+    if (error instanceof jwt.TokenExpiredError) {
+      const error_code = await authService.generateErrorCode(
+        'Internal server error'
+      );
+      return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
+    }
+
+    return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
+  }
+};
+
+const logoutUser = async (req: Request, res: Response) => {
+  try {
+    const { refresh_token } = req.body;
+    const cookieRefreshToken = req.cookies?.refresh_token;
+
+    const finalRefreshToken = refresh_token ?? cookieRefreshToken;
+
+    if (finalRefreshToken) {
+      await authService.logoutUser(finalRefreshToken);
+    }
+
+    if (req.cookies['refresh_token']) {
+      res.clearCookie('refresh_token');
+    }
+
+    if (req.cookies['access_token']) {
+      res.clearCookie('access_token');
+    }
+
+    return HTTPSuccessResponse(res, 200, 'Logged out successfully') as Response;
   } catch (error: unknown) {
     console.log(error);
+    if (NODE_ENV === 'DEVELOPMENT') {
+      if (error instanceof jwt.JsonWebTokenError) {
+        return HTTPErrorResponse(res, 400, error.message) as Response;
+      }
+    }
 
-    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    if (error instanceof jwt.TokenExpiredError) {
+      return HTTPErrorResponse(res, 401, 'Token Expire') as Response;
+    }
 
-    return res.redirect(
-      `${frontendUrl}/error?message=${encodeURIComponent(
-        'Google login failed'
-      )}`
-    );
+    if (error instanceof AuthenticationError) {
+      return HTTPErrorResponse(res, 401, 'Authentication Error') as Response;
+    }
+
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, 'Not Found') as Response;
+    }
+
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
+  }
+};
+
+const refreshAccessToken = async (req: Request, res: Response) => {
+  try {
+    const refresh_token = req.cookies.refresh_token ?? req.body.refresh_token;
+
+    if (!refresh_token) {
+      return HTTPErrorResponse(
+        res,
+        400,
+        'Refresh token is required'
+      ) as Response;
+    }
+
+    const accessToken = await authService.refreshAccessToken(refresh_token);
+
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Access Token Refreshed Successfully',
+      {
+        access_token: accessToken,
+      }
+    ) as Response;
+  } catch (error: unknown) {
+    if (NODE_ENV === 'DEVELOPMENT') {
+      if (error instanceof jwt.JsonWebTokenError) {
+        return HTTPErrorResponse(res, 400, error.message) as Response;
+      }
+    }
+
+    console.log(error);
+
+    if (error instanceof jwt.TokenExpiredError) {
+      return HTTPErrorResponse(res, 401, 'Token Expire') as Response;
+    }
+
+    if (error instanceof AuthenticationError) {
+      return HTTPErrorResponse(res, 401, 'Authentication Error') as Response;
+    }
+
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, 'Not Found') as Response;
+    }
+
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
+  }
+};
+
+const exhangeCode = async (req: Request, res: Response) => {
+  try {
+    if (!req.body) {
+      return HTTPErrorResponse(res, 400, 'Missing request body') as Response;
+    }
+
+    const { auth_code, error_code } = req.body;
+
+    if (!auth_code && !error_code) {
+      return HTTPErrorResponse(res, 400, 'Missing exchange code') as Response;
+    }
+
+    let response: object = {};
+    let response_message: string = '';
+
+    if (auth_code) {
+      const tokens = await authService.getDataFromAuthCode(auth_code);
+
+      const { access_token, refresh_token } = tokens;
+
+      response = { access_token, refresh_token };
+      response_message = 'Tokens retrieved';
+    }
+
+    if (error_code) {
+      const error_message = await authService.getDataFromErrorCode(error_code);
+      response_message = 'Error during authentication';
+      response = { error_message };
+    }
+
+    return HTTPSuccessResponse(
+      res,
+      200,
+      response_message,
+      response
+    ) as Response;
+  } catch (error: unknown) {
+    console.log(error);
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, 'Not Found') as Response;
+    }
+
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
 const authController = {
   googleAuth,
   googleCallback,
+  logoutUser,
+  refreshAccessToken,
+  exhangeCode,
 };
 
 export default authController;

@@ -1,20 +1,23 @@
 import express, { Response, Request } from 'express';
 import cookieParser from 'cookie-parser';
+import { fileURLToPath } from 'url';
 
 import cors from 'cors';
 import path from 'path';
-import fs from 'fs';
 import helmet from 'helmet';
 
 import { errorHandler, notFound } from './v1/middlewares/error.middleware';
 import { cacheControl } from './v1/middlewares/cacheControl.middleware';
 
-//load environment variables
-import '@/configs/dotenv.config';
+import userRoutes from './v1/routes/user.routes';
+import authRoutes from './v1/routes/auth.routes';
+import eventRoutes from './v1/routes/event.routes';
+import { NODE_ENV } from './constants/app.constants';
 
 const app = express();
 
 // ---------- SECURITY & PERFORMANCE MIDDLEWARE ----------
+app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cacheControl);
 app.use(cookieParser());
@@ -38,16 +41,29 @@ app.use(
   })
 );
 
-// ---------- SERVE FRONTEND ----------
-app.get('/', (req: Request, res: Response) => {
-  const distPath = path.join(__dirname, '../frontend/dist', 'index.html');
+// ---------- API ROUTES ----------
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/event', eventRoutes);
 
-  if (fs.existsSync(distPath)) {
-    return res.sendFile(distPath);
-  } else {
-    return res.json({ message: 'Hello World' });
-  }
-});
+// ---------- SERVE FRONTEND (only in production) ----------
+if (NODE_ENV === 'PRODUCTION') {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+
+  const distPath = path.join(__dirname, '../client/dist');
+  app.use(express.static(distPath));
+
+  app.get('*', (req: Request, res: Response) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
+
+if (NODE_ENV !== 'PRODUCTION') {
+  app.get('/api', (req: Request, res: Response) => {
+    res.send('API is running...');
+  });
+}
 
 // ---------- 404 HANDLER ----------
 app.use(notFound);

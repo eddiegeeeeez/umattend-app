@@ -52,3 +52,9 @@ export class EmptyTokenError extends AppError {
     super(message, 401, 'TokenError');
   }
 }
+
+export class GenerateTokenError extends AppError {
+  constructor(message = 'Token generation failed') {
+    super(message, 500, 'GenerateTokenError');
+  }
+}
