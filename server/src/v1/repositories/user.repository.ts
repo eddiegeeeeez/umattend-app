@@ -6,38 +6,7 @@ const findUserById = async (user_id: string) => {
   });
 };
 
-const isUserDoneOnboarding = async (user_id: string) => {
-  const user = await prisma.user.findFirst({
-    where: {
-      id: user_id,
-      done_onboarding: true,
-    },
-    select: {
-      id: true,
-      done_onboarding: true,
-      umindanao_email: true,
-      role: true,
-      student: {
-        select: {
-          department: true,
-          program: true,
-        },
-      },
-    },
-  });
-  if (!user) {
-    return null;
-  }
 
-  // Flatten the student fields
-  const { student, ...rest } = user;
-
-  return {
-    ...rest,
-    ...student,
-  };
-
-};
 
 const onboardUser = async (
   user_id: string,
@@ -84,7 +53,6 @@ const onboardUser = async (
 
 const userRepository = {
   findUserById,
-  isUserDoneOnboarding,
   onboardUser,
 };
 

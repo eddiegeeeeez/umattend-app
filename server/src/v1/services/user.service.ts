@@ -19,15 +19,7 @@ const getUserById = async (user_id: string): Promise<FetchUserInfoResult> => {
   };
 };
 
-const checkIsUserDoneOnboarding = async (
-  user_id: string
-): Promise<OnboardedUserInfoResult | null> => {
-  const user = userRepository.isUserDoneOnboarding(user_id);
-  if (!user) {
-    throw new AuthenticationError('User not onboarded');
-  }
-  return user;
-};
+
 
 const onboardUser = async (
   user_id: string,
@@ -43,7 +35,6 @@ const onboardUser = async (
 };
 const userService = {
   getUserById,
-  checkIsUserDoneOnboarding,
   onboardUser
 };
 
