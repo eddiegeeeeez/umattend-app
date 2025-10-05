@@ -31,6 +31,9 @@ const onboardUser = async (req: Request, res: Response) => {
   try {
     const user_id = req.user.id;
     const { department, program } = req.body;
+    if (!department || !program) {
+      return HTTPErrorResponse(res, 400, 'Missing Fields');
+    }
     const user = await userService.onboardUser(user_id, department, program);
     if (!user) {
       return HTTPErrorResponse(res, 404, 'User not found') as Response;
