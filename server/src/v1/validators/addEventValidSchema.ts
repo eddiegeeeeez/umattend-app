@@ -54,11 +54,11 @@ export const EventValidSchema = {
     toInt: true,
   },
   all_day: {
-    notEmpty: {
-      errorMessage: 'All day field is required',
-    },
-    isBoolean: {
-      errorMessage: 'All day must be a boolean',
+    optional: true,
+    isBoolean: { errorMessage: 'all_day must be boolean' },
+    toBoolean: true,
+    customSanitizer: {
+      options: (value: boolean) => value ?? false, // default false
     },
   },
   start_time: {
@@ -80,11 +80,11 @@ export const EventValidSchema = {
     toDate: true,
   },
   check_out_required: {
-    notEmpty: {
-      errorMessage: 'Check out required field is required',
-    },
-    isBoolean: {
-      errorMessage: 'Check out required must be a boolean',
+    optional: true,
+    isBoolean: { errorMessage: 'check_out_required must be boolean' },
+    toBoolean: true,
+    customSanitizer: {
+      options: (value: boolean) => value ?? false, // default false
     },
   },
   is_done: {
