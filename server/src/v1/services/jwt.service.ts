@@ -1,17 +1,17 @@
 import jwt from 'jsonwebtoken';
-import prisma from '../configs/prisma.config';
-import { hashRefreshToken } from '../utils/tokenHashing';
+import prisma from '../../configs/prisma.config';
+import { hashRefreshToken } from '../../utils/tokenHashing';
 import { v4 as uuidv4 } from 'uuid';
-import { AccessTokenPayloadTypes } from '../v1/types/token';
-import { GenerateTokenError } from '../utils/customErrors';
+import { AccessTokenPayloadTypes } from '../types/token';
+import { GenerateTokenError } from '../../utils/customErrors';
 import { UAParser } from 'ua-parser-js';
 import {
   JWT_ACCESS_TOKEN_SECRET,
   JWT_ACCESS_TOKEN_TTL,
   JWT_REFRESH_TOKEN_SECRET,
   JWT_REFRESH_TOKEN_TTL,
-} from '../constants/jwt.constants';
-import { getLocationByIp } from './getIPLocation';
+} from '../../constants/jwt.constants';
+import { getLocationByIp } from '../../utils/getIPLocation';
 
 export const generateAccessToken = (
   tokenPayload: AccessTokenPayloadTypes
@@ -74,10 +74,6 @@ export const generateRefreshToken = async (
   const browser = result.browser.name ?? 'Unknown';
 
   const { city, region, country } = await getLocationByIp(ip);
-
-  console.log(city);
-  console.log(region);
-  console.log(country);
 
   await prisma.refresh_token.create({
     data: {
