@@ -56,7 +56,7 @@ const addEvent = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
     }
 
-    await eventServices.addEvent(event_data);
+    const new_event = await eventServices.addEvent(event_data);
 
     if (!umindanao_email) {
       return HTTPErrorResponse(res, 500, 'Failed to add event');
@@ -64,7 +64,7 @@ const addEvent = async (req: Request, res: Response) => {
 
     sendEmail(umindanao_email, 'Event Successfully Created');
 
-    return HTTPSuccessResponse(res, 200, 'Event Created');
+    return HTTPSuccessResponse(res, 200, 'Event Created', new_event);
   } catch (error: unknown) {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
@@ -144,9 +144,17 @@ const updateEvent = async (req: Request, res: Response): Promise<Response> => {
       return HTTPErrorResponse(res, 400, 'Event ID is required');
     }
 
-    await eventServices.updateEvent(eventId, updated_event_data);
+    const updated_event = await eventServices.updateEvent(
+      eventId,
+      updated_event_data
+    );
 
-    return HTTPSuccessResponse(res, 200, 'Event successfully updated');
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Event successfully updated',
+      updated_event
+    );
   } catch (error) {
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, error.message);
