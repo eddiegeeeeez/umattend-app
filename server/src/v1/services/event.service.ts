@@ -1,7 +1,7 @@
-import { Prisma } from '@prisma/client';
-import { AddEventInterface } from '../interface/event';
 import eventRepository from '../repositories/event.repository';
-import { NODE_ENV } from '@/constants/app.constants';
+import { AddEventInterface } from '../interface/event';
+import { Prisma } from '@prisma/client';
+import { NODE_ENV } from '../../constants/app.constants';
 
 const addEvent = async (event_data: AddEventInterface) => {
   try {
@@ -27,8 +27,13 @@ const addEvent = async (event_data: AddEventInterface) => {
   }
 };
 
+const deleteEvent = async (eventId: string) => {
+  return await eventRepository.deleteEvent(eventId);
+};
+
 const eventServices = {
   addEvent,
+  deleteEvent,
 };
 
 export default eventServices;
