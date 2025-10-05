@@ -41,6 +41,7 @@ model user {
   @@index([last_login_at])
   @@index([deleted_at])
   @@map("users")
+  organizers organizers[]
 }
 
 model student {
@@ -124,6 +125,7 @@ model events {
   @@index([end_time])
   @@index([created_by])
   @@map("events")
+  organizers organizers[]
 }
 
 model attendance {
@@ -151,4 +153,21 @@ model attendance {
   @@index([check_in_at])
   @@index([check_out_at])
   @@map("attendances")
+}
+
+model organizers {
+  id       String @id @default(cuid())
+  user_id  String
+  event_id String
+
+  user  user   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  event events @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([user_id, event_id])
+  @@index([user_id])
+  @@index([event_id])
+  @@map("organizers")
 }
