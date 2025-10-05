@@ -219,7 +219,7 @@ const createCheckInEvent = async (
       checked_in_by: checkIn.check_in_by,
     };
 
-    // sendEmail(umindanao_email, 'Check-in Successful');
+    sendEmail(umindanao_email, 'Check-in Successful');
 
     return HTTPSuccessResponse(res, 200, 'Check-in successful', responseData);
   } catch (error: unknown) {
