@@ -1,4 +1,4 @@
-import prisma from '@/configs/prisma.config';
+import prisma from '../../configs/prisma.config';
 import { AddEventInterface } from '../interface/event';
 
 const createEvent = async (event_data: AddEventInterface) => {
@@ -20,8 +20,15 @@ const createEvent = async (event_data: AddEventInterface) => {
   });
 };
 
+const deleteEvent = async (eventId: string) => {
+  return await prisma.events.delete({
+    where: { id: eventId },
+  });
+};
+
 const eventRepository = {
   createEvent,
+  deleteEvent,
 };
 
 export default eventRepository;

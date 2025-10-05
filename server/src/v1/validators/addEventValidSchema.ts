@@ -120,7 +120,7 @@ export const EventValidSchema = {
     isIn: {
       options: [['dropdown', 'short_text', 'long_text', 'checkbox', 'radio']],
       errorMessage:
-        'Field type must be one of dropdown, short_text, long_text, checkbox, or radio',
+        'Field type must be one of dropdown, short text, long text, checkbox, or radio',
     },
   },
 };

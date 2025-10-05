@@ -3,7 +3,7 @@ import eventController from '../controllers/event.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { checkRole } from '../middlewares/role.middleware';
 import { checkSchema } from 'express-validator';
-import { EventValidSchema } from '../validation/addEventValidSchema';
+import { EventValidSchema } from '../validators/addEventValidSchema';
 const router = express.Router();
 
 router.post(
@@ -13,5 +13,6 @@ router.post(
   checkSchema(EventValidSchema),
   eventController.addEvent
 );
+router.delete('/:eventId', authMiddleware, eventController.deleteEvent);
 
 export default router;

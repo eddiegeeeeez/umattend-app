@@ -3,10 +3,11 @@ import {
   HTTPErrorResponse,
   HTTPSuccessResponse,
 } from '@/utils/responseHandler';
-import eventServices from '../services/event.service';
-import { sendEmail } from '../services/email.service';
 import { AddEventRequest } from '../interface/event';
+import { sendEmail } from '../services/email.service';
 import { matchedData, validationResult } from 'express-validator';
+import eventServices from '../services/event.service';
+
 const addEvent = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
@@ -42,7 +43,7 @@ const addEvent = async (req: Request, res: Response) => {
       start_time,
       end_time,
       check_out_required,
-      is_done ,
+      is_done,
       created_by: id,
     };
 
@@ -73,8 +74,32 @@ const addEvent = async (req: Request, res: Response) => {
   }
 };
 
+const deleteEvent = async (req: Request, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!eventId) {
+      return HTTPErrorResponse(res, 400, 'Event ID is required') as Response;
+    }
+    const success = await eventServices.deleteEvent(eventId);
+    if (!success) {
+      return HTTPErrorResponse(res, 404, 'Event not found') as Response;
+    }
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Event successfully deleted'
+    ) as Response;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message) as Response;
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
+  }
+};
+
 const eventController = {
   addEvent,
+  deleteEvent,
 };
 
 export default eventController;
