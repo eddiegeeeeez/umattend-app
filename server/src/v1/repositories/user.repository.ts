@@ -25,20 +25,67 @@ const isUserDoneOnboarding = async (user_id: string) => {
       },
     },
   });
+  if (!user) {
+    return null;
+  }
+
+  // Flatten the student fields
+  const { student, ...rest } = user;
+
+  return {
+    ...rest,
+    ...student,
+  };
+
+};
+
+const onboardUser = async (
+  user_id: string,
+  department: string,
+  program: string
+) => {
+  const user = await prisma.user.update({
+    where: { id: user_id },
+    data: {
+      done_onboarding: true,
+      student: {
+        update: {
+          department,
+          program,
+        },
+      },
+    },
+    select: {
+      id: true,
+      done_onboarding: true,
+      umindanao_email: true,
+      role: true,
+      student: {
+        select: {
+          department: true,
+          program: true,
+        },
+      },
+    },
+  });
 
   if (!user) {
     return null;
   }
 
+  // Flatten the student fields
+  const { student, ...rest } = user;
+
   return {
-    ...user,
-    ...user.student,
+    ...rest,
+    ...student,
   };
 };
 
 const userRepository = {
   findUserById,
   isUserDoneOnboarding,
+  onboardUser,
 };
 
 export default userRepository;

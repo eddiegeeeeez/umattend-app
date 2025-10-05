@@ -26,12 +26,25 @@ const checkIsUserDoneOnboarding = async (
   if (!user) {
     throw new AuthenticationError('User not onboarded');
   }
-  return user
+  return user;
 };
 
+const onboardUser = async (
+  user_id: string,
+  department: string,
+  program: string
+): Promise<OnboardedUserInfoResult | null> => {
+  const user = await userRepository.onboardUser(user_id, department, program);
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  return user;
+  
+};
 const userService = {
   getUserById,
   checkIsUserDoneOnboarding,
+  onboardUser
 };
 
 export default userService;

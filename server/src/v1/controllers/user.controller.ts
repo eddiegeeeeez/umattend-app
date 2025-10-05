@@ -27,8 +27,27 @@ const getUserById = async (req: Request, res: Response) => {
   }
 };
 
+const onboardUser = async (req: Request, res: Response) => {
+  try {
+    const user_id = req.user.id;
+    const { department, program } = req.body;
+    const user = await userService.onboardUser(user_id, department, program);
+    if (!user) {
+      return HTTPErrorResponse(res, 404, 'User not found') as Response;
+    }
+    return HTTPSuccessResponse(res, 200, 'User succesfully updated', {
+      user,
+    }) as Response;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    return HTTPErrorResponse(res, 500, error);
+  }
+};
 const userController = {
   getUserById,
+  onboardUser,
 };
 
 export default userController;
