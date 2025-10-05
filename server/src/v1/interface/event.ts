@@ -30,6 +30,13 @@ export interface UpdateEventInterface {
   created_by?: string;
 }
 
+export interface AddCheckInInterface {
+  student_id: string;
+  event_id: string;
+  check_in_at: string;
+  check_in_by: string;
+}
+
 export interface AddEventRequest extends Request {
   body: {
     event_data: AddEventInterface;

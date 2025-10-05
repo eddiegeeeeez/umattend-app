@@ -1,4 +1,4 @@
-import GoogleAuth from '../../utils/googleAuth.js';
+import GoogleAuth from '../services/google.service.js';
 import authRepository from '../repositories/auth.repository.js';
 import jwt from 'jsonwebtoken';
 import {
@@ -17,6 +17,7 @@ import { JWT_REFRESH_TOKEN_SECRET } from '@/constants/jwt.constants.js';
 
 import { sanitizeKey, extractStudentID } from '@/utils/string.utils.js';
 import { sendEmail } from './email.service.js';
+
 const googleAuthWithCode = async (
   code: string,
   state: string,
@@ -66,6 +67,7 @@ const googleAuthWithCode = async (
     user_id: user.id,
     umindanao_email: user.umindanao_email,
     role: user.role,
+    done_onboarding: user.done_onboarding,
     student_id: Number(user.student?.student_id),
     name: user.student?.name,
     department: user.student?.department ?? '',
