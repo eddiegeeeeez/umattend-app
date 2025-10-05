@@ -11,6 +11,7 @@ declare global {
         id: string;
         umindanao_email: string;
         role: string;
+        done_onboarding: boolean;
       };
     }
   }
@@ -41,6 +42,7 @@ export const authMiddleware = async (
       user_id: string;
       umindanao_email: string;
       role: string;
+      done_onboarding: boolean;
     };
 
     if (!decoded) {
@@ -51,6 +53,7 @@ export const authMiddleware = async (
       id: decoded.user_id,
       umindanao_email: decoded.umindanao_email,
       role: decoded.role,
+      done_onboarding: decoded.done_onboarding,
     } as FetchUserInfoResult;
 
     return next();
