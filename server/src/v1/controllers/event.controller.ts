@@ -7,6 +7,7 @@ import { AddEventRequest } from '../interface/event';
 import { sendEmail } from '../services/email.service';
 import { matchedData, validationResult } from 'express-validator';
 import eventServices from '../services/event.service';
+import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
 
 const addEvent = async (req: Request, res: Response) => {
   try {
@@ -74,28 +75,32 @@ const addEvent = async (req: Request, res: Response) => {
   }
 };
 
-const deleteEvent = async (req: Request, res: Response) => {
+const deleteEvent = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { eventId } = req.params;
+    const created_by = req.user?.id;
+
     if (!eventId) {
-      return HTTPErrorResponse(res, 400, 'Event ID is required') as Response;
+      return HTTPErrorResponse(res, 400, 'Event ID is required');
     }
-    const success = await eventServices.deleteEvent(eventId);
-    if (!success) {
-      return HTTPErrorResponse(res, 404, 'Event not found') as Response;
+
+    await eventServices.deleteEvent(eventId, created_by);
+
+    return HTTPSuccessResponse(res, 200, 'Event successfully deleted');
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
     }
-    return HTTPSuccessResponse(
-      res,
-      200,
-      'Event successfully deleted'
-    ) as Response;
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return HTTPErrorResponse(res, 500, error.message) as Response;
+
+    if (error instanceof ForbiddenError) {
+      return HTTPErrorResponse(res, 403, error.message);
     }
-    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
+
+    console.error('Unexpected error deleting event:', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
   }
 };
+
 
 const eventController = {
   addEvent,
