@@ -7,6 +7,7 @@ import { AddEventRequest } from '../interface/event';
 import { sendEmail } from '../services/email.service';
 import { matchedData, validationResult } from 'express-validator';
 import eventServices from '../services/event.service';
+import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
 
 const addEvent = async (req: Request, res: Response) => {
   try {
@@ -18,7 +19,7 @@ const addEvent = async (req: Request, res: Response) => {
 
     const data = matchedData(req);
 
-    const { id, umindanao_email } = req.user;
+    const { id: created_by, umindanao_email } = req.user;
 
     const {
       title,
@@ -44,10 +45,8 @@ const addEvent = async (req: Request, res: Response) => {
       end_time,
       check_out_required,
       is_done,
-      created_by: id,
+      created_by,
     };
-
-    console.log(event_data);
 
     if (!event_data) {
       return HTTPErrorResponse(res, 400, 'Missing event_data in request body');
@@ -74,32 +73,98 @@ const addEvent = async (req: Request, res: Response) => {
   }
 };
 
-const deleteEvent = async (req: Request, res: Response) => {
+const deleteEvent = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { eventId } = req.params;
+    const created_by = req.user?.id;
+
     if (!eventId) {
-      return HTTPErrorResponse(res, 400, 'Event ID is required') as Response;
+      return HTTPErrorResponse(res, 400, 'Event ID is required');
     }
-    const success = await eventServices.deleteEvent(eventId);
-    if (!success) {
-      return HTTPErrorResponse(res, 404, 'Event not found') as Response;
+
+    await eventServices.deleteEvent(eventId, created_by);
+
+    return HTTPSuccessResponse(res, 200, 'Event successfully deleted');
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
     }
-    return HTTPSuccessResponse(
-      res,
-      200,
-      'Event successfully deleted'
-    ) as Response;
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return HTTPErrorResponse(res, 500, error.message) as Response;
+
+    if (error instanceof ForbiddenError) {
+      return HTTPErrorResponse(res, 403, error.message);
     }
-    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
+
+    console.error('Unexpected error deleting event:', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+  }
+};
+
+const updateEvent = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return HTTPErrorResponse(res, 400, errors.array());
+    }
+
+    const data = matchedData(req);
+
+    const { id: created_by } = req.user;
+
+    const {
+      title,
+      description,
+      department,
+      location,
+      capacity,
+      all_day,
+      start_time,
+      end_time,
+      check_out_required,
+      is_done,
+    } = data as AddEventRequest['body']['event_data'];
+
+    const updated_event_data = {
+      title,
+      description,
+      department,
+      location,
+      capacity,
+      all_day,
+      start_time,
+      end_time,
+      check_out_required,
+      is_done,
+      created_by,
+    };
+
+    const { eventId } = req.params;
+
+    if (!eventId) {
+      return HTTPErrorResponse(res, 400, 'Event ID is required');
+    }
+
+    await eventServices.updateEvent(eventId, updated_event_data);
+
+    return HTTPSuccessResponse(res, 200, 'Event successfully updated');
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+
+    if (error instanceof ForbiddenError) {
+      return HTTPErrorResponse(res, 403, error.message);
+    }
+
+    console.error('Unexpected error updating event:', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
   }
 };
 
 const eventController = {
   addEvent,
   deleteEvent,
+  updateEvent,
 };
 
 export default eventController;

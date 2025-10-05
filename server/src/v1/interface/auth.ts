@@ -37,9 +37,12 @@ export interface FetchUserInfoResult {
 }
 
 export interface OnboardedUserInfoResult {
-  id: string;
-  umindanao_email: string;
-  done_onboarding: boolean;
-  role: string;
-  student: GetStudentByIdInterface | null;
+  access_token: string;
+  user: {
+    id: string;
+    umindanao_email: string;
+    done_onboarding: boolean;
+    role: string;
+    student: GetStudentByIdInterface | null;
+  };
 }

@@ -19,5 +19,12 @@ router.delete(
   checkRole('admin', 'csg'),
   eventController.deleteEvent
 );
+router.put(
+  '/:eventId',
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  checkSchema(EventValidSchema),
+  eventController.updateEvent
+);
 
 export default router;
