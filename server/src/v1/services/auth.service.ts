@@ -1,7 +1,10 @@
 import GoogleAuth from '../../utils/googleAuth.js';
 import authRepository from '../repositories/auth.repository.js';
 import jwt from 'jsonwebtoken';
-import { generateAccessToken, generateRefreshToken } from '@/v1/services/jwt.service.js';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from '@/v1/services/jwt.service.js';
 import {
   EmptyTokenError,
   AuthenticationError,

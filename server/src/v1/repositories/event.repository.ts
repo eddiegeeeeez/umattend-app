@@ -1,7 +1,6 @@
 import prisma from '../../configs/prisma.config';
 import { AddEventInterface } from '../interface/event';
 
-
 const createEvent = async (event_data: AddEventInterface) => {
   return await prisma.events.create({
     data: {
