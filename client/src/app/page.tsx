@@ -31,17 +31,17 @@ function LoginContent() {
       const auth_code = params.get('auth_code');
 
       try {
-        // const res = await axios.post('/api/v1/auth/exchange', { auth_code });
+        const res = await axios.post('/api/v1/auth/exchange', { auth_code });
 
-        // console.log(res.data);
+        console.log(res.data);
 
-        // const accessToken = res.data.data.access_token;
-        // const refreshToken = res.data.data.refresh_token;
+        const accessToken = res.data.data.access_token;
+        const refreshToken = res.data.data.refresh_token;
 
-        // if (res.status >= 200) {
-        //   setAuth(accessToken, refreshToken);
-        //   router.push('/');
-        // }
+        if (res.status >= 200) {
+          setAuth(accessToken, refreshToken);
+          router.push('/');
+        }
       } catch (err: unknown) {
         if (typeof err === 'object' && err !== null && 'response' in err) {
           const response = (err as { response?: { data?: unknown } }).response;

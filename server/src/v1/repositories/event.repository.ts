@@ -10,8 +10,22 @@ const createEvent = async (event_data: AddEventInterface) => {
 };
 
 const deleteEvent = async (eventId: string) => {
-  return await prisma.events.delete({
-    where: { id: eventId },
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.events.findUnique({
+      where: { id: eventId },
+    });
+
+    if (!existing) {
+      throw new Error('Event not found or already deleted.');
+    }
+
+    if (existing.is_done) {
+      throw new Error('Cannot delete a completed event.');
+    }
+
+    return tx.events.delete({
+      where: { id: eventId },
+    });
   });
 };
 

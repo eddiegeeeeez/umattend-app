@@ -49,16 +49,17 @@ const updateLoginAndProfile = async (
   user_id: string,
   profile_picture: string
 ) => {
-  await prisma.user.update({
-    where: { id: user_id },
-    data: {
-      last_login_at: new Date(),
-      student: {
-        update: {
-          profile_picture,
-        },
-      },
-    },
+  return prisma.$transaction(async (tx) => {
+    await Promise.all([
+      tx.user.update({
+        where: { id: user_id },
+        data: { last_login_at: new Date() },
+      }),
+      tx.student.updateMany({
+        where: { user_id },
+        data: { profile_picture },
+      }),
+    ]);
   });
 };
 
@@ -97,9 +98,17 @@ const findRefreshToken = async (token_id: string) => {
 };
 
 const revokeRefreshToken = async (token_id: string) => {
-  return await prisma.refresh_token.update({
-    where: { id: token_id, is_active: true },
-    data: { is_active: false, revoked_at: new Date() },
+  return prisma.$transaction(async (tx) => {
+    const token = await tx.refresh_token.findUnique({
+      where: { id: token_id },
+    });
+    if (!token?.is_active) {
+      return null;
+    }
+    return tx.refresh_token.update({
+      where: { id: token_id },
+      data: { is_active: false, revoked_at: new Date() },
+    });
   });
 };
 
