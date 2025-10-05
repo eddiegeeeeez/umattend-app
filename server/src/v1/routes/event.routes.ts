@@ -13,6 +13,11 @@ router.post(
   checkSchema(EventValidSchema),
   eventController.addEvent
 );
-router.delete('/:eventId', authMiddleware, eventController.deleteEvent);
+router.delete(
+  '/:eventId',
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  eventController.deleteEvent
+);
 
 export default router;
