@@ -1,6 +1,6 @@
 import authService from '../services/auth.service';
 import { Request, Response } from 'express';
-import GoogleAuth from '../../utils/googleAuth';
+import GoogleAuth from "../services/google.service";
 import {
   HTTPErrorResponse,
   HTTPSuccessResponse,
