@@ -18,7 +18,14 @@ const googleAuth = async (req: Request, res: Response) => {
     const url = GoogleAuth.generateGoogleAuthUrl();
     return res.redirect(url);
   } catch (error: unknown) {
-    console.log(error);
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
+    }
+
     return HTTPErrorResponse(
       res,
       500,
@@ -99,6 +106,14 @@ const googleCallback = async (req: Request, res: Response) => {
       return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
     }
 
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
+    }
+
     return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
   }
 };
@@ -141,6 +156,14 @@ const logoutUser = async (req: Request, res: Response) => {
 
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, 'Not Found') as Response;
+    }
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
     }
 
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
@@ -189,6 +212,13 @@ const refreshAccessToken = async (req: Request, res: Response) => {
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, 'Not Found') as Response;
     }
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
+    }
 
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
@@ -235,6 +265,35 @@ const exhangeCode = async (req: Request, res: Response) => {
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, 'Not Found') as Response;
     }
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
+    }
+
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
+  }
+};
+
+const getLoginHistory = async (req: Request, res: Response) => {
+  try {
+    const user_id = req.user.id;
+    const login_history = await authService.getLoginHistory(user_id);
+    return HTTPSuccessResponse(res, 200, 'Login history retrieved', {
+      login_history,
+    }) as Response;
+  } catch (error: unknown) {
+    console.log(error);
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
+    }
 
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
@@ -246,6 +305,7 @@ const authController = {
   logoutUser,
   refreshAccessToken,
   exhangeCode,
+  getLoginHistory,
 };
 
 export default authController;

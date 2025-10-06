@@ -251,6 +251,10 @@ const getDataFromAuthCode = async (auth_code: string) => {
   return { access_token, refresh_token };
 };
 
+const getLoginHistory = async (user_id: string) => {
+  return await authRepository.getLoginHistory(user_id);
+};
+
 const authServices = {
   googleAuthWithCode,
   refreshAccessToken,
@@ -259,6 +263,7 @@ const authServices = {
   getDataFromErrorCode,
   generateAuthCode,
   getDataFromAuthCode,
+  getLoginHistory,
 };
 
 export default authServices;
