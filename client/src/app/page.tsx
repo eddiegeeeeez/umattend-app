@@ -75,7 +75,7 @@ function LoginContent() {
 
           <div className="space-y-2">
             <CardTitle className="text-3xl font-bold tracking-tight">UMAttend</CardTitle>
-            <CardDescription className="text-base">UMAttend on the latest events in the campus</CardDescription>
+            <CardDescription className="text-xs sm:text-base">UMAttend on the latest events in the campus</CardDescription>
           </div>
         </CardHeader>
 
@@ -84,7 +84,7 @@ function LoginContent() {
             onClick={handleGoogleLogin}
             variant="outline"
             size="lg"
-            className="bg-card hover:bg-accent/20 border-border hover:border-primary h-12 w-full cursor-pointer border-2 text-base font-medium shadow-sm transition-all duration-300 hover:shadow-md"
+            className="bg-card hover:bg-accent/20 border-border hover:border-primary h-12 w-full cursor-pointer border-2 text-sm sm:text-base font-medium shadow-sm transition-all duration-300 hover:shadow-md"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path
@@ -112,12 +112,12 @@ function LoginContent() {
               <div className="border-border w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card text-muted-foreground px-2">Secure Authentication</span>
+              <span className="bg-card text-muted-foreground px-2 text-xs sm:text-base">Secure Authentication</span>
             </div>
           </div>
 
           <div className="space-y-2 text-center">
-            <p className="text-muted-foreground text-sm">By continuing, you agree to our Terms of Service and Privacy Policy</p>
+            <p className="text-muted-foreground text-xs sm:text-sm">By continuing, you agree to our Terms of Service and Privacy Policy</p>
           </div>
         </CardContent>
       </Card>
