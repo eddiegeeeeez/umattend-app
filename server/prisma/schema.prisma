@@ -106,6 +106,7 @@ model events {
   start_time         DateTime?
   end_time           DateTime?
   check_out_required Boolean   @default(false)
+  is_started         Boolean   @default(false)
   is_done            Boolean   @default(false)
 
   form_fields Json?
