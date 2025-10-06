@@ -13,5 +13,5 @@ export async function sendEmail(
   await emailQueue.add('send-email', emailData, {
     jobId,
   });
-  console.log(`📨 Queued email to ${to}`);
+  console.log(`Queued email to ${to}`);
 }

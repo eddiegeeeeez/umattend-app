@@ -62,7 +62,12 @@ const addEvent = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 500, 'Failed to add event');
     }
 
-    sendEmail(umindanao_email, 'Event Successfully Created');
+    sendEmail(
+      umindanao_email,
+      'Event Successfully Created',
+      'Your event has been successfully created.',
+      '<p>Your event has been successfully created.</p>'
+    );
 
     return HTTPSuccessResponse(res, 200, 'Event Created', new_event);
   } catch (error: unknown) {
@@ -227,7 +232,12 @@ const createCheckInEvent = async (
       checked_in_by: checkIn.check_in_by,
     };
 
-    sendEmail(umindanao_email, 'Check-in Successful');
+    sendEmail(
+      umindanao_email,
+      'Check-in Successful',
+      `You have successfully checked in to the event.`,
+      `<p>You have successfully checked in to the event.</p>`
+    );
 
     return HTTPSuccessResponse(res, 200, 'Check-in successful', responseData);
   } catch (error: unknown) {

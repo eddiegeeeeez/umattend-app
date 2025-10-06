@@ -17,7 +17,6 @@ const connection = {
   enableReadyCheck: false,
 };
 
-// Queue definition
 export const emailQueue = new Queue<EmailJob>('email-queue', {
   connection,
   defaultJobOptions: {
@@ -27,16 +26,15 @@ export const emailQueue = new Queue<EmailJob>('email-queue', {
       delay: 2000,
     },
     removeOnComplete: {
-      age: 86400, // 1 day
+      age: 3600,
       count: 1000,
     },
     removeOnFail: {
-      age: 604800, // 7 days
+      age: 86400,
     },
   } as JobsOptions,
 });
 
-// Worker — automatically processes jobs
 const emailWorker = new Worker<EmailJob>(
   'email-queue',
   async (job) => {
@@ -60,9 +58,12 @@ const emailWorker = new Worker<EmailJob>(
 );
 
 emailWorker.on('completed', (job) => {
-  console.log(`✅ Job ${job.id} completed for ${job.data.to}`);
+  console.log(`Job ${job.id} completed for ${job.data.to}`);
 });
 
 emailWorker.on('failed', (job, err) => {
-  console.error(`❌ Job ${job?.id} failed after ${job?.attemptsMade} attempts:`, err);
+  console.error(
+    `Job ${job?.id} failed after ${job?.attemptsMade} attempts:`,
+    err
+  );
 });
