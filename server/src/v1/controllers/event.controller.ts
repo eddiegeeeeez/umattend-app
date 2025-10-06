@@ -179,7 +179,13 @@ const createCheckInEvent = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const user_id = req.params.user_id;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return HTTPErrorResponse(res, 400, errors.array());
+    }
+
+    const { user_id, event_id } = req.params;
 
     const { umindanao_email, done_onboarding } = req.user;
 
@@ -187,7 +193,7 @@ const createCheckInEvent = async (
       throw new ForbiddenError('User has not completed onboarding');
     }
 
-    const { student_id, event_id } = req.body;
+    const { student_id } = req.body;
 
     if (!student_id || !event_id) {
       return HTTPErrorResponse(
@@ -255,6 +261,92 @@ const createCheckInEvent = async (
   }
 };
 
+const createCheckOutEvent = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return HTTPErrorResponse(res, 400, errors.array());
+    }
+
+    const { user_id, event_id } = req.params;
+
+    const { umindanao_email, done_onboarding } = req.user;
+
+    if (!done_onboarding) {
+      throw new ForbiddenError('User has not completed onboarding');
+    }
+
+    const { student_id } = req.body;
+
+    if (!student_id || !event_id) {
+      return HTTPErrorResponse(
+        res,
+        400,
+        'student_id and event_id are required'
+      );
+    }
+
+    const check_out_data = {
+      student_id: student_id,
+      event_id: event_id,
+      check_out_by: req.user.id,
+      check_out_at: new Date().toISOString(),
+    };
+
+    if (!check_out_data) {
+      return HTTPErrorResponse(
+        res,
+        400,
+        'Missing check_out_data in request body'
+      );
+    }
+
+    const checkOut = await eventServices.createCheckOutEvent(
+      user_id,
+      check_out_data
+    );
+
+    if (!umindanao_email) {
+      return HTTPErrorResponse(res, 401, 'Unauthorized');
+    }
+
+    if (!checkOut) {
+      return HTTPErrorResponse(res, 400, 'Failed to update check-out');
+    }
+
+    const responseData = {
+      event_id: checkOut.event_id,
+      event_name: checkOut.event.title,
+      checked_out_at: checkOut.check_in_at,
+      checked_out_by: checkOut.check_in_by,
+    };
+
+    sendEmail(
+      umindanao_email,
+      'Check-out Successful',
+      `You have successfully checked out to the event.`,
+      `<p>You have successfully checked out to the event.</p>`
+    );
+
+    return HTTPSuccessResponse(res, 200, 'Check-out successful', responseData);
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof ForbiddenError) {
+      return HTTPErrorResponse(res, 403, error.message);
+    }
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    console.error('Unexpected error checking out', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+  }
+};
+
 const addOrganizer = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
@@ -303,6 +395,7 @@ const eventController = {
   deleteEvent,
   updateEvent,
   createCheckInEvent,
+  createCheckOutEvent,
   addOrganizer,
 };
 
