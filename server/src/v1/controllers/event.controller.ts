@@ -298,12 +298,33 @@ const addOrganizer = async (req: Request, res: Response) => {
   }
 };
 
+const getEventDetailsById = async (req: Request, res: Response) => {
+  try {
+    const { event_id } = req.params;
+    if (!event_id) {
+      return HTTPErrorResponse(res, 400, 'Event ID is required');
+    }
+    const event = await eventServices.getEventDetailsById(event_id);
+    return HTTPSuccessResponse(res, 200, 'Event details retrieved', event);
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    console.error('Unexpected error retrieving event details:', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+  }
+};
+
 const eventController = {
   addEvent,
   deleteEvent,
   updateEvent,
   createCheckInEvent,
   addOrganizer,
+  getEventDetailsById,
 };
 
 export default eventController;

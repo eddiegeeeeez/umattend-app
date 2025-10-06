@@ -143,6 +143,14 @@ const addOrganizer = async (umindanao_email: string, event_id: string) => {
   return await eventRepository.addOrganizer(user_id, event_id);
 };
 
+const getEventDetailsById = async (event_id: string) => {
+  const event = await eventRepository.getEventDetails(event_id);
+  if (!event) {
+    throw new NotFoundError('Event not found');
+  }
+  return event;
+};
+
 const eventServices = {
   addEvent,
   deleteEvent,
@@ -150,6 +158,7 @@ const eventServices = {
   createCheckInEvent,
   scheduleEventStatusJob,
   addOrganizer,
+  getEventDetailsById,
 };
 
 export default eventServices;

@@ -47,4 +47,11 @@ router.post(
   eventController.addOrganizer
 );
 
+// router.get('/', eventController.getAllEvents);
+router.get(
+  '/:event_id',
+  authMiddleware,
+  eventController.getEventDetailsById
+);
+
 export default router;
