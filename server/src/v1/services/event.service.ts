@@ -6,6 +6,7 @@ import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
 import userRepository from '../repositories/user.repository';
 import { events } from '@prisma/client';
 import { eventStatusQueue } from '../queues/event.queue';
+import authRepository from '../repositories/auth.repository';
 
 const addEvent = async (event_data: AddEventInterface) => {
   try {
@@ -130,12 +131,25 @@ const scheduleEventStatusJob = async (event: events) => {
   );
 };
 
+const addOrganizer = async (umindanao_email: string, event_id: string) => {
+  const user = await authRepository.findUserByEmail(umindanao_email);
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  const user_id = user.id;
+  if (!user_id) {
+    throw new NotFoundError('User ID not found');
+  }
+  return await eventRepository.addOrganizer(user_id, event_id);
+};
+
 const eventServices = {
   addEvent,
   deleteEvent,
   updateEvent,
   createCheckInEvent,
   scheduleEventStatusJob,
+  addOrganizer,
 };
 
 export default eventServices;
