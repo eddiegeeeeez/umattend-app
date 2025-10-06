@@ -87,7 +87,7 @@ const createCheckInEvent = async (
         event_id,
         student_id,
         check_in_by,
-        check_in_at: check_in_at || new Date().toISOString(),
+        check_in_at: check_in_at ?? new Date().toISOString(),
         userId,
       },
       include: {
@@ -99,12 +99,26 @@ const createCheckInEvent = async (
   });
 };
 
+const checkOrganizer = async (user_id: string, event_id: string) => {
+  const organizer = await prisma.organizers.findUnique({
+    where: {
+      user_id_event_id: {
+        user_id,
+        event_id,
+      },
+    },
+  });
+
+  return !!organizer;
+};
+
 const eventRepository = {
   createEvent,
   deleteEvent,
   updateEvent,
   getEventDetails,
   createCheckInEvent,
+  checkOrganizer,
 };
 
 export default eventRepository;

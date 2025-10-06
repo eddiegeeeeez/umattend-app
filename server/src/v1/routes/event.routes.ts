@@ -4,6 +4,7 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 import { checkRole } from '../middlewares/role.middleware';
 import { checkSchema } from 'express-validator';
 import { EventValidSchema } from '../validators/addEventValidSchema';
+import { checkOrganizer } from '../middlewares/checkOrganizer.middleware';
 const router = express.Router();
 
 router.post(
@@ -30,6 +31,7 @@ router.post(
   `/check_in/:user_id`,
   authMiddleware,
   checkRole('admin', 'csg'),
+  checkOrganizer,
   eventController.createCheckInEvent
 );
 
