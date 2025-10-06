@@ -3,7 +3,10 @@ import eventController from '../controllers/event.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { checkRole } from '../middlewares/role.middleware';
 import { checkSchema } from 'express-validator';
-import { EventValidSchema } from '../validators/addEventValidSchema';
+import {
+  EventValidSchema,
+  AddOrganizerValidSchema,
+} from '../validators/addEventValidSchema';
 import { checkOrganizer } from '../middlewares/checkOrganizer.middleware';
 const router = express.Router();
 
@@ -33,6 +36,15 @@ router.post(
   checkRole('admin', 'csg'),
   checkOrganizer,
   eventController.createCheckInEvent
+);
+
+router.post(
+  `/add_organizer/:event_id`,
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  checkOrganizer,
+  checkSchema(AddOrganizerValidSchema),
+  eventController.addOrganizer
 );
 
 export default router;

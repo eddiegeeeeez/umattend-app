@@ -255,11 +255,55 @@ const createCheckInEvent = async (
   }
 };
 
+const addOrganizer = async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return HTTPErrorResponse(res, 400, errors.array());
+    }
+
+    const data = matchedData(req);
+
+    const { umindanao_email, event_id } = data as {
+      umindanao_email: string;
+      event_id: string;
+    };
+
+    if (!event_id) {
+      return HTTPErrorResponse(res, 400, 'Event ID is required');
+    }
+    if (!umindanao_email) {
+      return HTTPErrorResponse(res, 400, 'Umindanao email is required');
+    }
+    const new_organizer = await eventServices.addOrganizer(
+      umindanao_email,
+      event_id
+    );
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Organizer added successfully',
+      new_organizer
+    );
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    console.error('Unexpected error adding organizer:', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+  }
+};
+
 const eventController = {
   addEvent,
   deleteEvent,
   updateEvent,
   createCheckInEvent,
+  addOrganizer,
 };
 
 export default eventController;

@@ -125,3 +125,30 @@ export const EventValidSchema = {
     },
   },
 };
+
+export const AddOrganizerValidSchema = {
+  umindanao_email: {
+    notEmpty: {
+      errorMessage: 'University email cannot be empty',
+    },
+    isEmail: {
+      errorMessage: 'Invalid email address',
+    },
+    matches: {
+      options: /^[a-z]\.[a-z]+\.\d{6}@umindanao\.edu\.ph$/,
+      errorMessage: 'Invalid University Email Address',
+    },
+  },
+  event_id: {
+    notEmpty: {
+      errorMessage: 'Event ID is required',
+    },
+    isString: {
+      errorMessage: 'Event ID must be a string',
+    },
+    isLength: {
+      options: { min: 10 },
+      errorMessage: 'Event ID seems invalid (too short)',
+    },
+  },
+};
