@@ -3,10 +3,21 @@ import prisma from '../../configs/prisma.config';
 import { AddEventInterface, AddCheckInInterface } from '../interface/event';
 
 const createEvent = async (event_data: AddEventInterface) => {
-  return await prisma.events.create({
-    data: {
-      ...event_data,
-    },
+  return await prisma.$transaction(async (tx) => {
+    const event = await tx.events.create({
+      data: {
+        ...event_data,
+      },
+    });
+
+    await tx.organizers.create({
+      data: {
+        user_id: event.created_by,
+        event_id: event.id,
+      },
+    });
+
+    return event;
   });
 };
 
@@ -112,12 +123,22 @@ const checkOrganizer = async (user_id: string, event_id: string) => {
   return !!organizer;
 };
 
+const addOrganizer = async (user_id: string, event_id: string) => {
+  return await prisma.organizers.create({
+    data: {
+      user_id,
+      event_id,
+    },
+  });
+};
+
 const eventRepository = {
   createEvent,
   deleteEvent,
   updateEvent,
   getEventDetails,
   createCheckInEvent,
+  addOrganizer,
   checkOrganizer,
 };
 
