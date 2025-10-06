@@ -1,5 +1,9 @@
 import eventRepository from '../repositories/event.repository';
-import { AddCheckInInterface, AddEventInterface } from '../interface/event';
+import {
+  AddCheckInInterface,
+  AddCheckOutInterface,
+  AddEventInterface,
+} from '../interface/event';
 import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
@@ -102,6 +106,37 @@ const createCheckInEvent = async (
   }
 };
 
+const createCheckOutEvent = async (
+  userId: string,
+  attendance_data: AddCheckOutInterface
+) => {
+  try {
+    const userExists = await userRepository.findUserById(userId);
+    if (!userExists) {
+      throw new NotFoundError('User not found');
+    }
+
+    return eventRepository.createCheckOutEvent(attendance_data);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        throw new Error('Unique constraint failed');
+      }
+      if (error.code === 'P2003') {
+        throw new Error('Foreign key constraint failed');
+      }
+    }
+    if (
+      error instanceof Prisma.PrismaClientValidationError &&
+      NODE_ENV === 'development'
+    ) {
+      throw new Error('Validation failed: ' + error.message);
+    }
+    console.error(error);
+    return false;
+  }
+};
+
 const scheduleEventStatusJob = async (event: events) => {
   if (!event.id) {
     return;
@@ -156,6 +191,7 @@ const eventServices = {
   deleteEvent,
   updateEvent,
   createCheckInEvent,
+  createCheckOutEvent,
   scheduleEventStatusJob,
   addOrganizer,
   getEventDetailsById,
