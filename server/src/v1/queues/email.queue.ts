@@ -48,9 +48,9 @@ const emailWorker = new Worker<EmailJob>(
         text,
         html,
       });
-      console.log(`📧 Email sent to ${to}`);
+      console.log(`Email sent to ${to}`);
     } catch (error) {
-      console.error(`❌ Failed to send email to ${to}:`, error);
+      console.error(`Failed to send email to ${to}:`, error);
       throw error;
     }
   },
