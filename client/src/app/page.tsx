@@ -85,6 +85,9 @@ export default function LoginContent() {
               <CardDescription className="text-muted-foreground text-base">Sign in with your Google account to continue</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+                <p className="text-center text-sm font-medium text-red-500">{'Login Failed'}</p>
+              </div>
               {!isAuthenticating ? (
                 <>
                   <Button
