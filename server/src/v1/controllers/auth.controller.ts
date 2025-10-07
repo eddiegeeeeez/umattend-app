@@ -119,7 +119,7 @@ const googleCallback = async (req: Request, res: Response) => {
 
 const logoutUser = async (req: Request, res: Response) => {
   try {
-    const { refresh_token } = req.body;
+    const refresh_token = req.body?.refresh_token;
     const cookieRefreshToken = req.cookies?.refresh_token;
 
     const finalRefreshToken = refresh_token ?? cookieRefreshToken;
@@ -251,6 +251,10 @@ const exhangeCode = async (req: Request, res: Response) => {
       const error_message = await authService.getDataFromErrorCode(error_code);
       response_message = 'Error during authentication';
       response = { error_message };
+
+      if (error_message) {
+        return HTTPErrorResponse(res, 400, error_message) as Response;
+      }
     }
 
     return HTTPSuccessResponse(
@@ -260,9 +264,8 @@ const exhangeCode = async (req: Request, res: Response) => {
       response
     ) as Response;
   } catch (error: unknown) {
-    console.log(error);
     if (error instanceof NotFoundError) {
-      return HTTPErrorResponse(res, 404, 'Not Found') as Response;
+      return HTTPErrorResponse(res, 404, error.message) as Response;
     }
     if (NODE_ENV === 'DEVELOPMENT') {
       return HTTPErrorResponse(

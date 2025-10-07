@@ -72,7 +72,10 @@ const googleAuthWithCode = async (
     name: user.student?.name,
     department: user.student?.department ?? '',
     program: user.student?.program ?? '',
+    profile_picture: user.student?.profile_picture ?? '',
   });
+
+  console.log(user);
 
   const refresh_token = await generateRefreshToken(
     user.id,
@@ -229,8 +232,6 @@ const getDataFromErrorCode = async (error_code: string) => {
   const sanitizedErrorCode = sanitizeKey(error_code);
 
   const error = await authRepository.getErrorCode(sanitizedErrorCode);
-
-  console.log(error);
 
   if (!error) {
     throw new NotFoundError('Error code not found');

@@ -2,8 +2,8 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 
-const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1',
+export const axiosInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -16,7 +16,6 @@ axiosInstance.interceptors.request.use(
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
-
     return config;
   },
   (error) => {
@@ -31,6 +30,7 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Only attempt token refresh on 401 Unauthorized errors (not 403 or other errors)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -38,21 +38,21 @@ axiosInstance.interceptors.response.use(
 
       if (!refreshToken) {
         logout();
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(error);
       }
 
       try {
-        const response = await axios.post(`/refresh`, { refresh_token: refreshToken });
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, { refresh_token: refreshToken }, { withCredentials: true });
 
-        const { access_token, refresh_token } = response.data;
+        const { access_token, refresh_token } = response.data.data;
         setAuth(access_token, refresh_token);
 
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         logout();
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(refreshError);
       }
     }

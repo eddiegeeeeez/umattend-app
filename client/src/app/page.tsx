@@ -1,105 +1,100 @@
 //TODO migrate the uri and endpoints to secrets
 'use client';
 
-import { Suspense, useEffect } from 'react';
-import axios from 'axios';
-import { GalleryVerticalEnd } from 'lucide-react';
+import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import ClickSpark from '@/components/ClickSpark';
+import LoginForm from '@/components/auth/login-form';
+import useExchangeCode from '@/hooks/useExchangeCode';
+import { getUserOptions } from '@/api/client/@tanstack/react-query.gen';
 import { useAuthStore } from '@/store/authStore';
 
-function LoginContent() {
+export default function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isAuthenticating, isError, serverMessage, exchangeCode } = useExchangeCode();
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const updateUser = useAuthStore((state) => state.updateUser);
 
-  useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      localStorage.setItem('token', token);
-      router.push('/dashboard');
-    }
-  }, [router, searchParams]);
-
-  const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost/api/v1/auth/google'; // backend auth URL
+  const handleGoogleLogin = async () => {
+    router.push('/api/v1/auth/google');
+    // router.push('/events');
   };
 
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isDoneOnboarding = useAuthStore((state) => state.isDoneOnboarding);
+
+  // Fetch user data after authentication
+  const { data: userData } = useQuery({
+    ...getUserOptions(),
+    enabled: isAuthenticated(),
+    staleTime: Infinity // Don't refetch unless manually invalidated
+  });
+
+  // Update user data in store when fetched (merge with existing JWT data)
+  useEffect(() => {
+    if (userData?.success && userData?.data?.user) {
+      const apiUser = userData.data.user;
+      const currentUser = useAuthStore.getState().user;
+
+      // Merge API data with existing JWT data (preserve student_id from JWT)
+      updateUser({
+        user_id: apiUser.id,
+        student_id: currentUser?.student_id, // Keep from JWT
+        umindanao_email: apiUser.umindanao_email || currentUser?.umindanao_email,
+        name: apiUser.name || currentUser?.name,
+        department: apiUser.department || currentUser?.department,
+        program: apiUser.program || currentUser?.program,
+        role: (apiUser.role as 'student' | 'admin' | 'csg' | 'instructor' | 'organizer') || currentUser?.role || 'student',
+        done_onboarding: apiUser.done_onboarding ?? currentUser?.done_onboarding ?? false,
+        profile_picture: currentUser?.profile_picture || ''
+      });
+    }
+  }, [userData, updateUser]);
 
   useEffect(() => {
-    const exchangeCode = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const auth_code = params.get('auth_code');
+    const auth_code = searchParams.get('auth_code');
+    const error_code = searchParams.get('error_code');
 
-      try {
-        const res = await axios.post('/api/v1/auth/exchange', { auth_code });
+    const handleAuthCode = async () => {
+      if (!auth_code) return;
+      const result = await exchangeCode('auth_code', auth_code);
+      console.log(result);
 
-        console.log(res.data);
-
-        const accessToken = res.data.data.access_token;
-        const refreshToken = res.data.data.refresh_token;
-
-        if (res.status >= 200) {
-          setAuth(accessToken, refreshToken);
-          router.push('/');
-        }
-      } catch (err: unknown) {
-        if (typeof err === 'object' && err !== null && 'response' in err) {
-          const response = (err as { response?: { data?: unknown } }).response;
-          console.error('Login failed:', response?.data ?? (err instanceof Error ? err.message : String(err)));
-        } else {
-          console.error('Login failed:', (err as Error).message);
-        }
+      if (result.accessToken && result.refreshToken) {
+        setAuth(result.accessToken, result.refreshToken);
       }
+
+      router.push(!isDoneOnboarding() ? '/onboarding' : '/events');
     };
 
-    exchangeCode();
-  }, [router, setAuth]);
+    const handleErrorCode = async () => {
+      if (!error_code) return;
+      await exchangeCode('error_code', error_code);
+    };
+
+    handleAuthCode();
+    handleErrorCode();
+  }, [exchangeCode, setAuth, searchParams, router, isDoneOnboarding]);
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push('/');
+    }
+
+    if (isAuthenticated() && !isDoneOnboarding()) {
+      router.push('/onboarding');
+    }
+
+    if (isAuthenticated() && isDoneOnboarding()) {
+      router.push('/events');
+    }
+  }, [isAuthenticated, isDoneOnboarding, router]);
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-4" />
-            </div>
-            Acme Inc.
-          </a>
-        </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
-            <form className="flex flex-col gap-6">
-              <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Login to your account</h1>
-                <p className="text-muted-foreground text-sm text-balance">Enter your email below to login to your account</p>
-              </div>
-              <div className="grid gap-6">
-                <Button variant="outline" className="w-full cursor-pointer" onClick={handleGoogleLogin}>
-                  <a href="http://localhost/api/v1/auth/google" className="flex w-full items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <path
-                        d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                    Login with Google
-                  </a>
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-      <div className="bg-muted relative hidden lg:block"></div>
-    </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LoginContent />
-    </Suspense>
+    <ClickSpark sparkColor="#000" sparkSize={10} sparkRadius={15} sparkCount={8} duration={400}>
+      <LoginForm serverMessage={serverMessage} isError={isError} isAuthenticating={isAuthenticating} handleGoogleLogin={handleGoogleLogin} />
+    </ClickSpark>
   );
 }
