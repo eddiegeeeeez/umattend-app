@@ -41,16 +41,15 @@ const onboarding = {
       description: 'Complete user onboarding process',
       security: [{ bearerAuth: [] }],
       requestBody: {
-        required: true,
         content: {
           'application/json': {
             schema: {
               type: 'object',
               properties: {
-                studentNumber: { type: 'string' },
+                department: { type: 'string' },
                 program: { type: 'string' },
-                yearLevel: { type: 'number' },
               },
+              required: ['department', 'program'],
             },
           },
         },

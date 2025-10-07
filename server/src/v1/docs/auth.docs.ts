@@ -5,6 +5,23 @@ const refresh = {
       summary: 'Refresh access token',
       description: 'Refresh the access token using a valid refresh token',
       security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: false,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                refresh_token: {
+                  type: 'string',
+                  description:
+                    'Refresh token (optional if provided in Authorization header)',
+                },
+              },
+            },
+          },
+        },
+      },
       responses: {
         200: {
           description: 'Token refreshed successfully',
@@ -42,28 +59,25 @@ const exchange = {
       tags: ['Authentication'],
       summary: 'Exchange authorization code',
       description: 'Exchange authorization code for tokens',
-      security: [
-        {
-          bearerAuth: [],
-        },
-      ],
+      security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
           'application/json': {
             schema: {
               type: 'object',
+              title: 'Error Response',
               properties: {
                 auth_code: {
                   type: 'string',
-                  description: 'Exchange Auth Code',
+                  description: 'Exchange Auth code',
                 },
                 error_code: {
                   type: 'string',
                   description: 'Exchange Error code',
                 },
               },
-              required: ['auth_code', 'error_code'],
+              required: ['error_code', 'auth_code'],
             },
           },
         },
