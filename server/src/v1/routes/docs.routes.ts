@@ -5,6 +5,7 @@ import { auth } from '../docs/auth.docs';
 import { user } from '../docs/user.docs';
 import { event } from '../docs/event.docs';
 import { Request, Response } from 'express';
+import { FRONTEND_URL } from '@/constants/app.constants';
 
 const router = express.Router();
 
@@ -13,7 +14,8 @@ const openApiSpec = {
   info: {
     title: 'UMAttend API',
     version: '1.0.0',
-    description: 'API documentation for UMAttend application',
+    description:
+      'API documentation for the UMAttend application.\n\nTo obtain a token, please log in through the frontend application. After logging in, retrieve the access token and refresh token from your browser’s storage.',
   },
   servers: [
     {
@@ -21,6 +23,10 @@ const openApiSpec = {
       description: 'API v1',
     },
   ],
+  externalDocs: {
+    description: 'Open UMAttend Frontend',
+    url: FRONTEND_URL,
+  },
   paths: {
     ...auth,
     ...user,

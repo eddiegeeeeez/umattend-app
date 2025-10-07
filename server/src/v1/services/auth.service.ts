@@ -230,8 +230,6 @@ const getDataFromErrorCode = async (error_code: string) => {
 
   const error = await authRepository.getErrorCode(sanitizedErrorCode);
 
-  console.log(error);
-
   if (!error) {
     throw new NotFoundError('Error code not found');
   }

@@ -42,6 +42,11 @@ const exchange = {
       tags: ['Authentication'],
       summary: 'Exchange authorization code',
       description: 'Exchange authorization code for tokens',
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
       requestBody: {
         required: true,
         content: {
@@ -49,12 +54,16 @@ const exchange = {
             schema: {
               type: 'object',
               properties: {
-                code: {
+                auth_code: {
                   type: 'string',
-                  description: 'Authorization code',
+                  description: 'Exchange Auth Code',
+                },
+                error_code: {
+                  type: 'string',
+                  description: 'Exchange Error code',
                 },
               },
-              required: ['code'],
+              required: ['auth_code', 'error_code'],
             },
           },
         },
