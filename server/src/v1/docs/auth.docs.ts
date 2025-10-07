@@ -31,11 +31,17 @@ const refresh = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Access Token Refreshed Successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Access Token Refreshed Successfully',
+                  },
                   data: {
                     type: 'object',
                     properties: {
-                      access_token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+                      access_token: {
+                        type: 'string',
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                      },
                     },
                   },
                 },
@@ -51,7 +57,10 @@ const refresh = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'Refresh token is required' },
+                  message: {
+                    type: 'string',
+                    example: 'Refresh token is required',
+                  },
                 },
               },
             },
@@ -120,7 +129,10 @@ const logout = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Logged out successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Logged out successfully',
+                  },
                   data: { type: 'null' },
                 },
               },
@@ -230,8 +242,14 @@ const exchange = {
                   data: {
                     type: 'object',
                     properties: {
-                      access_token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
-                      refresh_token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+                      access_token: {
+                        type: 'string',
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                      },
+                      refresh_token: {
+                        type: 'string',
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                      },
                     },
                   },
                 },
@@ -302,7 +320,10 @@ const loginHistory = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Login history retrieved' },
+                  message: {
+                    type: 'string',
+                    example: 'Login history retrieved',
+                  },
                   data: {
                     type: 'object',
                     properties: {

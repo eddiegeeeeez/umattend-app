@@ -20,6 +20,7 @@ The documentation routes are **disabled in PRODUCTION** for security reasons. At
 ### Excluded Routes
 
 The following OAuth routes are intentionally excluded from the documentation:
+
 - `GET /api/v1/auth/google`
 - `GET /api/v1/auth/google/callback`
 

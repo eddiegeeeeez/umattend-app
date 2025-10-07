@@ -243,7 +243,10 @@ const updateAndDeleteEvent = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Event successfully deleted' },
+                  message: {
+                    type: 'string',
+                    example: 'Event successfully deleted',
+                  },
                   data: { type: 'null' },
                 },
               },
@@ -265,7 +268,8 @@ const updateAndDeleteEvent = {
           },
         },
         401: {
-          description: 'Unauthorized - authentication required to delete an event',
+          description:
+            'Unauthorized - authentication required to delete an event',
           content: {
             'application/json': {
               schema: {
@@ -293,7 +297,8 @@ const updateAndDeleteEvent = {
           },
         },
         404: {
-          description: 'Event not found - the specified event ID does not exist',
+          description:
+            'Event not found - the specified event ID does not exist',
           content: {
             'application/json': {
               schema: {
@@ -465,7 +470,10 @@ const updateAndDeleteEvent = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Event successfully updated' },
+                  message: {
+                    type: 'string',
+                    example: 'Event successfully updated',
+                  },
                   data: {
                     type: 'object',
                     properties: {
@@ -502,7 +510,8 @@ const updateAndDeleteEvent = {
           },
         },
         401: {
-          description: 'Unauthorized - authentication required to update an event',
+          description:
+            'Unauthorized - authentication required to update an event',
           content: {
             'application/json': {
               schema: {
@@ -617,7 +626,10 @@ const checkIn = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'student_id and event_id are required' },
+                  message: {
+                    type: 'string',
+                    example: 'student_id and event_id are required',
+                  },
                 },
               },
             },
@@ -645,7 +657,10 @@ const checkIn = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'User has not completed onboarding' },
+                  message: {
+                    type: 'string',
+                    example: 'User has not completed onboarding',
+                  },
                 },
               },
             },
@@ -739,7 +754,10 @@ const checkOut = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'student_id and event_id are required' },
+                  message: {
+                    type: 'string',
+                    example: 'student_id and event_id are required',
+                  },
                 },
               },
             },
@@ -767,7 +785,10 @@ const checkOut = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'User has not completed onboarding' },
+                  message: {
+                    type: 'string',
+                    example: 'User has not completed onboarding',
+                  },
                 },
               },
             },
@@ -848,7 +869,10 @@ const addOrganizer = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Organizer added successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Organizer added successfully',
+                  },
                   data: {
                     type: 'object',
                     properties: {
@@ -864,7 +888,8 @@ const addOrganizer = {
           },
         },
         400: {
-          description: 'Bad request - Missing required fields or validation errors',
+          description:
+            'Bad request - Missing required fields or validation errors',
           content: {
             'application/json': {
               schema: {

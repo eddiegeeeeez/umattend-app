@@ -14,7 +14,10 @@ const getUser = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'User succesfully fetched' },
+                  message: {
+                    type: 'string',
+                    example: 'User succesfully fetched',
+                  },
                   data: {
                     type: 'object',
                     properties: {
@@ -115,11 +118,17 @@ const onboarding = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'User succesfully updated' },
+                  message: {
+                    type: 'string',
+                    example: 'User succesfully updated',
+                  },
                   data: {
                     type: 'object',
                     properties: {
-                      access_token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+                      access_token: {
+                        type: 'string',
+                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                      },
                       user: {
                         type: 'object',
                         properties: {
