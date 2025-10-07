@@ -128,6 +128,11 @@ const logout = {
               schema: {
                 type: 'object',
                 properties: {
+                  refresh_token: {
+                    type: 'string',
+                    description:
+                      'Refresh token (optional if provided in Authorization header)',
+                  },
                   success: { type: 'boolean', example: true },
                   message: {
                     type: 'string',
@@ -333,7 +338,11 @@ const loginHistory = {
                           type: 'object',
                           properties: {
                             id: { type: 'string' },
-                            timestamp: { type: 'string', format: 'date-time', example: '2025-01-15T10:30:00.000Z' },
+                            timestamp: {
+                              type: 'string',
+                              format: 'date-time',
+                              example: '2025-01-15T10:30:00.000Z',
+                            },
                             ipAddress: { type: 'string' },
                             userAgent: { type: 'string' },
                           },
