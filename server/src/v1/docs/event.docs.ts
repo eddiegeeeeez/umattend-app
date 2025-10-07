@@ -126,17 +126,92 @@ const createEvent = {
         },
       },
       responses: {
-        201: {
+        200: {
           description: 'Event created successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Event Created' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      title: { type: 'string' },
+                      description: { type: 'string' },
+                      department: { type: 'string' },
+                      location: { type: 'string' },
+                      capacity: { type: 'number' },
+                      all_day: { type: 'boolean' },
+                      start_time: { type: 'string', format: 'date-time' },
+                      end_time: { type: 'string', format: 'date-time' },
+                      check_out_required: { type: 'boolean' },
+                      is_done: { type: 'boolean' },
+                      created_by: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         400: {
-          description: 'Bad request',
+          description: 'Bad request - Validation errors',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'array', items: { type: 'object' } },
+                },
+              },
+            },
+          },
         },
         401: {
           description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Unauthorized' },
+                },
+              },
+            },
+          },
         },
         403: {
           description: 'Forbidden - Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Access denied' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -160,17 +235,90 @@ const updateAndDeleteEvent = {
         },
       ],
       responses: {
-        200: { description: 'Event deleted successfully.' },
+        200: {
+          description: 'Event deleted successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Event successfully deleted' },
+                  data: { type: 'null' },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: 'Bad request - Event ID is required',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event ID is required' },
+                },
+              },
+            },
+          },
+        },
         401: {
-          description:
-            'Unauthorized — authentication required to delete an event.',
+          description: 'Unauthorized - authentication required to delete an event',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
         },
         403: {
-          description: 'Forbidden — only Admin/CSG roles can delete events.',
+          description: 'Forbidden - only Admin/CSG roles can delete events',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         404: {
-          description:
-            'Event not found — the specified event ID does not exist.',
+          description: 'Event not found - the specified event ID does not exist',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event not found' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -309,17 +457,105 @@ const updateAndDeleteEvent = {
         },
       },
       responses: {
-        200: { description: 'Event updated successfully.' },
-        400: { description: 'Bad request — invalid or missing update fields.' },
+        200: {
+          description: 'Event updated successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Event successfully updated' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      title: { type: 'string' },
+                      description: { type: 'string' },
+                      department: { type: 'string' },
+                      location: { type: 'string' },
+                      capacity: { type: 'number' },
+                      all_day: { type: 'boolean' },
+                      start_time: { type: 'string', format: 'date-time' },
+                      end_time: { type: 'string', format: 'date-time' },
+                      check_out_required: { type: 'boolean' },
+                      is_done: { type: 'boolean' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: 'Bad request - invalid or missing update fields',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event ID is required' },
+                },
+              },
+            },
+          },
+        },
         401: {
-          description:
-            'Unauthorized — authentication required to update an event.',
+          description: 'Unauthorized - authentication required to update an event',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
         },
         403: {
-          description: 'Forbidden — only Admin/CSG roles can update events.',
+          description: 'Forbidden - only Admin/CSG roles can update events',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         404: {
-          description: 'Event not found — cannot update a non-existent event.',
+          description: 'Event not found - cannot update a non-existent event',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event not found' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -352,15 +588,96 @@ const checkIn = {
       responses: {
         200: {
           description: 'User checked in successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Check-in successful' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      event_id: { type: 'string' },
+                      event_name: { type: 'string' },
+                      checked_in_at: { type: 'string', format: 'date-time' },
+                      checked_in_by: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: 'Bad request - Missing required fields',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'student_id and event_id are required' },
+                },
+              },
+            },
+          },
         },
         401: {
           description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Unauthorized' },
+                },
+              },
+            },
+          },
         },
         403: {
-          description: 'Forbidden',
+          description: 'Forbidden - User has not completed onboarding',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'User has not completed onboarding' },
+                },
+              },
+            },
+          },
         },
         404: {
           description: 'User or event not found',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -393,15 +710,96 @@ const checkOut = {
       responses: {
         200: {
           description: 'User checked out successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Check-out successful' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      event_id: { type: 'string' },
+                      event_name: { type: 'string' },
+                      checked_out_at: { type: 'string', format: 'date-time' },
+                      checked_out_by: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: 'Bad request - Missing required fields',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'student_id and event_id are required' },
+                },
+              },
+            },
+          },
         },
         401: {
           description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Unauthorized' },
+                },
+              },
+            },
+          },
         },
         403: {
-          description: 'Forbidden',
+          description: 'Forbidden - User has not completed onboarding',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'User has not completed onboarding' },
+                },
+              },
+            },
+          },
         },
         404: {
           description: 'User or event not found',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -444,18 +842,96 @@ const addOrganizer = {
       responses: {
         200: {
           description: 'Organizer added successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Organizer added successfully' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      user_id: { type: 'string' },
+                      event_id: { type: 'string' },
+                      created_at: { type: 'string', format: 'date-time' },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         400: {
-          description: 'Bad request',
+          description: 'Bad request - Missing required fields or validation errors',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event ID is required' },
+                },
+              },
+            },
+          },
         },
         401: {
           description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
         },
         403: {
-          description: 'Forbidden',
+          description: 'Forbidden - Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Access denied' },
+                },
+              },
+            },
+          },
         },
         404: {
           description: 'Event or user not found',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
         },
       },
     },
