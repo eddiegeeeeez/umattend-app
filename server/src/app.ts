@@ -23,8 +23,7 @@ app.set('trust proxy', 1);
 // Disable CSP for documentation routes in dev/staging
 app.use(
   helmet({
-    contentSecurityPolicy:
-      NODE_ENV === 'DEVELOPMENT' || NODE_ENV === 'STAGING' ? false : undefined,
+    contentSecurityPolicy: false,
   })
 );
 app.use(cacheControl);
