@@ -10,9 +10,8 @@
     "format:check": "prettier --check .",
     "format:check:ci": "./node_modules/.bin/prettier --check .",
     "type-check": "tsc --noEmit",
-    "prod": "node dist/server.js",
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc"
+    "start": "tsx src/server.ts",
+    "dev": "tsx watch src/server.ts"
   },
   "keywords": [],
   "author": "",
