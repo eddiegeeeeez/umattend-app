@@ -1,11 +1,13 @@
+// TODO migrate the endpoints to secrets
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:4000/api/:path*'
+        destination: 'http://localhost/api/:path*'
       }
     ];
   },
