@@ -1,0 +1,52 @@
+version: "3.9"
+
+networks:
+  appnet:
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      args:
+        NODE_VERSION: 20.11.1
+    container_name: app_server
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${SERVER_PORT}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_HOST}
+    networks: [appnet]
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        NODE_VERSION: 20.11.1
+    container_name: app_client
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      HOSTNAME: 0.0.0.0
+      PORT: ${CLIENT_PORT}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    depends_on:
+      - server
+    networks: [appnet]
+
+  nginx:
+    image: nginx:1.25.5-alpine
+    container_name: app_nginx
+    depends_on:
+      - client
+      - server
+    ports:
+      - "80:80"
+      # - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks: [appnet]
