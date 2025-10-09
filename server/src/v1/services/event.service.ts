@@ -186,10 +186,22 @@ const getEventDetailsById = async (event_id: string) => {
   return event;
 };
 
+const getAllEvents = async () => {
+
+  const events = await eventRepository.getAllEvents();
+
+  if(events.length === 0) {
+    throw new NotFoundError('No events found');
+  }
+
+  return events;
+};
+
 const eventServices = {
   addEvent,
   deleteEvent,
   updateEvent,
+  getAllEvents,
   createCheckInEvent,
   createCheckOutEvent,
   scheduleEventStatusJob,

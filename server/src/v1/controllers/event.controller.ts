@@ -410,6 +410,23 @@ const getEventDetailsById = async (req: Request, res: Response) => {
   }
 };
 
+const getAllEvents = async (req: Request, res: Response) => {
+  try {
+    const events = await eventServices.getAllEvents();
+    return HTTPSuccessResponse(res, 200, 'Events retrieved successfully', events);
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    console.error('Unexpected error retrieving events:', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+
+  }
+};
+
 const eventController = {
   addEvent,
   deleteEvent,
@@ -418,6 +435,7 @@ const eventController = {
   createCheckOutEvent,
   addOrganizer,
   getEventDetailsById,
+  getAllEvents,
 };
 
 export default eventController;
