@@ -12,20 +12,34 @@ import { cacheControl } from './v1/middlewares/cacheControl.middleware';
 import userRoutes from './v1/routes/user.routes';
 import authRoutes from './v1/routes/auth.routes';
 import eventRoutes from './v1/routes/event.routes';
+import docsRoutes from './v1/routes/docs.routes';
 import { NODE_ENV } from './constants/app.constants';
 
 const app = express();
 
 // ---------- SECURITY & PERFORMANCE MIDDLEWARE ----------
 app.set('trust proxy', 1);
-app.use(helmet());
+
+// Disable CSP for documentation routes in dev/staging
+app.use(
+  helmet({
+    contentSecurityPolicy:
+      NODE_ENV === 'DEVELOPMENT' || NODE_ENV === 'STAGING' ? false : undefined,
+  })
+);
 app.use(cacheControl);
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ---------- CORS CONFIGURATION ----------
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', "http://192.168.0.100:3000"];
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:4000',
+  'http://192.168.0.100:3000',
+];
+
 app.use(
   cors({
     origin: (origin: string | undefined, callback) => {
@@ -45,6 +59,7 @@ app.use(
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/event', eventRoutes);
+app.use('/api/v1/docs', docsRoutes);
 
 // ---------- SERVE FRONTEND (only in production) ----------
 if (NODE_ENV === 'PRODUCTION') {

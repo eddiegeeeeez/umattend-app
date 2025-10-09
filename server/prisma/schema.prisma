@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,22 +15,25 @@ datasource db {
 }
 
 model user {
-  id                  String          @id @default(cuid())
-  google_id           String          @unique
-  role                String
-  last_login_at       DateTime?
-  deleted_at          DateTime?
-  created_at          DateTime        @default(now())
-  updated_at          DateTime        @updatedAt
-  done_onboarding     Boolean         @default(false)
-  umindanao_email     String          @unique
+  id              String  @id @default(cuid())
+  umindanao_email String  @unique
+  google_id       String  @unique
+  role            String
+  done_onboarding Boolean @default(false)
+
+  last_login_at DateTime?
+
+  deleted_at DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  refresh_tokens      refresh_token[]
+  events              events[]
+  student             student?
+  attendance          attendance[]
   attendance_check_in attendance[]    @relation("CheckInByUser")
   attendance_check_ou attendance[]    @relation("CheckOutByUser")
-  attendance          attendance[]
-  events              events[]
-  organizers          organizers[]
-  refresh_tokens      refresh_token[]
-  student             student?
 
   @@index([umindanao_email])
   @@index([role])
@@ -32,20 +41,23 @@ model user {
   @@index([last_login_at])
   @@index([deleted_at])
   @@map("users")
+  organizers organizers[]
 }
 
 model student {
-  id              String       @id @default(cuid())
-  user_id         String       @unique
-  student_id      Int          @unique
+  id              String  @id @default(cuid())
+  user_id         String  @unique
+  student_id      Int     @unique
+  name            String
   department      String?
   program         String?
   profile_picture String
-  created_at      DateTime     @default(now())
-  updated_at      DateTime     @updatedAt
-  name            String
-  attendance      attendance[]
-  user            user         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+  attendance attendance[]
 
   @@index([department])
   @@index([program])
@@ -54,23 +66,27 @@ model student {
 }
 
 model refresh_token {
-  id         String    @id @default(cuid())
+  id         String @id @default(cuid())
   user_id    String
-  token_hash String    @unique
+  token_hash String @unique
+
   ip_address String?
+  browser    String?
+  os         String?
   device     String?
+  city       String?
+  region     String?
+  country    String?
+
   is_active  Boolean   @default(true)
   revoked_at DateTime?
   expires_at DateTime
   last_used  DateTime?
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  browser    String?
-  os         String?
-  city       String?
-  country    String?
-  region     String?
-  user       user      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([expires_at])
@@ -80,24 +96,28 @@ model refresh_token {
 }
 
 model events {
-  id                 String       @id @default(cuid())
+  id                 String    @id @default(cuid())
   title              String
   description        String
   department         String
   location           String
-  all_day            Boolean      @default(false)
+  capacity           Int?
+  all_day            Boolean   @default(false)
   start_time         DateTime?
   end_time           DateTime?
-  is_done            Boolean      @default(false)
-  form_fields        Json?
-  created_by         String
-  created_at         DateTime     @default(now())
-  updated_at         DateTime     @updatedAt
-  check_out_required Boolean      @default(false)
-  capacity           Int?
-  attendance         attendance[]
-  user               user         @relation(fields: [created_by], references: [id], onDelete: Cascade)
-  organizers         organizers[]
+  check_out_required Boolean   @default(false)
+  is_started         Boolean   @default(false)
+  is_done            Boolean   @default(false)
+
+  form_fields Json?
+
+  created_by String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user       user         @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  attendance attendance[]
 
   @@index([title])
   @@index([department])
@@ -106,24 +126,28 @@ model events {
   @@index([end_time])
   @@index([created_by])
   @@map("events")
+  organizers organizers[]
 }
 
 model attendance {
-  id                String    @id @default(cuid())
-  event_id          String
-  student_id        String
-  check_in_at       DateTime  @default(now())
-  check_out_at      DateTime?
-  check_in_by       String
-  check_out_by      String?
-  created_at        DateTime  @default(now())
-  updated_at        DateTime  @updatedAt
-  userId            String?
-  check_in_by_user  user      @relation("CheckInByUser", fields: [check_in_by], references: [id], onDelete: Cascade)
-  check_out_by_user user?     @relation("CheckOutByUser", fields: [check_out_by], references: [id], onDelete: Cascade)
-  event             events    @relation(fields: [event_id], references: [id], onDelete: Cascade)
-  student           student   @relation(fields: [student_id], references: [id], onDelete: Cascade)
-  user              user?     @relation(fields: [userId], references: [id])
+  id           String    @id @default(cuid())
+  event_id     String
+  student_id   String
+  check_in_at  DateTime  @default(now())
+  check_out_at DateTime?
+
+  check_in_by  String
+  check_out_by String?
+
+  event             events  @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  student           student @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  check_in_by_user  user    @relation("CheckInByUser", fields: [check_in_by], references: [id], onDelete: Cascade)
+  check_out_by_user user?   @relation("CheckOutByUser", fields: [check_out_by], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       user?    @relation(fields: [userId], references: [id])
+  userId     String?
 
   @@index([event_id])
   @@index([student_id])
@@ -133,13 +157,15 @@ model attendance {
 }
 
 model organizers {
-  id         String   @id @default(cuid())
-  user_id    String
-  event_id   String
+  id       String @id @default(cuid())
+  user_id  String
+  event_id String
+
+  user  user   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  event events @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  event      events   @relation(fields: [event_id], references: [id], onDelete: Cascade)
-  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, event_id])
   @@index([user_id])

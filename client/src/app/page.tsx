@@ -1,18 +1,16 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { GalleryVerticalEnd } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import AnimatedContent from '@/components/AnimatedContent';
-import ClickSpark from '@/components/ClickSpark';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/store/authStore';
 
-function LoginContent() {
+export default function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -24,6 +22,7 @@ function LoginContent() {
 
   const handleGoogleLogin = () => {
     router.push('/api/v1/auth/google');
+    setIsAuthenticating(true);
   };
 
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -32,6 +31,10 @@ function LoginContent() {
     const exchangeCode = async () => {
       const params = new URLSearchParams(window.location.search);
       const auth_code = params.get('auth_code');
+
+      if (auth_code) {
+        setIsAuthenticating(true);
+      }
 
       try {
         const res = await axios.post('/api/v1/auth/exchange', { auth_code });
@@ -52,6 +55,10 @@ function LoginContent() {
         } else {
           console.error('Login failed:', (err as Error).message);
         }
+      } finally {
+        setTimeout(() => {
+          setIsAuthenticating(false);
+        }, 1000);
       }
     };
 
@@ -59,82 +66,89 @@ function LoginContent() {
   }, [router, setAuth]);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
-      <div className="from-primary via-accent to-primary/60 absolute inset-0 bg-gradient-to-br opacity-90" />
-
-      <div className="bg-primary/30 absolute top-20 left-10 h-72 w-72 animate-pulse rounded-full blur-3xl" />
-      <div className="bg-accent/40 absolute right-10 bottom-20 h-96 w-96 animate-pulse rounded-full blur-3xl delay-1000" />
-
-      <Card className="bg-card/80 border-border/50 relative w-full max-w-md py-10 shadow-2xl backdrop-blur-xl">
-        <CardHeader className="space-y-4 text-center">
-          <div className="from-primary to-accent mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg">
-            <svg className="text-foreground h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+    <div className="bg-background flex min-h-screen flex-col items-center justify-between p-4">
+      <div className="flex w-full flex-1 items-center justify-center">
+        <div className="w-full max-w-md">
+          {/* Logo and Branding */}
+          <div className="mb-8 text-center">
+            <h1 className="mb-3 text-5xl font-bold text-balance">
+              <span className="text-yellow-500">UM</span>
+              <span className="text-foreground">Attend</span>
+            </h1>
+            <p className="text-muted-foreground text-lg text-balance">UMAttend on the latest events in the campus</p>
           </div>
 
-          <div className="space-y-2">
-            <CardTitle className="text-3xl font-bold tracking-tight">UMAttend</CardTitle>
-            <CardDescription className="text-xs sm:text-base">UMAttend on the latest events in the campus</CardDescription>
+          {/* Login Card */}
+          <Card className="border-border shadow-2xl">
+            <CardHeader className="space-y-2 text-center">
+              <CardTitle className="text-foreground text-2xl font-bold">Welcome Ga!</CardTitle>
+              <CardDescription className="text-muted-foreground text-base">Sign in with your Google account to continue</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+                <p className="text-center text-sm font-medium text-red-500">{'Login Failed'}</p>
+              </div>
+              {!isAuthenticating ? (
+                <>
+                  <Button
+                    onClick={handleGoogleLogin}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full text-base font-semibold transition-all duration-200"
+                    size="lg"
+                  >
+                    <svg
+                      className="mr-3 h-5 w-5"
+                      aria-hidden="true"
+                      focusable="false"
+                      data-prefix="fab"
+                      data-icon="google"
+                      role="img"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 488 512"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
+                      ></path>
+                    </svg>
+                    Continue with Google
+                  </Button>
+
+                  <p className="text-muted-foreground text-center text-xs leading-relaxed">
+                    By continuing, you agree to our Terms of Service and Privacy Policy
+                  </p>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center space-y-8 py-4">
+                  <div className="relative">
+                    <div className="border-muted border-t-primary h-16 w-16 animate-spin rounded-full border-4" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="bg-primary/20 h-8 w-8 rounded-full" />
+                    </div>
+                  </div>
+                  <div className="space-y-4 text-center">
+                    <p className="text-foreground text-lg font-semibold">Authenticating...</p>
+                    <p className="text-muted-foreground text-sm">Please wait while we verify your credentials</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="mt-6 text-center">
+            <p className="text-muted-foreground text-sm">
+              Need help?{' '}
+              <a href="#" className="text-primary font-medium hover:underline">
+                Contact Support
+              </a>
+            </p>
           </div>
-        </CardHeader>
+        </div>
+      </div>
 
-        <CardContent className="space-y-6">
-          <Button
-            onClick={handleGoogleLogin}
-            variant="outline"
-            size="lg"
-            className="bg-card hover:bg-accent/20 border-border hover:border-primary h-12 w-full cursor-pointer border-2 text-sm sm:text-base font-medium shadow-sm transition-all duration-300 hover:shadow-md"
-          >
-            <svg className="h-5 w-5" viewBox="0 0 24 24">
-              <path
-                fill="currentColor"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="currentColor"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
-            </svg>
-            Continue with Google
-          </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="border-border w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card text-muted-foreground px-2 text-xs sm:text-base">Secure Authentication</span>
-            </div>
-          </div>
-
-          <div className="space-y-2 text-center">
-            <p className="text-muted-foreground text-xs sm:text-sm">By continuing, you agree to our Terms of Service and Privacy Policy</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="absolute right-0 bottom-6 left-0 text-center">
-        <p className="text-foreground/60 text-sm font-medium">Powered by UMAttend</p>
+      {/* Footer */}
+      <div className="w-full pb-4 text-center">
+        <p className="text-muted-foreground/70 text-xs">Powered by UMAttend Engineering Team</p>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ClickSpark sparkColor="#000" sparkSize={10} sparkRadius={15} sparkCount={8} duration={400}>
-        <LoginContent />
-      </ClickSpark>
-    </Suspense>
   );
 }
