@@ -1,0 +1,46 @@
+name: UMattend CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Add SSH key to agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy via SSH
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+
+              APP_PATH='${{ secrets.APP_PATH }}'
+
+              echo "🔐 SSH OK"
+              cd "$APP_PATH"
+
+              echo "📦 Updating code..."
+              git fetch origin main
+              git reset --hard origin/main
+
+              echo "🐳 Rebuilding with Docker Compose..."
+              docker compose -f docker-compose.yml -f docker-compose.host.yml down || true
+              docker compose -f docker-compose.yml -f docker-compose.host.yml up -d --build --remove-orphans
+
+              echo "✅ Done"
+          EOF
