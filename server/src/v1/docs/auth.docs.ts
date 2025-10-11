@@ -333,7 +333,11 @@ const loginHistory = {
                           type: 'object',
                           properties: {
                             id: { type: 'string' },
-                            timestamp: { type: 'string', format: 'date-time', example: '2025-01-15T10:30:00.000Z' },
+                            timestamp: {
+                              type: 'string',
+                              format: 'date-time',
+                              example: '2025-01-15T10:30:00.000Z',
+                            },
                             ipAddress: { type: 'string' },
                             userAgent: { type: 'string' },
                           },
