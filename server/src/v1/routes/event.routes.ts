@@ -27,7 +27,7 @@ router.put(
   eventController.updateEvent
 );
 router.post(
-  `/check_in/:user_id`,
+  `/check_in/:student_id`,
   authMiddleware,
   checkRole('admin', 'csg'),
   eventController.createCheckInEvent

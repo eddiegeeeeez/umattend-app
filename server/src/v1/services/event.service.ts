@@ -3,7 +3,6 @@ import { AddCheckInInterface, AddEventInterface } from '../interface/event';
 import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
-import userRepository from '../repositories/user.repository';
 
 const addEvent = async (event_data: AddEventInterface) => {
   try {
@@ -58,17 +57,13 @@ const updateEvent = async (eventId: string, event_data: AddEventInterface) => {
   return await eventRepository.updateEvent(eventId, event_data);
 };
 
-const createCheckInEvent = async (
-  userId: string,
-  attendance_data: AddCheckInInterface
-) => {
+const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
   try {
-    const userExists = await userRepository.findUserById(userId);
-    if (!userExists) {
-      throw new NotFoundError('User not found');
+    if (!attendance_data.student_id) {
+      throw new NotFoundError('Student ID is required');
     }
 
-    return eventRepository.createCheckInEvent(userId, attendance_data);
+    return eventRepository.createCheckInEvent(attendance_data);
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {

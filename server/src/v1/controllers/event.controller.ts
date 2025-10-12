@@ -166,15 +166,15 @@ const createCheckInEvent = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const user_id = req.params.user_id;
+    const { student_id } = req.params;
 
     const { umindanao_email, done_onboarding } = req.user;
+
+    const { event_id } = req.body;
 
     if (!done_onboarding) {
       throw new ForbiddenError('User has not completed onboarding');
     }
-
-    const { student_id, event_id } = req.body;
 
     if (!student_id || !event_id) {
       return HTTPErrorResponse(
@@ -199,10 +199,7 @@ const createCheckInEvent = async (
       );
     }
 
-    const checkIn = await eventServices.createCheckInEvent(
-      user_id,
-      check_in_data
-    );
+    const checkIn = await eventServices.createCheckInEvent(check_in_data);
 
     if (!umindanao_email) {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
@@ -219,7 +216,12 @@ const createCheckInEvent = async (
       checked_in_by: checkIn.check_in_by,
     };
 
-    sendEmail(umindanao_email, 'Check-in Successful');
+    sendEmail(
+      umindanao_email,
+      'Check-in Successful',
+      `You have successfully checked in to the event.`,
+      `<p>You have successfully checked in to the event.</p>`
+    );
 
     return HTTPSuccessResponse(res, 200, 'Check-in successful', responseData);
   } catch (error: unknown) {
