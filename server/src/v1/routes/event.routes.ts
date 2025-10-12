@@ -38,7 +38,7 @@ router.post(
   eventController.createCheckInEvent
 );
 router.post(
-  `/check_out/:event_id/:user_id`,
+  `/check_out/:event_id/:student_id`,
   authMiddleware,
   checkRole('admin', 'csg'),
   checkOrganizer,
