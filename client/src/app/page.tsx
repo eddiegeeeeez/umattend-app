@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,17 +13,17 @@ export default function LoginContent() {
   const { isAuthenticating, accessToken, refreshToken, isError, serverMessage, exchangeCode } = useExchangeCode();
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      localStorage.setItem('token', token);
-      router.push('/dashboard');
-    }
-  }, [router, searchParams]);
-
   const handleGoogleLogin = () => {
     router.push('/api/v1/auth/google');
   };
+
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.push('/home');
+    }
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
     const auth_code = searchParams.get('auth_code');
@@ -32,13 +32,13 @@ export default function LoginContent() {
       if (accessToken && refreshToken) {
         setAuth(accessToken, refreshToken);
       }
+      router.push('/');
     }
 
     const error_code = searchParams.get('error_code');
     if (error_code) {
       exchangeCode('error_code', error_code);
     }
-
   }, [exchangeCode, setAuth, accessToken, refreshToken, searchParams, router]);
 
   return (
@@ -53,7 +53,7 @@ export default function LoginContent() {
             </h1>
             <p className="text-muted-foreground text-lg text-balance">UMAttend on the latest events in the campus</p>
           </div>
-
+          
           {/* Login Card */}
           <Card className="border-border shadow-2xl">
             <CardHeader className="space-y-2 text-center">
@@ -63,7 +63,7 @@ export default function LoginContent() {
             <CardContent className="space-y-6">
               {isError && (
                 <div className="rounded-md border border-red-300 bg-red-50 p-4">
-                  <p className="text-red-800">{serverMessage || 'An error occurred during authentication. Please try again.'}</p>
+                  <p className="text-center text-red-800">{serverMessage || 'An error occurred during authentication. Please try again.'}</p>
                 </div>
               )}
 

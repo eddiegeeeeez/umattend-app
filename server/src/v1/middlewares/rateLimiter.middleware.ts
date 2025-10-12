@@ -53,10 +53,6 @@ export const oauthRateLimiter = rateLimit({
       return res.redirect(`${FRONTEND_URL}/?error_code=${error_code}`);
     }
 
-    return res.status(429).json({
-      status: 'error',
-      message: 'Too many requests. Please slow down.',
-    });
   },
 });
 
