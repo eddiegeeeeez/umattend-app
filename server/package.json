@@ -10,9 +10,8 @@
     "format:check": "prettier --check .",
     "format:check:ci": "./node_modules/.bin/prettier --check .",
     "type-check": "tsc --noEmit",
-    "prod": "node dist/server.js",
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc"
+    "start": "tsx src/server.ts",
+    "dev": "tsx watch src/server.ts"
   },
   "keywords": [],
   "author": "",
@@ -20,9 +19,10 @@
   "type": "module",
   "dependencies": {
     "@prisma/client": "^6.16.3",
+    "@scalar/express-api-reference": "^0.8.20",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
-    "bull": "^4.16.5",
+    "bullmq": "^5.60.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",

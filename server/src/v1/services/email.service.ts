@@ -1,17 +1,17 @@
-// services/emailService.ts
 import { emailQueue } from '../queues/email.queue';
+import { EmailJob } from '../interface/email';
+import { v4 as uuidv4 } from 'uuid';
 
-export const sendEmail = async (
+export async function sendEmail(
   to: string,
   subject: string,
-  text?: string,
-  html?: string
-) => {
-  try {
-    await emailQueue.add({ to, subject, text, html });
-    return true;
-  } catch (err) {
-    console.error('Email failed:', err);
-    return false;
-  }
-};
+  text: string,
+  html: string
+): Promise<void> {
+  const emailData: EmailJob = { to, subject, text, html };
+  const jobId = uuidv4();
+  await emailQueue.add('send-email', emailData, {
+    jobId,
+  });
+  console.log(`Queued email to ${to}`);
+}

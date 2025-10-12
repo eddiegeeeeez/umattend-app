@@ -153,6 +153,21 @@ const deleteAuthCode = async (auth_code: string) => {
   return await redis.del(`auth_code:${auth_code}`);
 };
 
+const getLoginHistory = async (user_id: string) => {
+  return await prisma.refresh_token.findMany({
+    where: { user_id },
+    select: {
+      browser: true,
+      os: true,
+      city: true,
+      region: true,
+      country: true,
+    },
+    orderBy: { created_at: 'desc' },
+    take: 10,
+  });
+};
+
 const authRepository = {
   createUser,
   updateUser,
@@ -169,6 +184,7 @@ const authRepository = {
   createAuthCode,
   getAuthCode,
   deleteAuthCode,
+  getLoginHistory,
 };
 
 export default authRepository;

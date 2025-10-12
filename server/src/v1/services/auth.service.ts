@@ -230,8 +230,6 @@ const getDataFromErrorCode = async (error_code: string) => {
 
   const error = await authRepository.getErrorCode(sanitizedErrorCode);
 
-  console.log(error);
-
   if (!error) {
     throw new NotFoundError('Error code not found');
   }
@@ -251,6 +249,10 @@ const getDataFromAuthCode = async (auth_code: string) => {
   return { access_token, refresh_token };
 };
 
+const getLoginHistory = async (user_id: string) => {
+  return await authRepository.getLoginHistory(user_id);
+};
+
 const authServices = {
   googleAuthWithCode,
   refreshAccessToken,
@@ -259,6 +261,7 @@ const authServices = {
   getDataFromErrorCode,
   generateAuthCode,
   getDataFromAuthCode,
+  getLoginHistory,
 };
 
 export default authServices;

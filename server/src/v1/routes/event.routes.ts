@@ -3,7 +3,11 @@ import eventController from '../controllers/event.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { checkRole } from '../middlewares/role.middleware';
 import { checkSchema } from 'express-validator';
-import { EventValidSchema } from '../validators/addEventValidSchema';
+import {
+  EventValidSchema,
+  AddOrganizerValidSchema,
+} from '../validators/addEventValidSchema';
+import { checkOrganizer } from '../middlewares/checkOrganizer.middleware';
 const router = express.Router();
 
 router.post(
@@ -27,10 +31,27 @@ router.put(
   eventController.updateEvent
 );
 router.post(
-  `/check_in/:student_id`,
+  `/check_in/:event_id/:student_id`,
   authMiddleware,
   checkRole('admin', 'csg'),
+  checkOrganizer,
   eventController.createCheckInEvent
+);
+router.post(
+  `/check_out/:event_id/:user_id`,
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  checkOrganizer,
+  eventController.createCheckOutEvent
+);
+
+router.post(
+  `/add_organizer/:event_id`,
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  checkOrganizer,
+  checkSchema(AddOrganizerValidSchema),
+  eventController.addOrganizer
 );
 
 export default router;

@@ -8,6 +8,7 @@ import { sendEmail } from '../services/email.service';
 import { matchedData, validationResult } from 'express-validator';
 import eventServices from '../services/event.service';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
+import { NODE_ENV } from '@/constants/app.constants';
 
 const addEvent = async (req: Request, res: Response) => {
   try {
@@ -56,18 +57,34 @@ const addEvent = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
     }
 
-    await eventServices.addEvent(event_data);
+    if (event_data.start_time > event_data.end_time) {
+      return HTTPErrorResponse(
+        res,
+        400,
+        'Start time cannot be later than end time'
+      );
+    }
+
+    const new_event = await eventServices.addEvent(event_data);
 
     if (!umindanao_email) {
       return HTTPErrorResponse(res, 500, 'Failed to add event');
     }
 
-    sendEmail(umindanao_email, 'Event Successfully Created');
+    sendEmail(
+      umindanao_email,
+      'Event Successfully Created',
+      'Your event has been successfully created.',
+      '<p>Your event has been successfully created.</p>'
+    );
 
-    return HTTPSuccessResponse(res, 200, 'Event Created');
+    return HTTPSuccessResponse(res, 200, 'Event Created', new_event);
   } catch (error: unknown) {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
+    }
+    if (NODE_ENV === 'development') {
+      console.error('Error: ', error);
     }
     return HTTPErrorResponse(res, 500, error);
   }
@@ -144,9 +161,17 @@ const updateEvent = async (req: Request, res: Response): Promise<Response> => {
       return HTTPErrorResponse(res, 400, 'Event ID is required');
     }
 
-    await eventServices.updateEvent(eventId, updated_event_data);
+    const updated_event = await eventServices.updateEvent(
+      eventId,
+      updated_event_data
+    );
 
-    return HTTPSuccessResponse(res, 200, 'Event successfully updated');
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Event successfully updated',
+      updated_event
+    );
   } catch (error) {
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, error.message);
@@ -166,12 +191,10 @@ const createCheckInEvent = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { student_id } = req.params;
+    const { student_id, event_id } = req.params;
 
     const { umindanao_email, done_onboarding } = req.user;
-
-    const { event_id } = req.body;
-
+    
     if (!done_onboarding) {
       throw new ForbiddenError('User has not completed onboarding');
     }
@@ -239,11 +262,142 @@ const createCheckInEvent = async (
   }
 };
 
+const createCheckOutEvent = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return HTTPErrorResponse(res, 400, errors.array());
+    }
+
+    const { user_id, event_id } = req.params;
+
+    const { umindanao_email, done_onboarding } = req.user;
+
+    if (!done_onboarding) {
+      throw new ForbiddenError('User has not completed onboarding');
+    }
+
+    const { student_id } = req.body;
+
+    if (!student_id || !event_id) {
+      return HTTPErrorResponse(
+        res,
+        400,
+        'student_id and event_id are required'
+      );
+    }
+
+    const check_out_data = {
+      student_id: student_id,
+      event_id: event_id,
+      check_out_by: req.user.id,
+      check_out_at: new Date().toISOString(),
+    };
+
+    if (!check_out_data) {
+      return HTTPErrorResponse(
+        res,
+        400,
+        'Missing check_out_data in request body'
+      );
+    }
+
+    const checkOut = await eventServices.createCheckOutEvent(
+      user_id,
+      check_out_data
+    );
+
+    if (!umindanao_email) {
+      return HTTPErrorResponse(res, 401, 'Unauthorized');
+    }
+
+    if (!checkOut) {
+      return HTTPErrorResponse(res, 400, 'Failed to update check-out');
+    }
+
+    const responseData = {
+      event_id: checkOut.event_id,
+      event_name: checkOut.event.title,
+      checked_out_at: checkOut.check_in_at,
+      checked_out_by: checkOut.check_in_by,
+    };
+
+    sendEmail(
+      umindanao_email,
+      'Check-out Successful',
+      `You have successfully checked out to the event.`,
+      `<p>You have successfully checked out to the event.</p>`
+    );
+
+    return HTTPSuccessResponse(res, 200, 'Check-out successful', responseData);
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof ForbiddenError) {
+      return HTTPErrorResponse(res, 403, error.message);
+    }
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    console.error('Unexpected error checking out', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+  }
+};
+
+const addOrganizer = async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return HTTPErrorResponse(res, 400, errors.array());
+    }
+
+    const data = matchedData(req);
+
+    const { umindanao_email, event_id } = data as {
+      umindanao_email: string;
+      event_id: string;
+    };
+
+    if (!event_id) {
+      return HTTPErrorResponse(res, 400, 'Event ID is required');
+    }
+    if (!umindanao_email) {
+      return HTTPErrorResponse(res, 400, 'Umindanao email is required');
+    }
+    const new_organizer = await eventServices.addOrganizer(
+      umindanao_email,
+      event_id
+    );
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Organizer added successfully',
+      new_organizer
+    );
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    console.error('Unexpected error adding organizer:', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+  }
+};
+
 const eventController = {
   addEvent,
   deleteEvent,
   updateEvent,
   createCheckInEvent,
+  createCheckOutEvent,
+  addOrganizer,
 };
 
 export default eventController;

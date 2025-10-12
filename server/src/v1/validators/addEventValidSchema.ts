@@ -54,11 +54,11 @@ export const EventValidSchema = {
     toInt: true,
   },
   all_day: {
-    notEmpty: {
-      errorMessage: 'All day field is required',
-    },
-    isBoolean: {
-      errorMessage: 'All day must be a boolean',
+    optional: true,
+    isBoolean: { errorMessage: 'all_day must be boolean' },
+    toBoolean: true,
+    customSanitizer: {
+      options: (value: boolean) => value ?? false, // default false
     },
   },
   start_time: {
@@ -80,14 +80,15 @@ export const EventValidSchema = {
     toDate: true,
   },
   check_out_required: {
-    notEmpty: {
-      errorMessage: 'Check out required field is required',
-    },
-    isBoolean: {
-      errorMessage: 'Check out required must be a boolean',
+    optional: true,
+    isBoolean: { errorMessage: 'check_out_required must be boolean' },
+    toBoolean: true,
+    customSanitizer: {
+      options: (value: boolean) => value ?? false, // default false
     },
   },
   is_done: {
+    optional: true,
     isBoolean: { errorMessage: 'is_done must be boolean' },
     toBoolean: true,
     customSanitizer: {
@@ -121,6 +122,33 @@ export const EventValidSchema = {
       options: [['dropdown', 'short_text', 'long_text', 'checkbox', 'radio']],
       errorMessage:
         'Field type must be one of dropdown, short text, long text, checkbox, or radio',
+    },
+  },
+};
+
+export const AddOrganizerValidSchema = {
+  umindanao_email: {
+    notEmpty: {
+      errorMessage: 'University email cannot be empty',
+    },
+    isEmail: {
+      errorMessage: 'Invalid email address',
+    },
+    matches: {
+      options: /^[a-z]\.[a-z]+\.\d{6}@umindanao\.edu\.ph$/,
+      errorMessage: 'Invalid University Email Address',
+    },
+  },
+  event_id: {
+    notEmpty: {
+      errorMessage: 'Event ID is required',
+    },
+    isString: {
+      errorMessage: 'Event ID must be a string',
+    },
+    isLength: {
+      options: { min: 10 },
+      errorMessage: 'Event ID seems invalid (too short)',
     },
   },
 };
