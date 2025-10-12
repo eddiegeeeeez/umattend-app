@@ -267,20 +267,13 @@ const createCheckOutEvent = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return HTTPErrorResponse(res, 400, errors.array());
-    }
-
-    const { user_id, event_id } = req.params;
+    const { student_id, event_id } = req.params;
 
     const { umindanao_email, done_onboarding } = req.user;
 
     if (!done_onboarding) {
       throw new ForbiddenError('User has not completed onboarding');
     }
-
-    const { student_id } = req.body;
 
     if (!student_id || !event_id) {
       return HTTPErrorResponse(
@@ -305,10 +298,7 @@ const createCheckOutEvent = async (
       );
     }
 
-    const checkOut = await eventServices.createCheckOutEvent(
-      user_id,
-      check_out_data
-    );
+    const checkOut = await eventServices.createCheckOutEvent(check_out_data);
 
     if (!umindanao_email) {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
@@ -321,8 +311,8 @@ const createCheckOutEvent = async (
     const responseData = {
       event_id: checkOut.event_id,
       event_name: checkOut.event.title,
-      checked_out_at: checkOut.check_in_at,
-      checked_out_by: checkOut.check_in_by,
+      checked_out_at: checkOut.check_out_at,
+      checked_out_by: checkOut.check_out_by,
     };
 
     sendEmail(
