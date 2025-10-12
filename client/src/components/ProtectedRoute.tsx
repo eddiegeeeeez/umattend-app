@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 
+// components/ProtectedRoute.tsx
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
