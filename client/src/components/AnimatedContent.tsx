@@ -66,22 +66,10 @@ const AnimatedContent: React.FC<AnimatedContentProps> = ({
     });
 
     return () => {
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      ScrollTrigger.getAll().forEach((t) => t.kill());
       gsap.killTweensOf(el);
     };
-  }, [
-    distance,
-    direction,
-    reverse,
-    duration,
-    ease,
-    initialOpacity,
-    animateOpacity,
-    scale,
-    threshold,
-    delay,
-    onComplete
-  ]);
+  }, [distance, direction, reverse, duration, ease, initialOpacity, animateOpacity, scale, threshold, delay, onComplete]);
 
   return <div ref={ref}>{children}</div>;
 };

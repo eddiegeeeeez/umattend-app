@@ -1,69 +1,45 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import useExchangeCode from '@/hooks/useExchangeCode';
 import { useAuthStore } from '@/store/authStore';
 
 export default function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-
-  useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      localStorage.setItem('token', token);
-      router.push('/dashboard');
-    }
-  }, [router, searchParams]);
+  const { isAuthenticating, accessToken, refreshToken, isError, serverMessage, exchangeCode } = useExchangeCode();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleGoogleLogin = () => {
     router.push('/api/v1/auth/google');
-    setIsAuthenticating(true);
   };
 
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    const exchangeCode = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const auth_code = params.get('auth_code');
+    if (isAuthenticated()) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
 
-      if (auth_code) {
-        setIsAuthenticating(true);
+  useEffect(() => {
+    const auth_code = searchParams.get('auth_code');
+    if (auth_code) {
+      exchangeCode('auth_code', auth_code);
+      if (accessToken && refreshToken) {
+        setAuth(accessToken, refreshToken);
       }
+      router.push('/');
+    }
 
-      try {
-        const res = await axios.post('/api/v1/auth/exchange', { auth_code });
-
-        console.log(res.data);
-
-        const accessToken = res.data.data.access_token;
-        const refreshToken = res.data.data.refresh_token;
-
-        if (res.status >= 200) {
-          setAuth(accessToken, refreshToken);
-          router.push('/');
-        }
-      } catch (err: unknown) {
-        if (typeof err === 'object' && err !== null && 'response' in err) {
-          const response = (err as { response?: { data?: unknown } }).response;
-          console.error('Login failed:', response?.data ?? (err instanceof Error ? err.message : String(err)));
-        } else {
-          console.error('Login failed:', (err as Error).message);
-        }
-      } finally {
-        setTimeout(() => {
-          setIsAuthenticating(false);
-        }, 1000);
-      }
-    };
-
-    exchangeCode();
-  }, [router, setAuth]);
+    const error_code = searchParams.get('error_code');
+    if (error_code) {
+      exchangeCode('error_code', error_code);
+    }
+  }, [exchangeCode, setAuth, accessToken, refreshToken, searchParams, router]);
 
   return (
     <div className="bg-background flex min-h-screen flex-col items-center justify-between p-4">
@@ -85,9 +61,12 @@ export default function LoginContent() {
               <CardDescription className="text-muted-foreground text-base">Sign in with your Google account to continue</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4">
-                <p className="text-center text-sm font-medium text-red-500">{'Login Failed'}</p>
-              </div>
+              {isError && (
+                <div className="rounded-md border border-red-300 bg-red-50 p-4">
+                  <p className="text-center text-red-800">{serverMessage || 'An error occurred during authentication. Please try again.'}</p>
+                </div>
+              )}
+
               {!isAuthenticating ? (
                 <>
                   <Button
@@ -141,6 +120,32 @@ export default function LoginContent() {
                 Contact Support
               </a>
             </p>
+          </div>
+
+          {/* 
+          Display Access Token for Debugging Purposes Only (Remove in Production)
+          */}
+          <div className="mt-6 text-center">
+            <div className="mx-auto max-w-2xl text-left">
+              <label className="text-muted-foreground mb-2 block text-sm">Access Token:</label>
+              <div className="relative bg-neutral-100 p-3">
+                <pre className="bg-muted text-muted-foreground overflow-x-auto rounded-md p-5 text-xs whitespace-pre-wrap">{accessToken}</pre>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:bg-muted-foreground/10 absolute top-2 right-2 flex items-center rounded p-1"
+                  onClick={() => {
+                    navigator.clipboard.writeText(accessToken || '');
+                  }}
+                  aria-label="Copy access token"
+                  title="Copy to clipboard"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
+                    <rect x="3" y="3" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

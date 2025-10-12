@@ -1,7 +1,7 @@
 // store/authStore.ts
+import { jwtDecode } from 'jwt-decode';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { jwtDecode } from 'jwt-decode';
 
 interface User {
   id: string;
@@ -25,24 +25,24 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       refreshToken: null,
-      
+
       setAuth: (accessToken: string, refreshToken: string) => {
         const decoded = jwtDecode<User>(accessToken);
         set({
           user: decoded,
           accessToken,
-          refreshToken,
+          refreshToken
         });
       },
-      
+
       logout: () => {
         set({
           user: null,
           accessToken: null,
-          refreshToken: null,
+          refreshToken: null
         });
       },
-      
+
       isAdmin: () => {
         const state = get();
         return state.user?.role === 'admin';
@@ -51,10 +51,10 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: () => {
         const state = get();
         return state.accessToken !== null && state.user !== null;
-      },
+      }
     }),
     {
-      name: 'auth-storage',
+      name: 'auth-storage'
     }
   )
 );

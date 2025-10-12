@@ -128,6 +128,11 @@ const logout = {
               schema: {
                 type: 'object',
                 properties: {
+                  refresh_token: {
+                    type: 'string',
+                    description:
+                      'Refresh token (optional if provided in Authorization header)',
+                  },
                   success: { type: 'boolean', example: true },
                   message: {
                     type: 'string',
