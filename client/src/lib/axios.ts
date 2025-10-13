@@ -31,14 +31,14 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status >= 400 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       const { refreshToken, setAuth, logout } = useAuthStore.getState();
 
       if (!refreshToken) {
         logout();
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(error);
       }
 
@@ -52,7 +52,7 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         logout();
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(refreshError);
       }
     }

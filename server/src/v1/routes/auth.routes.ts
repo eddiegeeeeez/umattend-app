@@ -1,6 +1,9 @@
 import express from 'express';
 import authController from '../controllers/auth.controller';
-import { oauthRateLimiter, exchangeRateLimiter } from '../middlewares/rateLimiter.middleware';
+import {
+  oauthRateLimiter,
+  exchangeRateLimiter,
+} from '../middlewares/rateLimiter.middleware';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = express.Router();
