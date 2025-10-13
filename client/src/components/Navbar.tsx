@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, CalendarMinus2, Menu, Plus, Search, TicketSlash } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
@@ -8,9 +8,31 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [now, setNow] = useState<Date>(new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const formatGmtOffset = (date: Date) => {
+    // getTimezoneOffset returns minutes behind UTC (e.g., -480 for GMT+8)
+    const offsetMinutes = -date.getTimezoneOffset();
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const abs = Math.abs(offsetMinutes);
+    const hours = Math.floor(abs / 60);
+    const minutes = abs % 60;
+    return `GMT${sign}${hours}${minutes ? `:${minutes.toString().padStart(2, '0')}` : ''}`;
+  };
+
+  const formatTime = (date: Date) => {
+    const timeStr = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', hour12: true }).format(date);
+    return `${timeStr} ${formatGmtOffset(date)}`;
+  };
+
   return (
     <header className="border-border/40 bg-background sticky top-0 z-50 border-b">
-      <div className="container mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
+      <div className="container mx-auto flex h-14 max-w-4xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4 sm:gap-8">
           <button className="hover:bg-muted rounded-md p-2 transition-colors md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
             <Menu size={18} />
@@ -25,22 +47,15 @@ const Navbar = () => {
               <TicketSlash size={16} color="gray" />
               Events
             </Link>
-            <Link href="#" className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm font-medium transition-colors">
-              <CalendarMinus2 size={16} color="gray" />
-              Calendars
-            </Link>
-            <Link href="#" className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm font-medium transition-colors">
-              <Search size={16} color="gray" />
-              Discover
-            </Link>
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground hidden font-medium sm:flex">
+              Create Event
+            </Button>
           </nav>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <span className="text-muted-foreground hidden text-xs lg:inline">10:44 PM GMT+8</span>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground hidden font-medium sm:flex">
-            Create Event
-          </Button>
+          <span className="text-muted-foreground hidden text-xs lg:inline">{formatTime(now)}</span>
+
           <button className="hover:bg-muted hidden rounded-md p-1.5 transition-colors sm:block">
             <Search size={18} color="gray" />
           </button>
@@ -67,22 +82,6 @@ const Navbar = () => {
             >
               <TicketSlash size={18} color="gray" />
               Events
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-3 rounded-md px-3 py-2 transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <CalendarMinus2 size={16} color="gray" />
-              Calendars
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-3 rounded-md px-3 py-2 transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <Search size={18} color="gray" />
-              Discover
             </Link>
             <div className="border-border/40 my-4 border-t" />
             <Button

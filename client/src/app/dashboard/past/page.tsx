@@ -55,7 +55,6 @@ const pastEvents = [
 export default function PastEventsPage() {
   const [selectedEvent, setSelectedEvent] = useState<(typeof pastEvents)[0] | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleEventClick = (event: (typeof pastEvents)[0]) => {
     setSelectedEvent(event);

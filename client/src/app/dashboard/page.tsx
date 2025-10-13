@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, CalendarMinus2, Menu, Plus, Search, TicketSlash } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -98,7 +97,6 @@ const events = [
 export default function DashboardPage() {
   const [selectedEvent, setSelectedEvent] = useState<(typeof events)[0] | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleEventClick = (event: (typeof events)[0]) => {
     setSelectedEvent(event);
@@ -107,9 +105,7 @@ export default function DashboardPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Navbar */}
-
-      <main className="container mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:mb-8 sm:flex-row sm:items-center">
           <h1 className="text-foreground text-2xl font-bold sm:text-3xl">Events</h1>
 
@@ -220,17 +216,6 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      <footer className="border-border/40 mt-12 border-t sm:mt-16">
-        <div className="container mx-auto px-4 py-4 sm:px-6 sm:py-6">
-          <div className="text-muted-foreground flex flex-col items-center justify-between gap-2 text-xs sm:flex-row">
-            <p>Powered by UMAttend Engineering Team</p>
-            <Link href="/contact" className="hover:text-foreground transition-colors">
-              Contact Support
-            </Link>
-          </div>
-        </div>
-      </footer>
-
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
           {selectedEvent && (
@@ -332,51 +317,6 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-        </SheetContent>
-      </Sheet>
-
-      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <SheetContent side="left" className="w-[280px]">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <div className="bg-primary h-5 w-5 rounded" />
-              UMAttend
-            </SheetTitle>
-          </SheetHeader>
-          <nav className="mx-3 mt-8 flex flex-col gap-4">
-            <Link
-              href="/dashboard"
-              className="bg-muted text-foreground flex items-center gap-3 rounded-md px-3 py-2 font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <TicketSlash size={18} color="gray" />
-              Events
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-3 rounded-md px-3 py-2 transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <CalendarMinus2 size={16} color="gray" />
-              Calendars
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-3 rounded-md px-3 py-2 transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <Search size={18} color="gray" />
-              Discover
-            </Link>
-            <div className="border-border/40 my-4 border-t" />
-            <Button
-              className="bg-primary hover:bg-primary/90 text-primary-foreground w-full justify-start font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <Plus size={16} className="mr-2" />
-              Create Event
-            </Button>
-          </nav>
         </SheetContent>
       </Sheet>
     </div>
