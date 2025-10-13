@@ -1,56 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-
-// Sample past event data
-const pastEvents = [
-  {
-    id: 1,
-    title: 'Winter Hackathon 2024',
-    date: 'Feb 10',
-    dayOfWeek: 'Saturday',
-    time: '9:00 AM',
-    location: 'Computer Science Building',
-    category: 'Technology',
-    attendees: 120,
-    hasLocation: true,
-    image: '/hackathon-event.png',
-    description:
-      'A 24-hour coding marathon where students built innovative solutions to real-world problems. Teams competed for prizes and mentorship opportunities from industry professionals.'
-  },
-  {
-    id: 2,
-    title: 'Alumni Networking Night',
-    date: 'Jan 28',
-    dayOfWeek: 'Sunday',
-    time: '6:00 PM',
-    location: 'Grand Hall',
-    category: 'Career',
-    attendees: 85,
-    hasLocation: true,
-    image: '/networking-connections.png',
-    description:
-      'An evening of networking with successful alumni from various industries. Students had the opportunity to learn about career paths and make valuable connections.'
-  },
-  {
-    id: 3,
-    title: 'New Year Celebration',
-    date: 'Jan 1',
-    dayOfWeek: 'Monday',
-    time: '8:00 PM',
-    location: 'Campus Grounds',
-    category: 'Entertainment',
-    attendees: 500,
-    hasLocation: true,
-    image: '/vibrant-city-celebration.png',
-    description:
-      'A spectacular celebration to welcome the new year with live music, fireworks, and festivities. The entire campus community came together for this memorable event.'
-  }
-];
+import { pastEvents } from '@/constants';
 
 export default function PastEventsPage() {
   const [selectedEvent, setSelectedEvent] = useState<(typeof pastEvents)[0] | null>(null);
@@ -63,7 +19,7 @@ export default function PastEventsPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <main className="container mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         {/* Page Title and Toggle */}
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:mb-8 sm:flex-row sm:items-center">
           <h1 className="text-foreground text-2xl font-bold sm:text-3xl">Events</h1>
@@ -167,8 +123,8 @@ export default function PastEventsPage() {
                       </Button>
                     </div>
 
-                    <div className="bg-muted order-1 h-40 w-full flex-shrink-0 overflow-hidden rounded-lg sm:order-2 sm:h-24 sm:w-24">
-                      <img src={event.image || '/placeholder.svg'} alt={event.title} className="h-full w-full object-cover" />
+                    <div className="bg-muted relative order-1 h-40 w-full flex-shrink-0 overflow-hidden rounded-lg sm:order-2 sm:h-24 sm:w-24">
+                      <Image src={event.image || '/placeholder.svg'} alt={event.title} fill className="object-cover" />
                     </div>
                   </div>
                 </CardContent>

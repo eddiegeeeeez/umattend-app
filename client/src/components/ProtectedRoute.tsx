@@ -13,6 +13,8 @@ import { useAuthStore } from '@/store/authStore';
 
 // components/ProtectedRoute.tsx
 
+// components/ProtectedRoute.tsx
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;

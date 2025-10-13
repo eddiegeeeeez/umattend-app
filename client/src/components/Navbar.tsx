@@ -43,10 +43,6 @@ const Navbar = () => {
             <span className="text-foreground text-sm font-medium">UMAttend</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/dashboard" className="text-foreground hover:text-foreground/80 flex items-center gap-1.5 text-sm font-medium transition-colors">
-              <TicketSlash size={16} color="gray" />
-              Events
-            </Link>
             <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground hidden font-medium sm:flex">
               Create Event
             </Button>
@@ -74,16 +70,33 @@ const Navbar = () => {
               UMAttend
             </SheetTitle>
           </SheetHeader>
-          <nav className="mx-3 mt-8 flex flex-col gap-4">
-            <Link
-              href="/dashboard"
-              className="bg-muted text-foreground flex items-center gap-3 rounded-md px-3 py-2 font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <TicketSlash size={18} color="gray" />
-              Events
-            </Link>
-            <div className="border-border/40 my-4 border-t" />
+          <nav className="mx-3 flex flex-col gap-4">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-muted-foreground text-sm">{formatTime(now)}</span>
+              <div className="flex items-center gap-2">
+                <button
+                  aria-label="Search"
+                  className="hover:bg-muted rounded-md p-2"
+                  onClick={() => {
+                    // close sheet for now; hook search panel/modal here
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <Search size={18} color="gray" />
+                </button>
+                <button
+                  aria-label="Notifications"
+                  className="hover:bg-muted rounded-md p-2"
+                  onClick={() => {
+                    // close sheet for now; hook notifications panel here
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <Bell size={18} color="gray" />
+                </button>
+              </div>
+            </div>
+
             <Button
               className="bg-primary hover:bg-primary/90 text-primary-foreground w-full justify-start font-medium"
               onClick={() => setIsMobileMenuOpen(false)}
