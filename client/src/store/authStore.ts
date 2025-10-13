@@ -6,7 +6,8 @@ import { persist } from 'zustand/middleware';
 interface User {
   id: string;
   email: string;
-  role: 'student' | 'admin';
+  role: 'student' | 'admin' | 'csg' | 'instructor' | 'organizer';
+  done_onboarding: boolean;
 }
 
 interface AuthState {
@@ -17,6 +18,7 @@ interface AuthState {
   logout: () => void;
   isAdmin: () => boolean;
   isAuthenticated: () => boolean;
+  isDoneOnboarding: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -45,12 +47,17 @@ export const useAuthStore = create<AuthState>()(
 
       isAdmin: () => {
         const state = get();
-        return state.user?.role === 'admin';
+        return state.user?.role === 'admin' || state.user?.role === 'csg' || state.user?.role === 'organizer';
       },
 
       isAuthenticated: () => {
         const state = get();
-        return state.accessToken !== null && state.user !== null;
+        return state.accessToken !== null && state.accessToken !== null && state.user !== null;
+      },
+
+      isDoneOnboarding: () => {
+        const state = get();
+        return state.user?.done_onboarding ?? false;
       }
     }),
     {

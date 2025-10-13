@@ -1,10 +1,10 @@
-// components/ProtectedRoute.tsx
 'use client';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 
+<<<<<<< HEAD:client/src/components/ProtectedRoute.tsx
 // components/ProtectedRoute.tsx
 
 // components/ProtectedRoute.tsx
@@ -17,6 +17,8 @@ import { useAuthStore } from '@/store/authStore';
 
 // components/ProtectedRoute.tsx
 
+=======
+>>>>>>> 97eac06d42cff0e6899d2382afca033bf9086ddb:client/src/components/protected-routes.tsx
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
@@ -28,7 +30,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
 
   useEffect(() => {
     if (!user) {
-      router.push('/login');
+      router.push('/');
       return;
     }
 

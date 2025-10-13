@@ -27,8 +27,8 @@ export const registrationRateLimiter = rateLimit({
 });
 
 export const oauthRateLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, 
-  max: 5, 
+  windowMs: 5 * 60 * 1000,
+  max: 5,
   standardHeaders: true,
   legacyHeaders: false,
 
@@ -52,7 +52,6 @@ export const oauthRateLimiter = rateLimit({
 
       return res.redirect(`${FRONTEND_URL}/?error_code=${error_code}`);
     }
-
   },
 });
 

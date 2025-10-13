@@ -6,10 +6,7 @@ import {
   HTTPSuccessResponse,
 } from '../../utils/responseHandler';
 import jwt from 'jsonwebtoken';
-import {
-  AuthenticationError,
-  NotFoundError,
-} from '../../utils/customErrors';
+import { AuthenticationError, NotFoundError } from '../../utils/customErrors';
 import { FRONTEND_URL, NODE_ENV } from '../../constants/app.constants';
 import {
   JWT_ACCESS_TOKEN_TTL,
