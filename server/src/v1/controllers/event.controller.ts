@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import ExcelJS from 'exceljs'
 import {
   HTTPErrorResponse,
   HTTPSuccessResponse,
@@ -8,6 +9,7 @@ import { sendEmail } from '../services/email.service';
 import { matchedData, validationResult } from 'express-validator';
 import eventServices from '../services/event.service';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
+import { generateExportFileName } from '@/utils/export.utils';
 import { NODE_ENV } from '@/constants/app.constants';
 
 const addEvent = async (req: Request, res: Response) => {
@@ -392,6 +394,72 @@ const addOrganizer = async (req: Request, res: Response) => {
   }
 };
 
+const exportEventAttendeesToExcel = async (req: Request, res: Response) => {
+  try {
+    const event_id = req.query.eventId as string;
+
+    if (!event_id) {
+      return HTTPErrorResponse(res, 400, 'Event ID is required');
+    }
+
+    const attendees = await eventServices.getEventAttendees(event_id);
+
+    if (attendees.length === 0) {
+      return HTTPErrorResponse(res, 404, 'No attendees found for this event');
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Attendees');
+
+    worksheet.columns = [
+      { header: 'Student ID', key: 'student_id', width: 20 },
+      { header: 'Full Name', key: 'full_name', width: 30 },
+      { header: 'Email', key: 'umindanao_email', width: 35 },
+      { header: 'Check-In By', key: 'check_in_by', width: 30 },
+      { header: 'Check-In Time', key: 'check_in_at', width: 20 },
+      { header: 'Check-Out By', key: 'check_out_by', width: 30 },
+      { header: 'Check-Out Time', key: 'check_out_at', width: 20 },
+    ];
+
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    attendees.forEach((attendee) => {
+      worksheet.addRow(attendee);
+    });
+
+    const fileName = generateExportFileName(event_id, attendees[0].event_name);
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${fileName}"`
+    );
+
+    return res.send(buffer);
+
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    console.error('Unexpected error exporting event attendees:', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+  }
+};
+
+
 const eventController = {
   addEvent,
   deleteEvent,
@@ -399,6 +467,7 @@ const eventController = {
   createCheckInEvent,
   createCheckOutEvent,
   addOrganizer,
+  exportEventAttendeesToExcel
 };
 
 export default eventController;
