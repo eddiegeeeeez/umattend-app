@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Bell, CalendarMinus2, Menu, Plus, Search, TicketSlash } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -106,76 +107,7 @@ export default function DashboardPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <header className="border-border/40 bg-background sticky top-0 z-50 border-b">
-        <div className="container mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-4 sm:gap-8">
-            <button className="hover:bg-muted rounded-md p-2 transition-colors md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
-              <svg className="text-foreground h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-
-            <Link href="/dashboard" className="flex items-center gap-1.5">
-              <div className="bg-primary h-5 w-5 rounded" />
-              <span className="text-foreground text-sm font-medium">UMAttend</span>
-            </Link>
-
-            <nav className="hidden items-center gap-6 md:flex">
-              <Link href="/dashboard" className="text-foreground hover:text-foreground/80 flex items-center gap-1.5 text-sm font-medium transition-colors">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                Events
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm font-medium transition-colors">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                Calendars
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm font-medium transition-colors">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Discover
-              </Link>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="text-muted-foreground hidden text-xs lg:inline">10:44 PM GMT+8</span>
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground hidden font-medium sm:flex">
-              Create Event
-            </Button>
-            <button className="hover:bg-muted hidden rounded-md p-1.5 transition-colors sm:block">
-              <svg className="text-muted-foreground h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-            <button className="hover:bg-muted hidden rounded-md p-1.5 transition-colors sm:block">
-              <svg className="text-muted-foreground h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-            </button>
-            <button className="bg-muted flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium">U</button>
-          </div>
-        </div>
-      </header>
+      {/* Navbar */}
 
       <main className="container mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:mb-8 sm:flex-row sm:items-center">
@@ -411,20 +343,13 @@ export default function DashboardPage() {
               UMAttend
             </SheetTitle>
           </SheetHeader>
-          <nav className="mt-8 flex flex-col gap-4">
+          <nav className="mx-3 mt-8 flex flex-col gap-4">
             <Link
               href="/dashboard"
               className="bg-muted text-foreground flex items-center gap-3 rounded-md px-3 py-2 font-medium"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
+              <TicketSlash size={18} color="gray" />
               Events
             </Link>
             <Link
@@ -432,14 +357,7 @@ export default function DashboardPage() {
               className="text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-3 rounded-md px-3 py-2 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
+              <CalendarMinus2 size={16} color="gray" />
               Calendars
             </Link>
             <Link
@@ -447,9 +365,7 @@ export default function DashboardPage() {
               className="text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-3 rounded-md px-3 py-2 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              <Search size={18} color="gray" />
               Discover
             </Link>
             <div className="border-border/40 my-4 border-t" />
@@ -457,9 +373,7 @@ export default function DashboardPage() {
               className="bg-primary hover:bg-primary/90 text-primary-foreground w-full justify-start font-medium"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
+              <Plus size={16} className="mr-2" />
               Create Event
             </Button>
           </nav>
