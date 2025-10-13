@@ -75,17 +75,13 @@ const updateEvent = async (eventId: string, event_data: AddEventInterface) => {
   return updated_event;
 };
 
-const createCheckInEvent = async (
-  userId: string,
-  attendance_data: AddCheckInInterface
-) => {
+const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
   try {
-    const userExists = await userRepository.findUserById(userId);
-    if (!userExists) {
-      throw new NotFoundError('User not found');
+    if (!attendance_data.student_id) {
+      throw new NotFoundError('Student ID is required');
     }
 
-    return eventRepository.createCheckInEvent(userId, attendance_data);
+    return eventRepository.createCheckInEvent(attendance_data);
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
@@ -106,14 +102,10 @@ const createCheckInEvent = async (
   }
 };
 
-const createCheckOutEvent = async (
-  userId: string,
-  attendance_data: AddCheckOutInterface
-) => {
+const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
   try {
-    const userExists = await userRepository.findUserById(userId);
-    if (!userExists) {
-      throw new NotFoundError('User not found');
+    if (!attendance_data.event_id) {
+      throw new NotFoundError('Event ID is required');
     }
 
     return eventRepository.createCheckOutEvent(attendance_data);
