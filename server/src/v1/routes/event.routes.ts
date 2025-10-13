@@ -54,4 +54,12 @@ router.post(
   eventController.addOrganizer
 );
 
+router.get(
+  `/export`,
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  checkOrganizer,
+  eventController.exportEventAttendeesToExcel
+);
+
 export default router;
