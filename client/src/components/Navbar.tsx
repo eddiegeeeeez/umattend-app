@@ -169,7 +169,7 @@ const Navbar = () => {
               <div className="flex-1">
                 <div className="text-foreground mb-0.5 text-xs font-medium">Event Reminder</div>
                 <div className="text-muted-foreground text-xs">Tech Innovation Summit starts in 1 hour.</div>
-                <div className="text-muted-foreground mt-1 text-[10px]">2m ago</div>
+                <div className="text-muted-foreground mt-1 text-[10px]">3m ago</div>
               </div>
             </div>
           </div>
