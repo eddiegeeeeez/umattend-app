@@ -43,7 +43,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="border-border/40 sticky top-0 z-50 mx-4 border-b backdrop-blur-md mx-auto max-w-4xl">
+    <header className="border-border/40 sticky top-0 z-50 mx-4 mx-auto max-w-4xl border-b backdrop-blur-md">
       <div className="container mx-auto flex h-14 items-center justify-between sm:px-6">
         <div className="flex items-center gap-4 sm:gap-8">
           <div className="hover:bg-muted rounded-md bg-transparent p-2 transition-colors md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
@@ -96,8 +96,6 @@ const Navbar = () => {
             </PopoverContent>
           </Popover> */}
 
-
-          
           <Popover>
             <PopoverTrigger>
               <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium">U</div>

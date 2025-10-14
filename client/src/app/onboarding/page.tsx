@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
-
 import { useAuthStore } from '@/store/authStore';
 
 export default function OnboardingPage() {
