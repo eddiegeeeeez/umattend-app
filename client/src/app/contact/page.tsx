@@ -25,7 +25,7 @@ export default function ContactSupportPage() {
   };
 
   return (
-    <div className="bg-background flex min-h-screen flex-col items-center justify-between p-4">
+    <div className="bg-background flex min-h-screen flex-col items-center justify-between px-4 py-20">
       <div className="flex w-full flex-1 items-center justify-center">
         <div className="w-full max-w-2xl">
           {/* Logo and Branding */}

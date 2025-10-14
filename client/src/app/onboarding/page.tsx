@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Building2, GraduationCap, Mail, User, Hash } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Building2, GraduationCap, Mail, User, Hash, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -9,26 +9,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
+
 import { useAuthStore } from '@/store/authStore';
 
-export default function OnboardinPage() {
+export default function OnboardingPage() {
   const router = useRouter();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const isDoneOnboarding = useAuthStore((state) => state.isDoneOnboarding);
+  // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // const isDoneOnboarding = useAuthStore((state) => state.isDoneOnboarding);
+
+  // useEffect(() => {
+  //   if (!isAuthenticated()) {
+  //     router.push('/');
+  //   }
+
+  //   if (isDoneOnboarding()) {
+  //     router.push('/events');
+  //   }
+  // }, [isAuthenticated, router, isDoneOnboarding]);
+
+  // Starting functions from v0
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
   const [selectedProgram, setSelectedProgram] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push('/');
-    }
-
-    if (isDoneOnboarding()) {
-      router.push('/events');
-    }
-  }, [isAuthenticated, router, isDoneOnboarding]);
-
+  // Sample student data - in production, this would come from authentication
   const studentData = {
     name: 'Mario Jr Inguito',
     idNumber: '484470',
@@ -48,7 +52,7 @@ export default function OnboardinPage() {
 
   const handleDepartmentChange = (value: string) => {
     setSelectedDepartment(value);
-    setSelectedProgram('');
+    setSelectedProgram(''); // Reset program when department changes
   };
 
   const handleSubmit = async () => {
@@ -58,18 +62,22 @@ export default function OnboardinPage() {
 
     setIsSubmitting(true);
 
+    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Redirect to dashboard after successful onboarding
     router.push('/dashboard');
   };
 
   const isFormValid = selectedDepartment && selectedProgram;
+  // End of v0 code
 
   return (
-    <div className="bg-background min-h-screen">
-      <main className="container mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
+    <div className="min-h-screen bg-neutral-100">
+      <main className="container mx-auto max-w-4xl px-4 py-12 sm:px-12 sm:py-16">
         <div className="mb-8 sm:mb-12">
-          <h1 className="text-foreground mb-3 text-3xl leading-tight font-bold text-balance sm:text-4xl lg:text-5xl">Complete your profile</h1>
-          <p className="text-muted-foreground max-w-2xl text-base leading-relaxed text-balance sm:text-lg">
+          <h1 className="text-foreground text-2xl font-semibold sm:text-3xl">Complete Your Profile</h1>
+          <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed sm:text-base">
             Help us personalize your experience by providing your academic information
           </p>
         </div>
@@ -175,10 +183,10 @@ export default function OnboardinPage() {
                 <Button
                   onClick={handleSubmit}
                   disabled={!isFormValid}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full cursor-pointer text-base font-semibold shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full text-base font-semibold shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
                   size="lg"
                 >
-                  Complete Onboarding
+                  Continue to Dashboard
                 </Button>
               ) : (
                 <div className="flex flex-col items-center justify-center space-y-4 py-6">
@@ -206,12 +214,6 @@ export default function OnboardinPage() {
           </p>
         </div>
       </main>
-
-      <footer className="border-border mt-12 border-t">
-        <div className="container mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <p className="text-muted-foreground text-center text-xs">© 2025 UMAttend Engineering Team</p>
-        </div>
-      </footer>
     </div>
   );
 }
