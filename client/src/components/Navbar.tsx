@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Menu, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
+import { NavUser } from './nav-user';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 
@@ -30,39 +31,36 @@ const Navbar = () => {
     return `${timeStr} ${formatGmtOffset(date)}`;
   };
 
+  const data = {
+    user: {
+      name: 'shadcn',
+      email: 'm@example.com',
+      avatar: '/avatars/shadcn.jpg'
+    }
+  };
+
   return (
-    <header className="border-border/40 bg-background sticky top-0 z-50 border-b">
-      <div className="container mx-auto flex h-14 max-w-4xl items-center justify-between px-4 sm:px-6">
+    <header className="border-border/40 sticky top-0 z-50 mx-4 border-b backdrop-blur-md">
+      <div className="container mx-auto flex h-14 items-center justify-between sm:px-6">
         <div className="flex items-center gap-4 sm:gap-8">
           <button className="hover:bg-muted rounded-md p-2 transition-colors md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
             <Menu size={18} />
           </button>
 
           <Link href="/dashboard" className="flex items-center gap-1.5">
-            <h1 className="text-2xl font-bold text-balance">
+            <h1 className="text-3xl font-bold text-balance">
               <span className="text-yellow-500">UM</span>
               <span className="text-foreground">Attend</span>
             </h1>
           </Link>
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/create-event">
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground hidden cursor-pointer font-medium sm:flex">
-                Create Event
-              </Button>
-            </Link>
-          </nav>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <span className="text-muted-foreground hidden text-xs lg:inline">{formatTime(now)}</span>
+        <div className="flex items-center gap-2 sm:gap-5">
+          <Link href="/create-event" className='font-medium hover:underline'>Create Event</Link>
 
-          <button className="hover:bg-muted hidden rounded-md p-1.5 transition-colors sm:block">
-            <Search size={18} color="gray" />
-          </button>
-          <button className="hover:bg-muted hidden rounded-md p-1.5 transition-colors sm:block">
-            <Bell size={18} color="gray" />
-          </button>
-          <button className="bg-muted flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium">U</button>
+          <span className="text-muted-foreground hidden  lg:inline">{formatTime(now)}</span>
+
+          <NavUser user={data.user} />
         </div>
       </div>
 
