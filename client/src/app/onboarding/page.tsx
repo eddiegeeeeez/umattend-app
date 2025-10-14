@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Building2, GraduationCap, Mail, User, Hash, CheckCircle2 } from 'lucide-react';
+import { Building2, GraduationCap, Mail, User, Hash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
-
 import { useAuthStore } from '@/store/authStore';
 
 export default function OnboardingPage() {
