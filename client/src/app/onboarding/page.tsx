@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Building2, GraduationCap, Mail, User, Hash, CheckCircle2 } from 'lucide-react';
+import { Building2, GraduationCap, Mail, User, Hash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -175,7 +175,7 @@ export default function OnboardinPage() {
                 <Button
                   onClick={handleSubmit}
                   disabled={!isFormValid}
-                  className="cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full text-base font-semibold shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full cursor-pointer text-base font-semibold shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
                   size="lg"
                 >
                   Complete Onboarding

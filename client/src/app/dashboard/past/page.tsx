@@ -26,13 +26,13 @@ export default function PastEventsPage() {
           <div className="flex w-full items-center gap-2 rounded-lg bg-neutral-100 p-1 sm:w-auto">
             <Link
               href="/dashboard"
-              className="text-muted-foreground w-36 hover:text-foreground flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium transition-colors sm:flex-none"
+              className="text-muted-foreground hover:text-foreground w-36 flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium transition-colors sm:flex-none"
             >
               Upcoming
             </Link>
             <Link
               href="/dashboard/past"
-              className="bg-background w-36 text-foreground flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium shadow-sm transition-colors sm:flex-none"
+              className="bg-background text-foreground w-36 flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium shadow-sm transition-colors sm:flex-none"
             >
               Past
             </Link>

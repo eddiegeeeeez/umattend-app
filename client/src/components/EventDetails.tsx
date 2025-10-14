@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar, MapPin, UsersRound, AlertTriangle } from 'lucide-react';
-import Image, { type StaticImageData } from 'next/image';
+import { type StaticImageData } from 'next/image';
 import { Button } from './ui/button';
 import { SheetHeader, SheetTitle, SheetDescription } from './ui/sheet';
 
@@ -22,7 +22,6 @@ interface EventDetailsProps {
 const EventDetails = ({
   title,
   description,
-  image,
   dayOfWeek,
   date,
   time,
@@ -34,24 +33,26 @@ const EventDetails = ({
   onShare
 }: EventDetailsProps) => {
   return (
-    <div className="space-y-8 px-0 sm:px-6 py-6">
+    <div className="space-y-8 px-0 py-6 sm:px-6">
       <SheetHeader className="mb-2">
-        <SheetTitle className="text-3xl font-bold mb-1 leading-tight">{title}</SheetTitle>
-        {description && <SheetDescription className="text-base text-muted-foreground mb-2">{description}</SheetDescription>}
+        <SheetTitle className="mb-1 text-3xl leading-tight font-bold">{title}</SheetTitle>
+        {description && <SheetDescription className="text-muted-foreground mb-2 text-base">{description}</SheetDescription>}
       </SheetHeader>
 
       <div className="flex flex-col gap-6">
-        <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 flex flex-col gap-5">
+        <div className="flex flex-col gap-5 rounded-xl border border-gray-200 bg-gray-50 p-6">
           <div className="flex items-start gap-3">
-            <Calendar className="text-muted-foreground h-5 w-5 mt-0.5" />
+            <Calendar className="text-muted-foreground mt-0.5 h-5 w-5" />
             <div>
-              <div className="text-foreground font-semibold text-base">{dayOfWeek}, {date}</div>
+              <div className="text-foreground text-base font-semibold">
+                {dayOfWeek}, {date}
+              </div>
               <div className="text-muted-foreground text-sm">{time}</div>
             </div>
           </div>
           {hasLocation ? (
             <div className="flex items-start gap-3">
-              <MapPin className="text-muted-foreground h-5 w-5 mt-0.5" />
+              <MapPin className="text-muted-foreground mt-0.5 h-5 w-5" />
               <div>
                 <div className="text-foreground font-medium">{location}</div>
                 <div className="text-muted-foreground text-sm">Location</div>
@@ -59,12 +60,12 @@ const EventDetails = ({
             </div>
           ) : (
             <div className="flex items-start gap-3">
-              <AlertTriangle className="text-primary h-5 w-5 mt-0.5" />
+              <AlertTriangle className="text-primary mt-0.5 h-5 w-5" />
               <div className="text-primary font-medium">Location Missing</div>
             </div>
           )}
           <div className="flex items-start gap-3">
-            <UsersRound className="text-muted-foreground h-5 w-5 mt-0.5" />
+            <UsersRound className="text-muted-foreground mt-0.5 h-5 w-5" />
             <div>
               <div className="text-foreground font-medium">{attendees > 0 ? `${attendees} guests attending` : 'No guests yet'}</div>
               <div className="text-muted-foreground text-sm">Be the first to RSVP!</div>
@@ -87,7 +88,7 @@ const EventDetails = ({
             Share Event
           </Button>
         </div>
-        <div className="flex justify-end mt-2">
+        <div className="mt-2 flex justify-end">
           <div className="bg-muted inline-flex items-center rounded-full px-4 py-1 text-sm font-medium"># {category}</div>
         </div>
       </div>

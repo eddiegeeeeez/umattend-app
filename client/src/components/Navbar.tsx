@@ -56,9 +56,11 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-5">
-          <Link href="/create-event" className='font-medium hover:underline'>Create Event</Link>
+          <Link href="/create-event" className="font-medium hover:underline">
+            Create Event
+          </Link>
 
-          <span className="text-muted-foreground hidden  lg:inline">{formatTime(now)}</span>
+          <span className="text-muted-foreground hidden lg:inline">{formatTime(now)}</span>
 
           <NavUser user={data.user} />
         </div>

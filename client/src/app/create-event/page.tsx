@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon, MapPin, FileText, Users, Sparkles, Search, Bell, User, ChevronDown, X, ChevronLeft, Building2 } from 'lucide-react';
+import { CalendarIcon, MapPin, FileText, Users, ChevronDown, ChevronLeft, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -16,9 +16,7 @@ import { DepartmentAndPrograms } from '@/lib/department-and-program';
 const CreateEventPage = () => {
   const [eventName, setEventName] = useState('');
   const [description, setDescription] = useState('');
-  const [showDescription, setShowDescription] = useState(false);
   const [location, setLocation] = useState('');
-  const [showLocation, setShowLocation] = useState(false);
   const [startDate, setStartDate] = useState<Date>(new Date(2024, 9, 14));
   const [startTime, setStartTime] = useState('11:30');
   const [endDate, setEndDate] = useState<Date>(new Date(2024, 9, 14));
