@@ -60,6 +60,12 @@ const getEventDetails = async (eventId: string) => {
   });
 };
 
+const getAllEvents = async () => {
+  return prisma.events.findMany({
+    orderBy: { start_time: 'asc' },
+  });
+};
+
 const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
   const { event_id, student_id, check_in_at, check_in_by } = attendance_data;
   return await prisma.$transaction(async (tx) => {
@@ -198,6 +204,7 @@ const eventRepository = {
   createCheckOutEvent,
   addOrganizer,
   checkOrganizer,
+  getAllEvents,
 };
 
 export default eventRepository;
