@@ -15,7 +15,7 @@ export default function LoginContent() {
 
   const handleGoogleLogin = async () => {
     // router.push('/api/v1/auth/google');
-    
+
     router.push('/onboarding');
   };
 

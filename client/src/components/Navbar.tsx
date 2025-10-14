@@ -8,7 +8,6 @@ import { Button } from './ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 
-
 const Navbar = () => {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -158,8 +157,8 @@ const Navbar = () => {
       </Sheet>
       <Sheet open={isNotifSheetOpen} onOpenChange={setIsNotifSheetOpen}>
         <SheetContent side="right" className="w-[340px] max-w-full p-0">
-          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between border-b px-4 py-3 w-full gap-2 min-w-0">
-            <span className="text-foreground text-base font-semibold truncate min-w-0 flex-shrink flex-grow break-words">Notifications</span>
+          <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 border-b px-4 py-3 sm:flex-nowrap">
+            <span className="text-foreground min-w-0 flex-shrink flex-grow truncate text-base font-semibold break-words">Notifications</span>
           </div>
           <div className="max-h-[80vh] divide-y divide-gray-100 overflow-y-auto">
             {/* Example notification list, replace with dynamic data */}

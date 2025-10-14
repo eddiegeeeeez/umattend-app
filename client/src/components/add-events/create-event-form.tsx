@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon, MapPin, FileText, Users, ChevronDown, X, ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import Link from 'next/link';
 
 export function CreateEventForm() {
   const [eventName, setEventName] = useState('');
@@ -31,11 +31,11 @@ export function CreateEventForm() {
       <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="space-y-8">
           {/* Calendar and Privacy Selectors */}
-          <div className="flex items-center justify-between gap-4 mb-12">
+          <div className="mb-12 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-                <Link href="/dashboard">
-                  <ChevronLeft className="text-foreground hover:bg-primary/10 hover:text-primary rounded-full transition-colors cursor-pointer" />
-                </Link>
+              <Link href="/dashboard">
+                <ChevronLeft className="text-foreground hover:bg-primary/10 hover:text-primary cursor-pointer rounded-full transition-colors" />
+              </Link>
               <h1 className="text-foreground text-2xl font-semibold sm:text-3xl">Create Event</h1>
             </div>
 

@@ -46,23 +46,26 @@ const EventContent = ({
         {!isLast && <div className="border-primary/20 mx-auto mt-1 flex-1 border-l-2" aria-hidden />}
       </div>
 
-      <Card className="bg-white border border-gray-200 shadow-md mb-4 flex-1 cursor-pointer transition-colors sm:mb-6 rounded-2xl flex" onClick={onCardClick}>
-        <CardContent className="flex flex-col justify-between h-full px-8 py-3">
-          <div className="flex flex-col gap-2 flex-1 justify-center">
-            <div className="flex items-center justify-between mb-1">
+      <Card className="mb-4 flex flex-1 cursor-pointer rounded-2xl border border-gray-200 bg-white shadow-md transition-colors sm:mb-6" onClick={onCardClick}>
+        <CardContent className="flex h-full flex-col justify-between px-8 py-3">
+          <div className="flex flex-1 flex-col justify-center gap-2">
+            <div className="mb-1 flex items-center justify-between">
               <span className="text-muted-foreground text-xs sm:text-sm">{time}</span>
               <Button
                 variant="outline"
                 size="sm"
-                className="text-muted-foreground hover:text-foreground border-border/40 bg-transparent text-xs sm:text-sm px-4 py-2 rounded-lg shadow-sm"
-                onClick={(e) => { e.stopPropagation(); onManageClick?.(e); }}
+                className="text-muted-foreground hover:text-foreground border-border/40 rounded-lg bg-transparent px-4 py-2 text-xs shadow-sm sm:text-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onManageClick?.(e);
+                }}
               >
                 Manage Event
                 <ChevronRight size={18} />
               </Button>
             </div>
-            <h3 className="text-foreground text-lg font-semibold mb-2 leading-tight">{title}</h3>
-            <div className="flex flex-row gap-4 mb-1">
+            <h3 className="text-foreground mb-2 text-lg leading-tight font-semibold">{title}</h3>
+            <div className="mb-1 flex flex-row gap-4">
               {hasLocation ? (
                 <div className="text-muted-foreground flex items-center gap-2 text-xs sm:text-sm">
                   <MapPin size={14} />

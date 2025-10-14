@@ -77,7 +77,7 @@ const EventDetails = ({
           <Button className="bg-primary hover:bg-primary/90 text-primary-foreground w-full cursor-pointer font-medium" size="lg" onClick={onRSVP}>
             RSVP to Event
           </Button>
-          <Button variant="outline" className="w-full bg-transparent cursor-pointer" size="lg" onClick={onShare}>
+          <Button variant="outline" className="w-full cursor-pointer bg-transparent" size="lg" onClick={onShare}>
             <Share2 className="mr-2 h-4 w-4" />
             Share Event
           </Button>
