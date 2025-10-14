@@ -42,24 +42,16 @@ const EventContent = ({
       </div>
 
       <div className="relative flex flex-col items-center">
-        <div className="bg-primary mt-2 h-2 w-2 rounded-full" />
-        {!isLast && <div className="border-primary/20 mx-auto mt-1 flex-1 border-l-2" aria-hidden />}
+        <div className="bg-neutral-700  h-2 w-2 rounded-full" />
+        {!isLast && <div className="border-neutral-200 mx-auto mt-1 flex-1 border-l-2" aria-hidden />}
       </div>
 
-      <Card className="bg-white border border-gray-200 shadow-md mb-4 flex-1 cursor-pointer transition-colors sm:mb-6 rounded-2xl flex" onClick={onCardClick}>
+      <Card className="shadow-md mb-4 flex-1 cursor-pointer transition-colors sm:mb-6 rounded-2xl flex" onClick={onCardClick}>
         <CardContent className="flex flex-col justify-between h-full px-8 py-3">
           <div className="flex flex-col gap-2 flex-1 justify-center">
             <div className="flex items-center justify-between mb-1">
               <span className="text-muted-foreground text-xs sm:text-sm">{time}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground border-border/40 bg-transparent text-xs sm:text-sm px-4 py-2 rounded-lg shadow-sm"
-                onClick={(e) => { e.stopPropagation(); onManageClick?.(e); }}
-              >
-                Manage Event
-                <ChevronRight size={18} />
-              </Button>
+
             </div>
             <h3 className="text-foreground text-lg font-semibold mb-2 leading-tight">{title}</h3>
             <div className="flex flex-row gap-4 mb-1">

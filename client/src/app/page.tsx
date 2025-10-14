@@ -14,8 +14,6 @@ export default function LoginContent() {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleGoogleLogin = () => {
-    // router.push('/api/v1/auth/google');
-
     router.push('/dashboard');
   };
 
@@ -55,7 +53,7 @@ export default function LoginContent() {
     }
 
     if (isAuthenticated() && isDoneOnboarding()) {
-      router.push('/events');
+      router.push('/dashboard');
     }
   }, [isAuthenticated, isDoneOnboarding, router]);
 

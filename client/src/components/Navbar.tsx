@@ -39,11 +39,13 @@ const Navbar = () => {
           </button>
 
           <Link href="/dashboard" className="flex items-center gap-1.5">
-            <div className="bg-primary h-5 w-5 rounded" />
-            <span className="text-foreground text-sm font-medium">UMAttend</span>
+            <h1 className="text-2xl font-bold text-balance">
+              <span className="text-yellow-500">UM</span>
+              <span className="text-foreground">Attend</span>
+            </h1>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/create-event"> 
+            <Link href="/create-event">
               <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground hidden cursor-pointer font-medium sm:flex">
                 Create Event
               </Button>
