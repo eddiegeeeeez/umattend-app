@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bell, CalendarMinus2, Menu, Plus, Search, TicketSlash } from 'lucide-react';
+import { Bell, Menu, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
@@ -43,9 +43,11 @@ const Navbar = () => {
             <span className="text-foreground text-sm font-medium">UMAttend</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground hidden font-medium sm:flex">
-              Create Event
-            </Button>
+            <Link href="/create-event"> 
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground hidden cursor-pointer font-medium sm:flex">
+                Create Event
+              </Button>
+            </Link>
           </nav>
         </div>
 
