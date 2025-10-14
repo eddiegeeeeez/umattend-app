@@ -176,6 +176,7 @@ const getEventDetailsById = async (event_id: string) => {
     throw new NotFoundError('Event not found');
   }
   return {
+    id: event.id,
     title: event.title,
     description: event.description,
     department: event.department,
@@ -198,6 +199,7 @@ const getAllEvents = async (): Promise<GetAllEventsInterface> => {
   }
 
   return events.map((event) => ({
+    id: event.id,
     title: event.title,
     description: event.description,
     department: event.department,

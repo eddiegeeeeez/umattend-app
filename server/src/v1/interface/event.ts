@@ -51,6 +51,7 @@ export interface AddEventRequest extends Request {
 }
 
 export interface GetEventDetailsByIdInterface {
+  id: string
   title: string;
   description: string;
   department: string;
