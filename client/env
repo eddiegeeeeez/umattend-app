@@ -1,0 +1,44 @@
+
+
+NODE_ENV=DEVELOPMENT # DEVELOPMENT | PRODUCTION | TEST
+PORT=4000   
+
+# Connect to Supabase via connection pooling
+DATABASE_URL="postgresql://postgres.fopmwgeekxuddmrsrqbb:uKthZV2hYuFybvpM@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+
+# Direct connection to the database. Used for migrations
+DIRECT_URL="postgresql://postgres.fopmwgeekxuddmrsrqbb:uKthZV2hYuFybvpM@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres"
+
+# CORS Configuration
+CORS_ORIGIN="http://localhost:3000"
+ALLOWED_ORIGINS="http://localhost:3000,http://localhost:3001"
+
+## URL Settings
+API_URL="http://localhost:4000/api/v1"
+FRONTEND_URL="http://localhost:3000"
+
+# JWT Settings
+JWT_ACCESS_TOKEN_SECRET="dec33200e4d8991c18383f65e8deea8b"
+JWT_ACCESS_TOKEN_TTL="1"
+JWT_REFRESH_TOKEN_SECRET="11a1445ae575b752670ebd6655e099b0"
+JWT_REFRESH_TOKEN_TTL="24"
+JWT_GOOGLE_STATE_SECRET="144f980845f8347fc7695c0f929f2ea3"
+
+
+# Google OAuth Settings
+GOOGLE_CLIENT_ID="659265979567-d159pi3b2c1gt6hms791a4oj5c0dmp92.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="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"
+GOOGLE_REDIRECT_URI="http://localhost:4000/api/v1/auth/google/callback"
+
+# Redis Settings
+REDIS_HOST="redis-12181.c8.us-east-1-3.ec2.redns.redis-cloud.com"
+REDIS_USERNAME="default"
+REDIS_PASSWORD="6PcTWqyjug7Of314xtNJJrxUObGmEbO7"
+REDIS_PORT="12181"
+
+# Email Settings
+MAIL_HOST="smtp.gmail.com"
+MAIL_PORT=465
+MAIL_SECURE=true
+MAIL_USER="inguitomario00@gmail.com"
+MAIL_PASS="izkt ltnq qxhq uvzb"
