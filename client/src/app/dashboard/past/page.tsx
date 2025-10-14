@@ -17,13 +17,13 @@ export default function PastEventsPage() {
   };
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-gray-100 min-h-screen">
       <main className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         {/* Page Title and Toggle */}
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:mb-8 sm:flex-row sm:items-center">
           <h1 className="text-foreground text-2xl font-semibold sm:text-3xl">Events</h1>
 
-          <div className="bg-muted/50 flex w-full items-center gap-2 rounded-lg p-1 sm:w-auto">
+          <div className="bg-stone-200 flex w-full items-center gap-2 rounded-lg p-1 sm:w-auto">
             <Link
               href="/dashboard"
               className="text-muted-foreground hover:text-foreground flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium transition-colors sm:flex-none"

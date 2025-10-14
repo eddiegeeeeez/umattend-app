@@ -42,8 +42,8 @@ const EventContent = ({
       </div>
 
       <div className="relative flex flex-col items-center">
-        <div className="bg-muted-foreground/40 mt-2 h-2 w-2 rounded-full" />
-        {!isLast && <div className="bg-border/40 mt-2 w-px flex-1" />}
+        <div className="bg-primary mt-2 h-2 w-2 rounded-full" />
+        {!isLast && <div className="border-primary/20 mx-auto mt-1 flex-1 border-l-2" aria-hidden />}
       </div>
 
       <Card className="bg-card border-border/40 hover:border-border mb-4 flex-1 cursor-pointer transition-colors sm:mb-6" onClick={onCardClick}>

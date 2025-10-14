@@ -67,7 +67,7 @@ const EventDetails = ({
               <MapPin className="text-muted-foreground mt-0.5 h-5 w-5" />
               <div>
                 <div className="text-foreground font-medium">{location}</div>
-                <button className="text-primary text-sm hover:underline">View on map</button>
+                <div className="text-muted-foreground text-sm">Location</div>
               </div>
             </div>
           ) : (
@@ -105,7 +105,7 @@ const EventDetails = ({
         </div>
       </div>
 
-      <div className="border-t py-4">
+      <div className="border-t p-4">
         <div className="bg-muted inline-flex items-center rounded-full px-4 py-1 text-sm font-medium"># {category}</div>
       </div>
     </div>
