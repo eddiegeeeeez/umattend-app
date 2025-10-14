@@ -8,9 +8,11 @@ import { Button } from './ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 
+
 const Navbar = () => {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNotifSheetOpen, setIsNotifSheetOpen] = useState(false);
   const [now, setNow] = useState<Date>(new Date());
 
   useEffect(() => {
@@ -37,9 +39,9 @@ const Navbar = () => {
     <header className="border-border/40 bg-background sticky top-0 z-50 border-b">
       <div className="container mx-auto flex h-14 max-w-4xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4 sm:gap-8">
-          <button className="hover:bg-muted rounded-md p-2 transition-colors md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
+          <Button className="hover:bg-muted rounded-md bg-transparent p-2 transition-colors md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
             <Menu size={18} />
-          </button>
+          </Button>
 
           <Link href="/dashboard" className="flex items-center gap-1.5">
             <div className="bg-primary h-5 w-5 rounded" />
@@ -57,10 +59,6 @@ const Navbar = () => {
         <div className="flex items-center gap-2 sm:gap-3">
           <span className="text-muted-foreground hidden text-xs lg:inline">{formatTime(now)}</span>
 
-          {/* <Button className="bg-transparent hover:bg-muted hidden rounded-md p-1.5 transition-colors sm:block">
-            <Search size={18} color="gray" />
-          </Button> */}
-
           <Popover>
             <PopoverTrigger>
               <Button className="hover:bg-muted hidden rounded-md bg-transparent p-1.5 transition-colors sm:block" aria-label="Notifications">
@@ -70,7 +68,7 @@ const Navbar = () => {
             <PopoverContent className="w-80 rounded-xl border border-gray-200 p-0 shadow-lg">
               <div className="flex items-center justify-between border-b px-4 py-3">
                 <span className="text-foreground text-sm font-semibold">Notifications</span>
-                <button className="text-primary text-xs hover:underline">Mark all as read</button>
+                <div className="text-primary cursor-pointer text-xs hover:underline">Mark all as read</div>
               </div>
               <div className="max-h-72 divide-y divide-gray-100 overflow-y-auto">
                 {/* Example notification list, replace with dynamic data */}
@@ -135,26 +133,16 @@ const Navbar = () => {
             <div className="flex items-center justify-between px-2">
               <span className="text-muted-foreground text-sm">{formatTime(now)}</span>
               <div className="flex items-center gap-2">
-                <button
-                  aria-label="Search"
-                  className="hover:bg-muted rounded-md p-2"
-                  onClick={() => {
-                    // close sheet for now; hook search panel/modal here
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  <Search size={18} color="gray" />
-                </button>
-                <button
+                <div
                   aria-label="Notifications"
                   className="hover:bg-muted rounded-md p-2"
                   onClick={() => {
-                    // close sheet for now; hook notifications panel here
                     setIsMobileMenuOpen(false);
+                    setTimeout(() => setIsNotifSheetOpen(true), 300); // wait for menu to close
                   }}
                 >
                   <Bell size={18} color="gray" />
-                </button>
+                </div>
               </div>
             </div>
 
@@ -166,6 +154,26 @@ const Navbar = () => {
               Create Event
             </Button>
           </nav>
+        </SheetContent>
+      </Sheet>
+      <Sheet open={isNotifSheetOpen} onOpenChange={setIsNotifSheetOpen}>
+        <SheetContent side="right" className="w-[340px] max-w-full p-0">
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between border-b px-4 py-3 w-full gap-2 min-w-0">
+            <span className="text-foreground text-base font-semibold truncate min-w-0 flex-shrink flex-grow break-words">Notifications</span>
+          </div>
+          <div className="max-h-[80vh] divide-y divide-gray-100 overflow-y-auto">
+            {/* Example notification list, replace with dynamic data */}
+            <div className="hover:bg-muted/50 flex cursor-pointer items-start gap-3 px-4 py-3">
+              <div className="bg-primary/10 mt-0.5 rounded-full p-1">
+                <Bell size={18} className="text-primary" />
+              </div>
+              <div className="flex-1">
+                <div className="text-foreground mb-0.5 text-xs font-medium">Event Reminder</div>
+                <div className="text-muted-foreground text-xs">Tech Innovation Summit starts in 1 hour.</div>
+                <div className="text-muted-foreground mt-1 text-[10px]">2m ago</div>
+              </div>
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
     </header>
