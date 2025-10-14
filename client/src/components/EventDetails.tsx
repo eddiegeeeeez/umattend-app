@@ -34,37 +34,24 @@ const EventDetails = ({
   onShare
 }: EventDetailsProps) => {
   return (
-    <div className="space-y-6">
-      <div className="bg-muted relative -mt-6 mb-6 h-64 w-full overflow-hidden">
-        <Image
-          src={image || '/placeholder.svg'}
-          alt={title}
-          fill
-          sizes="(min-width: 640px) 32rem, 100vw"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      </div>
-
-      <SheetHeader>
-        <SheetTitle className="text-2xl">{title}</SheetTitle>
-        {description && <SheetDescription className="text-base">{description}</SheetDescription>}
+    <div className="space-y-8 px-0 sm:px-6 py-6">
+      <SheetHeader className="mb-2">
+        <SheetTitle className="text-3xl font-bold mb-1 leading-tight">{title}</SheetTitle>
+        {description && <SheetDescription className="text-base text-muted-foreground mb-2">{description}</SheetDescription>}
       </SheetHeader>
 
-      <div className="px-4">
-        <div className="space-y-3">
+      <div className="flex flex-col gap-6">
+        <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 flex flex-col gap-5">
           <div className="flex items-start gap-3">
-            <Calendar className="text-muted-foreground mt-0.5 h-5 w-5" />
+            <Calendar className="text-muted-foreground h-5 w-5 mt-0.5" />
             <div>
-              <div className="text-foreground font-medium">
-                {dayOfWeek}, {date}
-              </div>
+              <div className="text-foreground font-semibold text-base">{dayOfWeek}, {date}</div>
               <div className="text-muted-foreground text-sm">{time}</div>
             </div>
           </div>
-
           {hasLocation ? (
             <div className="flex items-start gap-3">
-              <MapPin className="text-muted-foreground mt-0.5 h-5 w-5" />
+              <MapPin className="text-muted-foreground h-5 w-5 mt-0.5" />
               <div>
                 <div className="text-foreground font-medium">{location}</div>
                 <div className="text-muted-foreground text-sm">Location</div>
@@ -72,26 +59,23 @@ const EventDetails = ({
             </div>
           ) : (
             <div className="flex items-start gap-3">
-              <AlertTriangle className="text-primary mt-0.5 h-5 w-5" />
+              <AlertTriangle className="text-primary h-5 w-5 mt-0.5" />
               <div className="text-primary font-medium">Location Missing</div>
             </div>
           )}
-
           <div className="flex items-start gap-3">
-            <UsersRound className="text-muted-foreground mt-0.5 h-5 w-5" />
+            <UsersRound className="text-muted-foreground h-5 w-5 mt-0.5" />
             <div>
               <div className="text-foreground font-medium">{attendees > 0 ? `${attendees} guests attending` : 'No guests yet'}</div>
               <div className="text-muted-foreground text-sm">Be the first to RSVP!</div>
             </div>
           </div>
         </div>
-
-        <div className="space-y-3 pt-10">
+        <div className="space-y-3 pt-6">
           <Button className="bg-primary hover:bg-primary/90 text-primary-foreground w-full font-medium" size="lg" onClick={onRSVP}>
             RSVP to Event
           </Button>
           <Button variant="outline" className="w-full bg-transparent" size="lg" onClick={onShare}>
-            {/* keep the inline svg for share (small and simple) */}
             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -103,10 +87,9 @@ const EventDetails = ({
             Share Event
           </Button>
         </div>
-      </div>
-
-      <div className="border-t p-4">
-        <div className="bg-muted inline-flex items-center rounded-full px-4 py-1 text-sm font-medium"># {category}</div>
+        <div className="flex justify-end mt-2">
+          <div className="bg-muted inline-flex items-center rounded-full px-4 py-1 text-sm font-medium"># {category}</div>
+        </div>
       </div>
     </div>
   );
