@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Menu, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 
 const Navbar = () => {
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [now, setNow] = useState<Date>(new Date());
 
@@ -103,8 +105,18 @@ const Navbar = () => {
                 </div>
               </div>
               <div className="flex flex-col py-1">
-                <button className="hover:bg-muted px-4 py-3 text-left text-xs transition-colors">View Profile</button>
-                <button className="hover:bg-muted px-4 py-3 text-left text-xs transition-colors">Sign Out</button>
+                <div
+                  className="hover:bg-muted cursor-pointer justify-start bg-transparent px-4 py-3 text-left text-xs font-normal transition-colors"
+                  onClick={() => router.push('/profile')}
+                >
+                  View Profile
+                </div>
+                <div
+                  className="hover:bg-muted cursor-pointer justify-start bg-transparent px-4 py-3 text-left text-xs font-normal transition-colors"
+                  onClick={() => router.push('/')}
+                >
+                  Sign Out
+                </div>
               </div>
             </PopoverContent>
           </Popover>
