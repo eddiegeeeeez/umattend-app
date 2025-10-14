@@ -38,9 +38,9 @@ const Navbar = () => {
     <header className="border-border/40 bg-background sticky top-0 z-50 border-b">
       <div className="container mx-auto flex h-14 max-w-4xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4 sm:gap-8">
-          <Button className="hover:bg-muted rounded-md bg-transparent p-2 transition-colors md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
+          <div className="hover:bg-muted rounded-md bg-transparent p-2 transition-colors md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
             <Menu size={18} />
-          </Button>
+          </div>
 
           <Link href="/dashboard" className="flex items-center gap-1.5">
             <div className="bg-primary h-5 w-5 rounded" />
@@ -60,9 +60,9 @@ const Navbar = () => {
 
           <Popover>
             <PopoverTrigger>
-              <Button className="hover:bg-muted hidden rounded-md bg-transparent p-1.5 transition-colors sm:block" aria-label="Notifications">
+              <div className="hover:bg-muted hidden rounded-md bg-transparent p-1.5 transition-colors sm:block" aria-label="Notifications">
                 <Bell size={18} color="gray" />
-              </Button>
+              </div>
             </PopoverTrigger>
             <PopoverContent className="w-80 rounded-xl border border-gray-200 p-0 shadow-lg">
               <div className="flex items-center justify-between border-b px-4 py-3">
@@ -91,7 +91,7 @@ const Navbar = () => {
           </Popover>
           <Popover>
             <PopoverTrigger>
-              <Button className="bg-muted flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium">U</Button>
+              <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium">U</div>
             </PopoverTrigger>
             <PopoverContent className="w-64 rounded-xl border border-gray-200 p-0 shadow-lg">
               <div className="flex items-center gap-3 border-b px-4 py-3">
