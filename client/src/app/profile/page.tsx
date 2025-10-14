@@ -1,6 +1,5 @@
 import React from 'react';
-import { Calendar, Search, Bell, Sparkles, QrCode, Mail, Users } from 'lucide-react';
-import Link from 'next/link';
+import { Calendar, QrCode, Mail, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 
