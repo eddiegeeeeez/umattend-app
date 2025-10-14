@@ -14,7 +14,9 @@ export default function LoginContent() {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleGoogleLogin = () => {
-    router.push('/api/v1/auth/google');
+    // router.push('/api/v1/auth/google');
+
+    router.push('/dashboard');
   };
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
