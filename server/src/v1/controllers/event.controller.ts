@@ -8,6 +8,7 @@ import { sendEmail } from '../services/email.service';
 import { matchedData, validationResult } from 'express-validator';
 import eventServices from '../services/event.service';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
+import { NODE_ENV } from '@/constants/app.constants';
 
 const addEvent = async (req: Request, res: Response) => {
   try {
@@ -56,6 +57,14 @@ const addEvent = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
     }
 
+    if (event_data.start_time > event_data.end_time) {
+      return HTTPErrorResponse(
+        res,
+        400,
+        'Start time cannot be later than end time'
+      );
+    }
+
     const new_event = await eventServices.addEvent(event_data);
 
     if (!umindanao_email) {
@@ -73,6 +82,9 @@ const addEvent = async (req: Request, res: Response) => {
   } catch (error: unknown) {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
+    }
+    if (NODE_ENV === 'development') {
+      console.error('Error: ', error);
     }
     return HTTPErrorResponse(res, 500, error);
   }
@@ -179,21 +191,13 @@ const createCheckInEvent = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return HTTPErrorResponse(res, 400, errors.array());
-    }
-
-    const { user_id, event_id } = req.params;
+    const { student_id, event_id } = req.params;
 
     const { umindanao_email, done_onboarding } = req.user;
 
     if (!done_onboarding) {
       throw new ForbiddenError('User has not completed onboarding');
     }
-
-    const { student_id } = req.body;
 
     if (!student_id || !event_id) {
       return HTTPErrorResponse(
@@ -218,10 +222,7 @@ const createCheckInEvent = async (
       );
     }
 
-    const checkIn = await eventServices.createCheckInEvent(
-      user_id,
-      check_in_data
-    );
+    const checkIn = await eventServices.createCheckInEvent(check_in_data);
 
     if (!umindanao_email) {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
@@ -266,20 +267,13 @@ const createCheckOutEvent = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return HTTPErrorResponse(res, 400, errors.array());
-    }
-
-    const { user_id, event_id } = req.params;
+    const { student_id, event_id } = req.params;
 
     const { umindanao_email, done_onboarding } = req.user;
 
     if (!done_onboarding) {
       throw new ForbiddenError('User has not completed onboarding');
     }
-
-    const { student_id } = req.body;
 
     if (!student_id || !event_id) {
       return HTTPErrorResponse(
@@ -304,10 +298,7 @@ const createCheckOutEvent = async (
       );
     }
 
-    const checkOut = await eventServices.createCheckOutEvent(
-      user_id,
-      check_out_data
-    );
+    const checkOut = await eventServices.createCheckOutEvent(check_out_data);
 
     if (!umindanao_email) {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
@@ -320,8 +311,8 @@ const createCheckOutEvent = async (
     const responseData = {
       event_id: checkOut.event_id,
       event_name: checkOut.event.title,
-      checked_out_at: checkOut.check_in_at,
-      checked_out_by: checkOut.check_in_by,
+      checked_out_at: checkOut.check_out_at,
+      checked_out_by: checkOut.check_out_by,
     };
 
     sendEmail(
@@ -413,7 +404,12 @@ const getEventDetailsById = async (req: Request, res: Response) => {
 const getAllEvents = async (req: Request, res: Response) => {
   try {
     const events = await eventServices.getAllEvents();
-    return HTTPSuccessResponse(res, 200, 'Events retrieved successfully', events);
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Events retrieved successfully',
+      events
+    );
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, error.message);
@@ -423,7 +419,6 @@ const getAllEvents = async (req: Request, res: Response) => {
     }
     console.error('Unexpected error retrieving events:', error);
     return HTTPErrorResponse(res, 500, 'Internal server error');
-
   }
 };
 

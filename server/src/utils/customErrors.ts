@@ -58,3 +58,15 @@ export class GenerateTokenError extends AppError {
     super(message, 500, 'GenerateTokenError');
   }
 }
+
+export class ExchangeCodeError extends AppError {
+  constructor(message = 'Exchange code error') {
+    super(message, 400, 'ExchangeCodeError');
+  }
+}
+
+export class RateLimitError extends AppError {
+  constructor(message = 'Too many requests, please try again later.') {
+    super(message, 429, 'RateLimitError');
+  }
+}

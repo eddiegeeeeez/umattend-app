@@ -3,11 +3,11 @@ import {
   AddCheckInInterface,
   AddCheckOutInterface,
   AddEventInterface,
+  GetAllEventsInterface,
 } from '../interface/event';
 import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
-import userRepository from '../repositories/user.repository';
 import { events } from '@prisma/client';
 import { eventStatusQueue } from '../queues/event.queue';
 import authRepository from '../repositories/auth.repository';
@@ -75,17 +75,13 @@ const updateEvent = async (eventId: string, event_data: AddEventInterface) => {
   return updated_event;
 };
 
-const createCheckInEvent = async (
-  userId: string,
-  attendance_data: AddCheckInInterface
-) => {
+const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
   try {
-    const userExists = await userRepository.findUserById(userId);
-    if (!userExists) {
-      throw new NotFoundError('User not found');
+    if (!attendance_data.student_id) {
+      throw new NotFoundError('Student ID is required');
     }
 
-    return eventRepository.createCheckInEvent(userId, attendance_data);
+    return eventRepository.createCheckInEvent(attendance_data);
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
@@ -106,14 +102,10 @@ const createCheckInEvent = async (
   }
 };
 
-const createCheckOutEvent = async (
-  userId: string,
-  attendance_data: AddCheckOutInterface
-) => {
+const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
   try {
-    const userExists = await userRepository.findUserById(userId);
-    if (!userExists) {
-      throw new NotFoundError('User not found');
+    if (!attendance_data.event_id) {
+      throw new NotFoundError('Event ID is required');
     }
 
     return eventRepository.createCheckOutEvent(attendance_data);
@@ -183,18 +175,41 @@ const getEventDetailsById = async (event_id: string) => {
   if (!event) {
     throw new NotFoundError('Event not found');
   }
-  return event;
+  return {
+    title: event.title,
+    description: event.description,
+    department: event.department,
+    location: event.location,
+    capacity: event.capacity ?? undefined,
+    all_day: event.all_day,
+    start_time: event.start_time ?? undefined,
+    end_time: event.end_time ?? undefined,
+    check_out_required: event.check_out_required,
+    is_done: event.is_done,
+    created_by: event.created_by,
+  };
 };
 
-const getAllEvents = async () => {
-
+const getAllEvents = async (): Promise<GetAllEventsInterface> => {
   const events = await eventRepository.getAllEvents();
 
-  if(events.length === 0) {
+  if (events.length === 0) {
     throw new NotFoundError('No events found');
   }
 
-  return events;
+  return events.map((event) => ({
+    title: event.title,
+    description: event.description,
+    department: event.department,
+    location: event.location,
+    capacity: event.capacity ?? undefined,
+    all_day: event.all_day,
+    start_time: event.start_time ?? undefined,
+    end_time: event.end_time ?? undefined,
+    check_out_required: event.check_out_required,
+    is_done: event.is_done,
+    created_by: event.created_by,
+  }));
 };
 
 const eventServices = {

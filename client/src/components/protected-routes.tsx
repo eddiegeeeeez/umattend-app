@@ -1,4 +1,3 @@
-// components/ProtectedRoute.tsx
 'use client';
 
 import { useEffect } from 'react';
@@ -16,7 +15,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
 
   useEffect(() => {
     if (!user) {
-      router.push('/login');
+      router.push('/');
       return;
     }
 
