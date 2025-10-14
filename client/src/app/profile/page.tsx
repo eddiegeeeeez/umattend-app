@@ -20,7 +20,7 @@ const page = () => {
     }
   ];
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-neutral-100">
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
         {/* Hero Profile Card */}
         <div className="border-border from-card to-card/50 relative mb-10 overflow-hidden rounded-2xl border bg-gradient-to-br shadow-lg">

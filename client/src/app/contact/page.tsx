@@ -44,7 +44,7 @@ export default function ContactSupportPage() {
             <CardHeader className="space-y-2">
               <CardTitle className="text-foreground text-2xl font-bold">Contact Support</CardTitle>
               <CardDescription className="text-muted-foreground text-base">
-                Having trouble? We're here to help. Send us a message and we'll get back to you soon.
+                Having trouble? We&apos;re here to help. Send us a message and we&apos;ll get back to you soon.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -117,7 +117,7 @@ export default function ContactSupportPage() {
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-foreground text-xl font-bold">Message Sent!</h3>
-                    <p className="text-muted-foreground">Thank you for contacting us. We'll get back to you within 24-48 hours.</p>
+                    <p className="text-muted-foreground">Thank you for contacting us. We&apos;ll get back to you within 24-48 hours.</p>
                   </div>
                   <Link href="/">
                     <Button className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 px-8 text-base font-semibold">Return to Login</Button>

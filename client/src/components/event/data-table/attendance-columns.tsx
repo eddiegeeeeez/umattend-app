@@ -107,10 +107,10 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
     cell: ({ row }) => <div className="text-muted-foreground text-xs font-medium md:text-sm">{row.getValue('checkOutBy')}</div>
   },
   {
-    id: 'actions',
-    header: () => <div className="text-foreground text-center text-xs font-bold md:text-sm">Actions</div>,
+    id: "actions",
+    header: () => <div className="text-center font-bold text-foreground text-xs md:text-sm">Actions</div>,
     cell: ({ row }) => {
-      const record = row.original;
+      const record = row.original
 
       return (
         <div className="text-center">

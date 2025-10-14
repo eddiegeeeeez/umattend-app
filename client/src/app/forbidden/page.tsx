@@ -13,8 +13,8 @@ export default function ForbiddenPage() {
           </EmptyMedia>
           <EmptyTitle className="text-2xl">403 - Access Forbidden</EmptyTitle>
           <EmptyDescription className="text-base">
-            You don't have permission to access this resource. This page is restricted to authorized users only. If you believe this is an error, please contact
-            support.
+            You don&apos;t have permission to access this resource. This page is restricted to authorized users only. If you believe this is an error, please
+            contact support.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>

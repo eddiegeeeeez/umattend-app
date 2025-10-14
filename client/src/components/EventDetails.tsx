@@ -22,7 +22,6 @@ interface EventDetailsProps {
 const EventDetails = ({
   title,
   description,
-  image,
   dayOfWeek,
   date,
   time,

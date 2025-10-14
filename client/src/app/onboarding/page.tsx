@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
+
 import { useAuthStore } from '@/store/authStore';
 
 export default function OnboardingPage() {
@@ -72,7 +73,7 @@ export default function OnboardingPage() {
   // End of v0 code
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-neutral-100">
       <main className="container mx-auto max-w-4xl px-4 py-12 sm:px-12 sm:py-16">
         <div className="mb-8 sm:mb-12">
           <h1 className="text-foreground text-2xl font-semibold sm:text-3xl">Complete Your Profile</h1>
@@ -147,12 +148,6 @@ export default function OnboardingPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedDepartment && (
-                  <div className="text-primary flex items-center gap-1.5 text-xs">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span>Department selected</span>
-                  </div>
-                )}
               </div>
 
               <div className="space-y-2.5">
@@ -180,12 +175,6 @@ export default function OnboardingPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedProgram && (
-                  <div className="text-primary flex items-center gap-1.5 text-xs">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span>Program selected</span>
-                  </div>
-                )}
               </div>
             </div>
 

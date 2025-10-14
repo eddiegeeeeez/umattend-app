@@ -17,7 +17,7 @@ export default function PastEventsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-neutral-100">
       <main className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         {/* Page Title and Toggle */}
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:mb-8 sm:flex-row sm:items-center">
@@ -26,13 +26,13 @@ export default function PastEventsPage() {
           <div className="flex w-full items-center gap-2 rounded-lg bg-stone-200 p-1 sm:w-auto">
             <Link
               href="/dashboard"
-              className="text-muted-foreground hover:text-foreground flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium transition-colors sm:flex-none"
+              className="text-muted-foreground hover:text-foreground w-36 flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium transition-colors sm:flex-none"
             >
               Upcoming
             </Link>
             <Link
               href="/dashboard/past"
-              className="bg-background text-foreground flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium shadow-sm transition-colors sm:flex-none"
+              className="bg-background text-foreground w-36 flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium shadow-sm transition-colors sm:flex-none"
             >
               Past
             </Link>

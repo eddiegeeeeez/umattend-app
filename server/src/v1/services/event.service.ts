@@ -7,7 +7,6 @@ import {
 import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
-import userRepository from '../repositories/user.repository';
 import { events } from '@prisma/client';
 import { eventStatusQueue } from '../queues/event.queue';
 import authRepository from '../repositories/auth.repository';

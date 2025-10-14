@@ -194,7 +194,7 @@ const createCheckInEvent = async (
     const { student_id, event_id } = req.params;
 
     const { umindanao_email, done_onboarding } = req.user;
-    
+
     if (!done_onboarding) {
       throw new ForbiddenError('User has not completed onboarding');
     }
