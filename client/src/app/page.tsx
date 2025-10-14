@@ -13,10 +13,10 @@ export default function LoginContent() {
   const { isAuthenticating, accessToken, isError, serverMessage, exchangeCode } = useExchangeCode();
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     // router.push('/api/v1/auth/google');
-
-    router.push('/dashboard');
+    
+    router.push('/onboarding');
   };
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
