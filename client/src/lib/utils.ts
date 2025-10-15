@@ -5,7 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-
 export const generateTimeOptions = () => {
   const times: string[] = [];
   const periods = ['AM', 'PM'];
@@ -72,4 +71,13 @@ export const addOneHour = (timeStr: string) => {
   }
 
   return `${hours.toString().padStart(2, '0')}:${mins} ${newPeriod}`;
+};
+
+export const formatDate = (date: Date) => {
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
 };
