@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import EventContent from '@/components/EventContent';
-import EventDetails from '@/components/EventDetails';
+import EventContent from '@/components/event/event-content';
+import EventDetails from '@/components/event/event-details';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { pastEvents } from '@/constants';
 

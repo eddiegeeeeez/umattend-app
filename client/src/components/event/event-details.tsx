@@ -1,8 +1,8 @@
 import React from 'react';
 import { Calendar, MapPin, UsersRound, AlertTriangle, Share2 } from 'lucide-react';
 import { type StaticImageData } from 'next/image';
-import { Button } from './ui/button';
-import { SheetHeader, SheetTitle, SheetDescription } from './ui/sheet';
+import { Button } from '../ui/button';
+import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
 
 interface EventDetailsProps {
   title: string;
