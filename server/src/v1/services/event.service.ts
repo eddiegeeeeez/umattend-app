@@ -3,6 +3,7 @@ import {
   AddCheckInInterface,
   AddCheckOutInterface,
   AddEventInterface,
+  GetAllEventsInterface,
 } from '../interface/event';
 import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
@@ -169,14 +170,60 @@ const addOrganizer = async (umindanao_email: string, event_id: string) => {
   return await eventRepository.addOrganizer(user_id, event_id);
 };
 
+const getEventDetailsById = async (event_id: string) => {
+  const event = await eventRepository.getEventDetails(event_id);
+  if (!event) {
+    throw new NotFoundError('Event not found');
+  }
+  return {
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    department: event.department,
+    location: event.location,
+    capacity: event.capacity ?? undefined,
+    all_day: event.all_day,
+    start_time: event.start_time ?? undefined,
+    end_time: event.end_time ?? undefined,
+    check_out_required: event.check_out_required,
+    is_done: event.is_done,
+    created_by: event.created_by,
+  };
+};
+
+const getAllEvents = async (): Promise<GetAllEventsInterface> => {
+  const events = await eventRepository.getAllEvents();
+
+  if (events.length === 0) {
+    throw new NotFoundError('No events found');
+  }
+
+  return events.map((event) => ({
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    department: event.department,
+    location: event.location,
+    capacity: event.capacity ?? undefined,
+    all_day: event.all_day,
+    start_time: event.start_time ?? undefined,
+    end_time: event.end_time ?? undefined,
+    check_out_required: event.check_out_required,
+    is_done: event.is_done,
+    created_by: event.created_by,
+  }));
+};
+
 const eventServices = {
   addEvent,
   deleteEvent,
   updateEvent,
+  getAllEvents,
   createCheckInEvent,
   createCheckOutEvent,
   scheduleEventStatusJob,
   addOrganizer,
+  getEventDetailsById,
 };
 
 export default eventServices;
