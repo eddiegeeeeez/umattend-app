@@ -54,4 +54,6 @@ router.post(
   eventController.addOrganizer
 );
 
+
+
 export default router;
