@@ -1,17 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, MapPin, Users, Clock, Settings, BarChart3, UserCheck, Edit } from 'lucide-react';
+import { Settings, BarChart3, UserCheck } from 'lucide-react';
 import EventAttendees from '@/components/event/manage/attendees/event-attendees';
 import EventDetails from '@/components/event/manage/details/event-details';
 import HeroSection from '@/components/event/manage/hero/hero-section';
 import ManageEventSkeleton from '@/components/event/manage/manage-event-skeleton';
 import EventOverview from '@/components/event/manage/overview/event-overview';
 import { UpdateEventSheet } from '@/components/event/manage/update-event-sheet';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatDate } from '@/lib/utils';
 
 type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
 

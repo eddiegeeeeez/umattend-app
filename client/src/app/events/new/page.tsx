@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { MapPin, FileText, Users, ChevronDown, X, ChevronLeft } from 'lucide-react';
+import { MapPin, FileText, Users, ChevronDown, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';

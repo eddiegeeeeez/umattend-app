@@ -248,6 +248,3 @@ export const attendanceData = [
     checkOutBy: 'Admin User'
   }
 ];
-
-
-

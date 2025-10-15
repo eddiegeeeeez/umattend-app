@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar, MapPin, Users, Clock, Edit } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,10 @@ const statusConfig: Record<EventStatus, { label: string; variant: 'default' | 's
 
 export default function HeroSeciont({ event, setIsSheetOpen }: { event: Event; setIsSheetOpen: (open: boolean) => void }) {
   const [attendanceStatus, setAttendanceStatus] = useState<'joined' | 'not_joined'>('joined');
+
+  useEffect(() => {
+    setAttendanceStatus('joined');
+  }, []);
   return (
     <section className="border-border bg-muted/30 border-b">
       <div className="container mx-auto px-4 py-8 md:py-12">

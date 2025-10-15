@@ -1,17 +1,12 @@
 'use client';
 
-import { Calendar, Search, Bell, User, Sparkles, Download, Users } from 'lucide-react';
-import { columns } from '@/components/event/manage/attendees/data-table/attendance-columns';
-import { AttendanceDataTable } from '@/components/event/manage/attendees/data-table/attendance-data-table';
-import { Button } from '@/components/ui/button';
+import { Calendar, Users } from 'lucide-react';
 
 // Sample data
 
 export default function AttendancePage() {
   return (
     <div className="bg-background min-h-screen">
-
-
       <main className="container mx-auto px-4 py-6 md:px-8 md:py-10">
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mb-8 md:grid-cols-3 md:gap-6">
           <div className="bg-card border-border rounded-xl border p-5 shadow-sm transition-shadow hover:shadow-md md:p-6">
@@ -50,8 +45,6 @@ export default function AttendancePage() {
             </div>
           </div>
         </div>
-
-
       </main>
     </div>
   );
