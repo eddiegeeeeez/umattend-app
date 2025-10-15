@@ -214,6 +214,29 @@ const getAllEvents = async (): Promise<GetAllEventsInterface> => {
   }));
 };
 
+const getAllPastEvents = async (): Promise<GetAllEventsInterface> => {
+  const events = await eventRepository.getAllPastEvents();
+
+  if (events.length === 0) {
+    throw new NotFoundError('No past events found');
+  }
+
+  return events.map((event) => ({
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    department: event.department,
+    location: event.location,
+    capacity: event.capacity ?? undefined,
+    all_day: event.all_day,
+    start_time: event.start_time ?? undefined,
+    end_time: event.end_time ?? undefined,
+    check_out_required: event.check_out_required,
+    is_done: event.is_done,
+    created_by: event.created_by,
+  }));
+};
+
 const eventServices = {
   addEvent,
   deleteEvent,
@@ -224,6 +247,7 @@ const eventServices = {
   scheduleEventStatusJob,
   addOrganizer,
   getEventDetailsById,
+  getAllPastEvents,
 };
 
 export default eventServices;

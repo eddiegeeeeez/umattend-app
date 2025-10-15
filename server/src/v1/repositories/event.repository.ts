@@ -63,6 +63,18 @@ const getEventDetails = async (eventId: string) => {
 const getAllEvents = async () => {
   return prisma.events.findMany({
     orderBy: { start_time: 'asc' },
+    where: {
+      is_done: false,
+    },
+  });
+};
+
+const getAllPastEvents = async () => {
+  return prisma.events.findMany({
+    orderBy: { end_time: 'desc' },
+    where: {
+      is_done: true,
+    },
   });
 };
 
@@ -205,6 +217,7 @@ const eventRepository = {
   addOrganizer,
   checkOrganizer,
   getAllEvents,
+  getAllPastEvents,
 };
 
 export default eventRepository;

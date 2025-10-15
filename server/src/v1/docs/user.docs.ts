@@ -212,7 +212,8 @@ const getUserAttendedEvents = {
     get: {
       tags: ['User'],
       summary: 'Get user attended events',
-      description: 'Retrieve all events the user has attended (checked in and checked out)',
+      description:
+        'Retrieve all events the user has attended (checked in and checked out)',
       security: [{ bearerAuth: [] }],
       responses: {
         200: {
@@ -323,5 +324,5 @@ const getUserAttendedEvents = {
 export const user = {
   ...getUser,
   ...onboarding,
-  ...getUserAttendedEvents
+  ...getUserAttendedEvents,
 };
