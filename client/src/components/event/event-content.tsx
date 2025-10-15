@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPin, TriangleAlert, UsersRound } from 'lucide-react';
 import { type StaticImageData } from 'next/image';
-import { Card, CardContent } from './ui/card';
+import { Card, CardContent } from '../ui/card';
 
 interface EventContentProps {
   id?: number;
