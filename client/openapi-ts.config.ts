@@ -1,7 +1,10 @@
+import { config } from 'dotenv';
 import { defineConfig } from '@hey-api/openapi-ts';
 
+config();
+
 export default defineConfig({
-  input: 'http://localhost:4000/v1/openapi.json', // sign up at app.heyapi.dev
+  input: `${process.env.API_URL}/docs/openapi.json`,
   output: 'src/api/client',
   plugins: [
     {

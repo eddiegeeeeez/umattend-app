@@ -1,41 +1,143 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { AxiosError } from 'axios';
 import { Building2, GraduationCap, Mail, User, Hash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { postUserOnboardingMutation, getUserOptions } from '@/api/client/@tanstack/react-query.gen';
+import type { PostUserOnboardingError } from '@/api/client/types.gen';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
 import { useAuthStore } from '@/store/authStore';
 
+interface OnboardingFormData {
+  department: string;
+  program: string;
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
-  // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  // const isDoneOnboarding = useAuthStore((state) => state.isDoneOnboarding);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isDoneOnboarding = useAuthStore((state) => state.isDoneOnboarding);
+  const user = useAuthStore((state) => state.user);
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const updateUser = useAuthStore((state) => state.updateUser);
+  const refreshToken = useAuthStore((state) => state.refreshToken);
 
-  // useEffect(() => {
-  //   if (!isAuthenticated()) {
-  //     router.push('/');
-  //   }
+  // Fetch user data to ensure we have the latest info (but not during onboarding submission)
+  const { data: userData } = useQuery({
+    ...getUserOptions(),
+    enabled: isAuthenticated() && !isDoneOnboarding(), // Disable after onboarding is done
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
 
-  //   if (isDoneOnboarding()) {
-  //     router.push('/events');
-  //   }
-  // }, [isAuthenticated, router, isDoneOnboarding]);
+  // Update user data in store when fetched (merge with existing JWT data)
+  useEffect(() => {
+    if (userData?.success && userData?.data?.user) {
+      const apiUser = userData.data.user;
+      const currentUser = useAuthStore.getState().user; // ✅ Get user from store directly
 
-  // Starting functions from v0
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
-  const [selectedProgram, setSelectedProgram] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+      // Merge API data with existing JWT data (preserve student_id from JWT)
+      updateUser({
+        user_id: apiUser.id,
+        student_id: currentUser?.student_id, // Keep from JWT
+        email: apiUser.email || currentUser?.email || '',
+        umindanao_email: apiUser.umindanao_email || currentUser?.umindanao_email,
+        name: apiUser.name || currentUser?.name,
+        department: apiUser.department || currentUser?.department,
+        program: apiUser.program || currentUser?.program,
+        role: (apiUser.role as 'student' | 'admin' | 'csg' | 'instructor' | 'organizer') || currentUser?.role || 'student',
+        done_onboarding: apiUser.done_onboarding ?? currentUser?.done_onboarding ?? false
+      });
+    }
+  }, [userData, updateUser]); // ✅ Removed 'user' from dependencies
 
-  // Sample student data - in production, this would come from authentication
-  const studentData = {
-    name: 'Mario Jr Inguito',
-    idNumber: '484470',
-    email: 'm.inguito.484470@umindanao.edu.ph'
+  const {
+    watch,
+    setValue,
+    handleSubmit,
+    formState: { isValid }
+  } = useForm<OnboardingFormData>({
+    mode: 'onChange',
+    defaultValues: {
+      department: '',
+      program: ''
+    }
+  });
+
+  const selectedDepartment = watch('department');
+  const selectedProgram = watch('program');
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push('/');
+    }
+
+    if (isDoneOnboarding()) {
+      router.push('/events');
+    }
+  }, [isAuthenticated, router, isDoneOnboarding]);
+
+  const onboardingMutation = useMutation({
+    ...postUserOnboardingMutation(),
+    onSuccess: (data) => {
+      if (data.success && data.data?.access_token) {
+        // Update the auth store with the new access token (keep existing refresh token)
+        const currentRefreshToken = refreshToken;
+
+        // Use setAuth to update both tokens (or replaceAccessToken if only access token changed)
+        if (currentRefreshToken) {
+          setAuth(data.data.access_token, currentRefreshToken);
+        }
+
+        toast.success('Profile completed successfully!', {
+          description: 'Welcome to the event management system.'
+        });
+
+        // Redirect to events page after a short delay to ensure state is updated
+        setTimeout(() => {
+          router.push('/events');
+        }, 800);
+      } else {
+        toast.error('Onboarding failed', {
+          description: 'Invalid response from server. Please try again.'
+        });
+      }
+    },
+    onError: (error: AxiosError<PostUserOnboardingError>) => {
+      const errorMessage = error?.response?.data?.message || 'Failed to complete profile. Please try again.';
+      toast.error('Onboarding failed', {
+        description: errorMessage
+      });
+    }
+  });
+
+  const departments = Object.keys(DepartmentAndPrograms);
+  const programs = selectedDepartment ? DepartmentAndPrograms[selectedDepartment as keyof typeof DepartmentAndPrograms] : [];
+
+  const handleDepartmentChange = (value: string) => {
+    setValue('department', value, { shouldValidate: true });
+    setValue('program', '', { shouldValidate: true }); // Reset program when department changes
+  };
+
+  const handleProgramChange = (value: string) => {
+    setValue('program', value, { shouldValidate: true });
+  };
+
+  const onSubmit = (data: OnboardingFormData) => {
+    onboardingMutation.mutate({
+      body: {
+        department: data.department,
+        program: data.program
+      }
+    });
   };
 
   const getInitials = (name: string) => {
@@ -46,30 +148,12 @@ export default function OnboardingPage() {
     return name.substring(0, 2).toUpperCase();
   };
 
-  const departments = Object.keys(DepartmentAndPrograms);
-  const programs = selectedDepartment ? DepartmentAndPrograms[selectedDepartment as keyof typeof DepartmentAndPrograms] : [];
-
-  const handleDepartmentChange = (value: string) => {
-    setSelectedDepartment(value);
-    setSelectedProgram(''); // Reset program when department changes
+  // Student data from auth store
+  const studentData = {
+    name: user?.name || 'User',
+    idNumber: user?.student_id?.toString() || 'N/A',
+    email: user?.umindanao_email || user?.email || 'N/A'
   };
-
-  const handleSubmit = async () => {
-    if (!selectedDepartment || !selectedProgram) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Redirect to dashboard after successful onboarding
-    router.push('/events');
-  };
-
-  const isFormValid = selectedDepartment && selectedProgram;
-  // End of v0 code
 
   return (
     <div className="min-h-screen bg-neutral-100">
@@ -155,7 +239,7 @@ export default function OnboardingPage() {
                   Program
                   <span className="text-destructive">*</span>
                 </Label>
-                <Select value={selectedProgram} onValueChange={setSelectedProgram} disabled={!selectedDepartment}>
+                <Select value={selectedProgram} onValueChange={handleProgramChange} disabled={!selectedDepartment}>
                   <SelectTrigger
                     id="program"
                     className="border-border hover:border-foreground/20 bg-background h-12 w-full text-left text-sm break-words !whitespace-normal transition-colors disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-2 [&>span]:text-left [&>span]:leading-normal [&>span]:break-words [&>span]:whitespace-normal"
@@ -177,25 +261,27 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            <div className="pt-4">
-              {!isSubmitting ? (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!isFormValid}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full text-base font-semibold shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
-                  size="lg"
-                >
-                  Continue to Dashboard
-                </Button>
-              ) : (
-                <div className="flex flex-col items-center justify-center space-y-4 py-6">
-                  <div className="relative">
-                    <div className="border-muted border-t-primary h-12 w-12 animate-spin rounded-full border-3" />
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="pt-4">
+                {!onboardingMutation.isPending ? (
+                  <Button
+                    type="submit"
+                    disabled={!isValid || onboardingMutation.isPending}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full text-base font-semibold shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
+                    size="lg"
+                  >
+                    Continue to Dashboard
+                  </Button>
+                ) : (
+                  <div className="flex flex-col items-center justify-center space-y-4 py-6">
+                    <div className="relative">
+                      <div className="border-muted border-t-primary h-12 w-12 animate-spin rounded-full border-3" />
+                    </div>
+                    <p className="text-foreground text-sm font-medium">Setting up your profile...</p>
                   </div>
-                  <p className="text-foreground text-sm font-medium">Setting up your profile...</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </form>
 
             <p className="text-muted-foreground pt-2 text-center text-xs leading-relaxed">
               By continuing, you agree to our <button className="text-foreground font-medium hover:underline">Terms of Service</button> and{' '}
