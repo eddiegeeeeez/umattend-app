@@ -186,7 +186,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
 };
 
 const checkOrganizer = async (user_id: string, event_id: string) => {
-  const organizer = await prisma.organizers.findUnique({
+  return await prisma.organizers.findUnique({
     where: {
       user_id_event_id: {
         user_id,
@@ -194,8 +194,6 @@ const checkOrganizer = async (user_id: string, event_id: string) => {
       },
     },
   });
-
-  return !!organizer;
 };
 
 const addOrganizer = async (user_id: string, event_id: string) => {
