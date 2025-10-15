@@ -48,7 +48,7 @@ export function CreateEventForm() {
   return (
     <div className="min-h-screen bg-neutral-100">
       {/* Main Content */}
-      <main className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="space-y-3">
           {/* Calendar and Privacy Selectors */}
           <div className="mb-12 flex items-center justify-between gap-4">
@@ -76,11 +76,11 @@ export function CreateEventForm() {
           </div>
 
           {/* Date and Time */}
-          <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-2">
+          <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6">
             <div className="space-y-1">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex min-w-[80px] items-center gap-3">
-                  <Label className="text-foreground text-md pl-5 font-medium">Start</Label>
+                  <Label className="text-foreground text-md font-medium">Start</Label>
                 </div>
                 <div className="flex flex-1 items-center justify-end gap-1">
                   {/* Date Picker */}
@@ -88,13 +88,13 @@ export function CreateEventForm() {
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="bg-background text-foreground hover:bg-muted hover:border-primary/50 rounded-l-2 h-9 w-[110px] justify-start rounded-r-none text-left font-medium shadow-none"
+                        className="bg-background text-foreground hover:bg-muted hover:border-primary/50 rounded-l-2 h-9 w-[155px] justify-start rounded-r-none text-left font-medium shadow-none"
                       >
-                        {format(startDate, 'EEE, MMM d')}
+                        {format(startDate, 'EEE, MMMM d')}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={startDate} onSelect={(date) => date && setStartDate(date)} initialFocus />
+                      <Calendar mode="single" selected={startDate} onSelect={(date) => date && setStartDate(date)} />
                     </PopoverContent>
                   </Popover>
 
@@ -115,7 +115,7 @@ export function CreateEventForm() {
               </div>
               <div className="flex items-center justify-between gap-4">
                 <div className="flex min-w-[80px] items-center gap-3">
-                  <Label className="text-foreground text-md pl-5 font-medium">End</Label>
+                  <Label className="text-foreground text-md font-medium">End</Label>
                 </div>
                 <div className="flex flex-1 items-center justify-end gap-1">
                   {/* Date Picker */}
@@ -123,9 +123,9 @@ export function CreateEventForm() {
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="bg-background text-foreground hover:bg-muted hover:border-primary/50 rounded-l-2 h-9 w-[110px] justify-start rounded-r-none text-left font-medium shadow-none"
+                        className="bg-background text-foreground hover:bg-muted hover:border-primary/50 rounded-l-2 h-9 w-[155px] justify-start rounded-r-none text-left font-medium shadow-none"
                       >
-                        {format(endDate, 'EEE, MMM d')}
+                        {format(endDate, 'EEE, MMMM d')}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
