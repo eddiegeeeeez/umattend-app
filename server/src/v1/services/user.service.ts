@@ -1,6 +1,7 @@
 import userRepository from '../repositories/user.repository';
 import { NotFoundError } from '../../utils/customErrors';
 import {
+  FetchUserAttendedEvents,
   FetchUserInfoResult,
   OnboardedUserInfoResult,
 } from '../interface/auth';
@@ -47,9 +48,20 @@ const onboardUser = async (
   };
 };
 
+const getUserAttendedEvents = async (
+  user_id: string
+): Promise<FetchUserAttendedEvents[] | null> => {
+  const events = await userRepository.getUserAttendedEvents(user_id);
+  if (!events) {
+    return null;
+  }
+
+  return events;
+};
 const userService = {
   getUserById,
   onboardUser,
+  getUserAttendedEvents,
 };
 
 export default userService;
