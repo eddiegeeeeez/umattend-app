@@ -4,8 +4,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface User {
-  id: string;
+  user_id?: string; // Database ID
+  student_id?: number; // Student ID number (e.g., 535940)
   email: string;
+  umindanao_email?: string;
+  name?: string;
+  department?: string;
+  program?: string;
   role: 'student' | 'admin' | 'csg' | 'instructor' | 'organizer';
   done_onboarding: boolean;
 }
@@ -15,6 +20,7 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   setAuth: (accessToken: string, refreshToken: string) => void;
+  updateUser: (user: User) => void;
   logout: () => void;
   isAdmin: () => boolean;
   isAuthenticated: () => boolean;
@@ -35,6 +41,18 @@ export const useAuthStore = create<AuthState>()(
           accessToken,
           refreshToken
         });
+      },
+
+      replaceAccessToken: (accessToken: string) => {
+        const decoded = jwtDecode<User>(accessToken);
+        set({
+          user: decoded,
+          accessToken
+        });
+      },
+
+      updateUser: (user: User) => {
+        set({ user });
       },
 
       logout: () => {

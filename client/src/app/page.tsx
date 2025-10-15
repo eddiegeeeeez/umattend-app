@@ -2,9 +2,11 @@
 
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import ClickSpark from '@/components/ClickSpark';
 import LoginForm from '@/components/login-form';
 import useExchangeCode from '@/hooks/useExchangeCode';
+import { getUserOptions } from '@/api/client/@tanstack/react-query.gen';
 import { useAuthStore } from '@/store/authStore';
 
 export default function LoginContent() {
@@ -12,15 +14,42 @@ export default function LoginContent() {
   const searchParams = useSearchParams();
   const { isAuthenticating, accessToken, isError, serverMessage, exchangeCode } = useExchangeCode();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const updateUser = useAuthStore((state) => state.updateUser);
 
   const handleGoogleLogin = async () => {
-    // router.push('/api/v1/auth/google');
-
-    router.push('/onboarding');
+    router.push('/api/v1/auth/google');
   };
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isDoneOnboarding = useAuthStore((state) => state.isDoneOnboarding);
+
+  // Fetch user data after authentication
+  const { data: userData } = useQuery({
+    ...getUserOptions(),
+    enabled: isAuthenticated(),
+    staleTime: Infinity // Don't refetch unless manually invalidated
+  });
+
+  // Update user data in store when fetched (merge with existing JWT data)
+  useEffect(() => {
+    if (userData?.success && userData?.data?.user) {
+      const apiUser = userData.data.user;
+      const currentUser = useAuthStore.getState().user;
+
+      // Merge API data with existing JWT data (preserve student_id from JWT)
+      updateUser({
+        user_id: apiUser.id,
+        student_id: currentUser?.student_id, // Keep from JWT
+        email: apiUser.email || currentUser?.email || '',
+        umindanao_email: apiUser.umindanao_email || currentUser?.umindanao_email,
+        name: apiUser.name || currentUser?.name,
+        department: apiUser.department || currentUser?.department,
+        program: apiUser.program || currentUser?.program,
+        role: (apiUser.role as 'student' | 'admin' | 'csg' | 'instructor' | 'organizer') || currentUser?.role || 'student',
+        done_onboarding: apiUser.done_onboarding ?? currentUser?.done_onboarding ?? false
+      });
+    }
+  }, [userData, updateUser]);
 
   useEffect(() => {
     const auth_code = searchParams.get('auth_code');
