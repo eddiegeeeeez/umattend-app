@@ -66,9 +66,39 @@ const onboardUser = async (req: Request, res: Response) => {
     return HTTPErrorResponse(res, 500, error);
   }
 };
+const getUserAttendedEvents = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.user as { id: string };
+    const events = await userService.getUserAttendedEvents(id);
+
+    if (events === null) {
+      return HTTPSuccessResponse(
+        res,
+        200,
+        'User does not attend events yet',
+        null
+      );
+    }
+
+    if (!events) {
+      return HTTPErrorResponse(res, 404, 'events not found') as Response;
+    }
+
+    return HTTPSuccessResponse(res, 200, 'events succesfully fetched', {
+      events,
+    }) as Response;
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message) as Response;
+    }
+
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
+  }
+};
 const userController = {
   getUserById,
   onboardUser,
+  getUserAttendedEvents,
 };
 
 export default userController;
