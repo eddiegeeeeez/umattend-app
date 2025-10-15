@@ -53,7 +53,7 @@ export function CreateEventForm() {
           {/* Calendar and Privacy Selectors */}
           <div className="mb-12 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Link href="/dashboard">
+              <Link href="/events">
                 <ChevronLeft className="text-foreground hover:bg-primary/10 hover:text-primary cursor-pointer rounded-full transition-colors" />
               </Link>
               <h1 className="text-foreground text-2xl font-semibold sm:text-3xl">Create Event</h1>

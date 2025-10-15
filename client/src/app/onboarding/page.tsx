@@ -65,7 +65,7 @@ export default function OnboardingPage() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Redirect to dashboard after successful onboarding
-    router.push('/dashboard');
+    router.push('/events');
   };
 
   const isFormValid = selectedDepartment && selectedProgram;
