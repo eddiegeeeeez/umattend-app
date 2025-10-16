@@ -125,13 +125,6 @@ const ProfilePage = () => {
                       <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
                         Use this QR code to quickly check in and out to events. Event organizers can scan this to verify your attendance.
                       </p>
-                      {/* <Button
-                        onClick={onDownloadClick}
-                        variant="outline"
-                        className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
-                      >
-                        Download QR Code
-                      </Button> */}
                     </div>
                   </div>
                 </div>

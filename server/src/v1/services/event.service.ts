@@ -180,8 +180,8 @@ const getEventDetailsById = async (event_id: string) => {
   }
 
   const is_organizer = await eventRepository.checkOrganizer(
-    event_id,
-    event.created_by
+    event.created_by,
+    event_id
   );
 
   if (is_organizer) {
