@@ -1,12 +1,40 @@
 'use client';
 
+import { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { Calendar, QrCode, Mail, Users } from 'lucide-react';
+import QRCodeStyling, { Options, FileExtension } from 'qr-code-styling';
+import { isString } from 'util';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
 
 const ProfilePage = () => {
   const user = useAuthStore((state) => state.user);
+
+  const userId = String(user?.student_id);
+
+  const [options, setOptions] = useState<Options>({
+    type: 'canvas',
+    shape: 'square',
+    width: 165,
+    height: 165,
+    data: `${userId}`,
+    margin: 0,
+    qrOptions: {
+      mode: 'Byte',
+      errorCorrectionLevel: 'H'
+    },
+    imageOptions: {
+      saveAsBlob: true,
+      hideBackgroundDots: true,
+      imageSize: 0.4,
+      margin: 0
+    },
+    dotsOptions: { type: 'rounded', color: '#000000', roundSize: true },
+    backgroundOptions: { round: 0, color: '#fdfcf1' },
+    cornersSquareOptions: { type: 'extra-rounded', color: '#f3cb00' },
+    cornersDotOptions: { type: 'dot', color: '#000000' }
+  });
 
   const toTitleCase = (str: string) => {
     return str
@@ -22,6 +50,32 @@ const ProfilePage = () => {
       return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
+  };
+
+  const fileExt: FileExtension = 'png';
+  const [qrCode, setQrCode] = useState<QRCodeStyling>();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setQrCode(new QRCodeStyling(options));
+  }, [options]);
+
+  useEffect(() => {
+    if (ref.current) {
+      qrCode?.append(ref.current);
+    }
+  }, [qrCode, ref]);
+
+  useEffect(() => {
+    if (!qrCode) return;
+    qrCode?.update(options);
+  }, [qrCode, options]);
+
+  const onDownloadClick = () => {
+    if (!qrCode) return;
+    qrCode.download({
+      extension: fileExt
+    });
   };
 
   const pastEvents = [
@@ -73,16 +127,18 @@ const ProfilePage = () => {
                 <div className="border-border bg-background/90 rounded-xl border p-6 shadow-lg">
                   <div className="flex flex-col items-center gap-6 sm:flex-row">
                     <div className="flex-shrink-0">
-                      <div className="border-primary/30 bg-primary/5 flex h-44 w-44 items-center justify-center rounded-xl border-2 border-dashed">
-                        <QrCode className="text-primary/60 h-20 w-20" />
-                      </div>
+                      <div ref={ref} className="border-primary/30 bg-primary/5 flex h-44 w-44 items-center justify-center rounded-xl border-2 border-dashed" />
                     </div>
                     <div className="flex-1 text-center sm:text-left">
                       <h3 className="text-foreground mb-2 text-xl font-bold">Your Digital Pass</h3>
                       <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
                         Use this QR code to quickly check in to events. Event organizers can scan this to verify your attendance.
                       </p>
-                      <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent">
+                      <Button
+                        onClick={onDownloadClick}
+                        variant="outline"
+                        className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
+                      >
                         Download QR Code
                       </Button>
                     </div>
