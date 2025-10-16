@@ -1,81 +1,62 @@
 'use client';
 
-import { useState, useRef, useEffect, ChangeEvent } from 'react';
-import { Calendar, QrCode, Mail, Users } from 'lucide-react';
-import QRCodeStyling, { Options, FileExtension } from 'qr-code-styling';
-import { isString } from 'util';
+import { useRef, useEffect, useMemo } from 'react';
+import { Calendar, Mail, Users } from 'lucide-react';
+import QRCodeStyling, { Options } from 'qr-code-styling';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
 
 const ProfilePage = () => {
   const user = useAuthStore((state) => state.user);
-
   const userId = String(user?.student_id);
+  const ref = useRef<HTMLDivElement>(null);
 
-  const [options, setOptions] = useState<Options>({
-    type: 'canvas',
-    shape: 'square',
-    width: 165,
-    height: 165,
-    data: `${userId}`,
-    margin: 0,
-    qrOptions: {
-      mode: 'Byte',
-      errorCorrectionLevel: 'H'
-    },
-    imageOptions: {
-      saveAsBlob: true,
-      hideBackgroundDots: true,
-      imageSize: 0.4,
-      margin: 0
-    },
-    dotsOptions: { type: 'rounded', color: '#000000', roundSize: true },
-    backgroundOptions: { round: 0, color: '#fdfcf1' },
-    cornersSquareOptions: { type: 'extra-rounded', color: '#f3cb00' },
-    cornersDotOptions: { type: 'dot', color: '#000000' }
-  });
+  const options: Options = useMemo(
+    () => ({
+      type: 'canvas',
+      shape: 'square',
+      width: 165,
+      height: 165,
+      data: userId,
+      margin: 0,
+      qrOptions: {
+        mode: 'Byte',
+        errorCorrectionLevel: 'H'
+      },
+      imageOptions: {
+        saveAsBlob: true,
+        hideBackgroundDots: true,
+        imageSize: 0.4,
+        margin: 0
+      },
+      dotsOptions: { type: 'rounded', color: '#000000', roundSize: true },
+      backgroundOptions: { round: 0, color: '#fdfcf1' },
+      cornersSquareOptions: { type: 'extra-rounded', color: '#f3cb00' },
+      cornersDotOptions: { type: 'dot', color: '#000000' }
+    }),
+    [userId]
+  );
 
-  const toTitleCase = (str: string) => {
-    return str
+  const qrCode = useMemo(() => new QRCodeStyling(options), [options]);
+
+  useEffect(() => {
+    if (ref.current && !ref.current.hasChildNodes()) {
+      qrCode.append(ref.current);
+    }
+    qrCode.update(options);
+  }, [qrCode, options]);
+
+  const toTitleCase = (str: string) =>
+    str
       .toLowerCase()
       .split(' ')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  };
 
   const getInitials = (name: string) => {
     const names = name.split(' ');
-    if (names.length >= 2) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
-
-  const fileExt: FileExtension = 'png';
-  const [qrCode, setQrCode] = useState<QRCodeStyling>();
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setQrCode(new QRCodeStyling(options));
-  }, [options]);
-
-  useEffect(() => {
-    if (ref.current) {
-      qrCode?.append(ref.current);
-    }
-  }, [qrCode, ref]);
-
-  useEffect(() => {
-    if (!qrCode) return;
-    qrCode?.update(options);
-  }, [qrCode, options]);
-
-  const onDownloadClick = () => {
-    if (!qrCode) return;
-    qrCode.download({
-      extension: fileExt
-    });
+    return names.length >= 2 ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase() : name.substring(0, 2).toUpperCase();
   };
 
   const pastEvents = [
@@ -92,6 +73,7 @@ const ProfilePage = () => {
       date: 'Sat, Oct 4, 7:00 PM'
     }
   ];
+  
   return (
     <div className="min-h-screen bg-neutral-100">
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
@@ -107,7 +89,13 @@ const ProfilePage = () => {
                   <AvatarFallback className="bg-foreground text-background text-xl font-semibold">{getInitials(user?.name || '')}</AvatarFallback>
                 </Avatar>
                 <div className="w-full text-center lg:text-left">
-                  <h1 className="text-foreground mb-9 text-2xl font-bold text-balance sm:text-3xl">{toTitleCase(user?.name || '')}</h1>
+                  <h1 className="text-foreground mb-2 text-2xl font-bold text-balance sm:text-3xl">{toTitleCase(user?.name || '')}</h1>
+                  <div className="text-muted-foreground mb-2 flex items-center justify-center gap-2 text-sm lg:justify-start">
+                    <span>{user?.department}</span>
+                  </div>
+                  <div className="text-muted-foreground mb-9 flex items-center justify-center gap-2 text-sm lg:justify-start">
+                    <span>{user?.program}</span>
+                  </div>
                   {/* Stats Cards */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="border-border bg-background/90 min-w-0 rounded-xl border p-4 text-center shadow-sm transition-shadow hover:shadow-md">
@@ -127,20 +115,25 @@ const ProfilePage = () => {
                 <div className="border-border bg-background/90 rounded-xl border p-6 shadow-lg">
                   <div className="flex flex-col items-center gap-6 sm:flex-row">
                     <div className="flex-shrink-0">
-                      <div ref={ref} className="border-primary/30 bg-primary/5 flex h-44 w-44 items-center justify-center rounded-xl border-2 border-dashed" />
+                      <div
+                        ref={ref}
+                        className="border-primary/30 bg-primary/5 pointer-events-none flex h-44 w-44 items-center justify-center rounded-xl border-2 border-dashed select-none"
+                        onContextMenu={(e) => e.preventDefault()}
+                        style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
+                      />
                     </div>
                     <div className="flex-1 text-center sm:text-left">
                       <h3 className="text-foreground mb-2 text-xl font-bold">Your Digital Pass</h3>
                       <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
                         Use this QR code to quickly check in to events. Event organizers can scan this to verify your attendance.
                       </p>
-                      <Button
+                      {/* <Button
                         onClick={onDownloadClick}
                         variant="outline"
                         className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
                       >
                         Download QR Code
-                      </Button>
+                      </Button> */}
                     </div>
                   </div>
                 </div>
