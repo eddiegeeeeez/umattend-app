@@ -9,6 +9,7 @@ import { matchedData, validationResult } from 'express-validator';
 import eventServices from '../services/event.service';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
 import { NODE_ENV } from '@/constants/app.constants';
+import { decodeAndVerifyQR } from '@/utils/decodeAndVerifyQR';
 
 const addEvent = async (req: Request, res: Response) => {
   try {
@@ -191,7 +192,7 @@ const createCheckInEvent = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { student_id, event_id } = req.params;
+    const { qr_code, event_id } = req.params;
 
     const { umindanao_email, done_onboarding } = req.user;
 
@@ -199,12 +200,18 @@ const createCheckInEvent = async (
       throw new ForbiddenError('User has not completed onboarding');
     }
 
-    if (!student_id || !event_id) {
+    if (!qr_code || !event_id) {
       return HTTPErrorResponse(
         res,
         400,
         'student_id and event_id are required'
       );
+    }
+
+    const { student_id } = decodeAndVerifyQR(qr_code);
+
+    if (!student_id) {
+      return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
     }
 
     const check_in_data = {
@@ -267,7 +274,7 @@ const createCheckOutEvent = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { student_id, event_id } = req.params;
+    const { qr_code, event_id } = req.params;
 
     const { umindanao_email, done_onboarding } = req.user;
 
@@ -275,12 +282,18 @@ const createCheckOutEvent = async (
       throw new ForbiddenError('User has not completed onboarding');
     }
 
-    if (!student_id || !event_id) {
+    if (!qr_code || !event_id) {
       return HTTPErrorResponse(
         res,
         400,
         'student_id and event_id are required'
       );
+    }
+
+    const { student_id } = decodeAndVerifyQR(qr_code);
+
+    if (!student_id) {
+      return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
     }
 
     const check_out_data = {
