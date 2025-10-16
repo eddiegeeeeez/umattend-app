@@ -73,39 +73,37 @@ const ProfilePage = () => {
       date: 'Sat, Oct 4, 7:00 PM'
     }
   ];
-  
+
   return (
     <div className="min-h-screen bg-neutral-100">
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
         {/* Hero Profile Card */}
         <div className="border-border from-card to-card/50 relative mb-10 overflow-hidden rounded-2xl border bg-gradient-to-br shadow-lg">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(250,204,21,0.08),transparent_60%)]" />
           <div className="relative px-8 py-12">
             <div className="flex flex-col items-start gap-10 lg:flex-row">
               {/* Left Column - Avatar and Basic Info */}
-              <div className="flex w-full flex-col items-center gap-8 lg:w-80 lg:items-start">
-                <Avatar className="border-background ring-primary/20 h-36 w-36 border-4 shadow-xl ring-2">
-                  <AvatarImage src={user?.profile_picture || undefined} />
-                  <AvatarFallback className="bg-foreground text-background text-xl font-semibold">{getInitials(user?.name || '')}</AvatarFallback>
-                </Avatar>
-                <div className="w-full text-center lg:text-left">
-                  <h1 className="text-foreground mb-2 text-2xl font-bold text-balance sm:text-3xl">{toTitleCase(user?.name || '')}</h1>
-                  <div className="text-muted-foreground mb-2 flex items-center justify-center gap-2 text-sm lg:justify-start">
-                    <span>{user?.department}</span>
+              <div className="flex w-full flex-col items-center justify-between gap-8 lg:w-80">
+                <div className="flex flex-col items-center gap-5">
+                  <Avatar className="border-background ring-primary/20 h-36 w-36 border-4 shadow-xl ring-2">
+                    <AvatarImage src={user?.profile_picture || undefined} />
+                    <AvatarFallback className="bg-foreground text-background text-xl font-semibold">{getInitials(user?.name || '')}</AvatarFallback>
+                  </Avatar>
+                  <div className="w-full text-center lg:text-left">
+                    <h1 className="text-foreground mb-2 text-center text-2xl font-bold sm:text-3xl">{toTitleCase(user?.name || '')}</h1>
+                    <p className="text-muted-foreground mb-2 text-center text-sm">{user?.department}</p>
+                    <p className="text-muted-foreground mb-2 text-center text-sm">{user?.program}</p>
+                    {/* Stats Cards */}
                   </div>
-                  <div className="text-muted-foreground mb-9 flex items-center justify-center gap-2 text-sm lg:justify-start">
-                    <span>{user?.program}</span>
+                </div>
+                <div className="grid w-full grid-cols-2 gap-3">
+                  <div className="border-border bg-background/90 min-w-0 rounded-xl border p-4 text-center shadow-sm transition-shadow hover:shadow-md">
+                    <div className="text-foreground mb-1 text-xl font-bold">2</div>
+                    <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Hosted</div>
                   </div>
-                  {/* Stats Cards */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="border-border bg-background/90 min-w-0 rounded-xl border p-4 text-center shadow-sm transition-shadow hover:shadow-md">
-                      <div className="text-foreground mb-1 text-xl font-bold">2</div>
-                      <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Hosted</div>
-                    </div>
-                    <div className="border-border bg-background/90 min-w-0 rounded-xl border p-4 text-center shadow-sm transition-shadow hover:shadow-md">
-                      <div className="text-foreground mb-1 text-xl font-bold">7</div>
-                      <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Attended</div>
-                    </div>
+                  <div className="border-border bg-background/90 min-w-0 rounded-xl border p-4 text-center shadow-sm transition-shadow hover:shadow-md">
+                    <div className="text-foreground mb-1 text-xl font-bold">7</div>
+                    <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Attended</div>
                   </div>
                 </div>
               </div>
@@ -125,7 +123,7 @@ const ProfilePage = () => {
                     <div className="flex-1 text-center sm:text-left">
                       <h3 className="text-foreground mb-2 text-xl font-bold">Your Digital Pass</h3>
                       <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                        Use this QR code to quickly check in to events. Event organizers can scan this to verify your attendance.
+                        Use this QR code to quickly check in and out to events. Event organizers can scan this to verify your attendance.
                       </p>
                       {/* <Button
                         onClick={onDownloadClick}
@@ -138,7 +136,7 @@ const ProfilePage = () => {
                   </div>
                 </div>
                 {/* Quick Info Cards */}
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4">
                   <div className="border-border bg-background/90 hover:border-primary/50 flex min-w-0 items-center gap-3 rounded-xl border p-4 shadow-sm transition-all hover:shadow-md">
                     <div className="bg-primary/10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg">
                       <Mail className="text-primary h-5 w-5" />
