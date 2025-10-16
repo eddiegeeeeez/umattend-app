@@ -51,7 +51,7 @@ const Navbar = () => {
         <div className="flex items-center gap-2 sm:gap-3">
           <nav className="hidden items-center gap-6 md:flex">
             <Link href="/events/new">
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground hidden cursor-pointer font-medium sm:flex">
+              <Button size="sm" className="bg-primary hover:bg-stone-800 hover:text-primary text-primary-foreground hidden cursor-pointer font-medium sm:flex">
                 Create Event
               </Button>
             </Link>
@@ -103,13 +103,15 @@ const Navbar = () => {
               <span className="text-muted-foreground text-sm">{formatTime(now)}</span>
             </div>
 
+            <Link href={"/events/new"}>
             <Button
-              className="bg-primary hover:bg-primary/90 text-primary-foreground w-full justify-start font-medium"
+              className="bg-primary hover:bg-stone-800 hover:text-primary text-primary-foreground w-full justify-start font-medium"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <Plus size={16} className="mr-2" />
               Create Event
             </Button>
+            </Link>
           </nav>
         </SheetContent>
       </Sheet>
