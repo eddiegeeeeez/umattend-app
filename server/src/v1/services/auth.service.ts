@@ -76,7 +76,6 @@ const googleAuthWithCode = async (
   });
 
   console.log(user);
-  
 
   const refresh_token = await generateRefreshToken(
     user.id,

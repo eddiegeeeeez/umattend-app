@@ -995,10 +995,250 @@ const addOrganizer = {
   },
 };
 
+const getAllEvents = {
+  '/event': {
+    get: {
+      tags: ['Event'],
+      summary: 'Get all events',
+      description: 'Retrieve all active (ongoing) events ordered by start time',
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: {
+          description: 'Events retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Events retrieved successfully',
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: {
+                          type: 'string',
+                          example: '123e4567-e89b-12d3-a456-426614174000',
+                        },
+                        title: {
+                          type: 'string',
+                          example: 'Annual Tech Conference 2025',
+                        },
+                        description: {
+                          type: 'string',
+                          example:
+                            'Join us for an exciting day of technology talks and networking.',
+                        },
+                        department: {
+                          type: 'string',
+                          example: 'College of Computer Studies',
+                        },
+                        location: {
+                          type: 'string',
+                          example: 'Main Auditorium, Building A',
+                        },
+                        capacity: { type: 'number', example: 100 },
+                        all_day: { type: 'boolean', example: false },
+                        start_time: {
+                          type: 'string',
+                          format: 'date-time',
+                          example: '2025-10-15T09:00:00.000Z',
+                        },
+                        end_time: {
+                          type: 'string',
+                          format: 'date-time',
+                          example: '2025-10-15T17:00:00.000Z',
+                        },
+                        check_out_required: { type: 'boolean', example: true },
+                        is_done: { type: 'boolean', example: false },
+                        created_by: {
+                          type: 'string',
+                          example: '123e4567-e89b-12d3-a456-426614174001',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized - authentication required',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: 'No events found',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No events found' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+const getAllPastEvents = {
+  '/event/past': {
+    get: {
+      tags: ['Event'],
+      summary: 'Get all past events',
+      description: 'Retrieve all past (completed) events ordered by start time',
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: {
+          description: 'Events retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Events retrieved successfully',
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: {
+                          type: 'string',
+                          example: '123e4567-e89b-12d3-a456-426614174000',
+                        },
+                        title: {
+                          type: 'string',
+                          example: 'Annual Tech Conference 2025',
+                        },
+                        description: {
+                          type: 'string',
+                          example:
+                            'Join us for an exciting day of technology talks and networking.',
+                        },
+                        department: {
+                          type: 'string',
+                          example: 'College of Computer Studies',
+                        },
+                        location: {
+                          type: 'string',
+                          example: 'Main Auditorium, Building A',
+                        },
+                        capacity: { type: 'number', example: 100 },
+                        all_day: { type: 'boolean', example: false },
+                        start_time: {
+                          type: 'string',
+                          format: 'date-time',
+                          example: '2025-10-15T09:00:00.000Z',
+                        },
+                        end_time: {
+                          type: 'string',
+                          format: 'date-time',
+                          example: '2025-10-15T17:00:00.000Z',
+                        },
+                        check_out_required: { type: 'boolean', example: true },
+                        is_done: { type: 'boolean', example: false },
+                        created_by: {
+                          type: 'string',
+                          example: '123e4567-e89b-12d3-a456-426614174001',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized - authentication required',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: 'No events found',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No events found' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export const event = {
   ...createEvent,
   ...updateAndDeleteEvent,
   ...checkIn,
   ...checkOut,
   ...addOrganizer,
+  ...getAllEvents,
+  ...getAllPastEvents,
 };
