@@ -16,10 +16,10 @@ const connection = {
   enableReadyCheck: false,
 };
 
-export const eventStatusQueue = new Queue('event-status-queue', { connection });
+export const endEventStatusQueue = new Queue('event-end-status-queue', { connection });
 
-const eventStatusWorker = new Worker(
-  'event-status-queue',
+const endEventStatusWorker = new Worker(
+  'event-end-status-queue',
   async (job) => {
     const { event_id } = job.data;
 
@@ -35,10 +35,10 @@ const eventStatusWorker = new Worker(
   { connection }
 );
 
-eventStatusWorker.on('completed', (job) => {
+endEventStatusWorker.on('completed', (job) => {
   console.log(`Job completed for event ${job.data.event_id}`);
 });
 
-eventStatusWorker.on('failed', (job, err) => {
+endEventStatusWorker.on('failed', (job, err) => {
   console.error(`Job failed for event ${job?.data?.event_id}:`, err);
 });
