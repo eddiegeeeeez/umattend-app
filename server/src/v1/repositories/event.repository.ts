@@ -5,7 +5,6 @@ import {
   AddCheckInInterface,
   AddCheckOutInterface,
 } from '../interface/event';
-import { StudentWithAttendance } from '../interface/student';
 
 const createEvent = async (event_data: AddEventInterface) => {
   return await prisma.$transaction(async (tx) => {
@@ -206,7 +205,7 @@ const addOrganizer = async (user_id: string, event_id: string) => {
   });
 };
 
-const getStudentsByEventId = async (event_id: string) => {
+const getAttendeesByEventId = async (event_id: string) => {
   return await prisma.attendance.findMany({
     where: {
       event_id: event_id,
@@ -243,7 +242,7 @@ const eventRepository = {
   checkOrganizer,
   getAllEvents,
   getAllPastEvents,
-  getStudentsByEventId,
+  getAttendeesByEventId,
 };
 
 export default eventRepository;

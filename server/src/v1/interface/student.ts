@@ -10,16 +10,12 @@ export interface GetStudentByIdInterface {
   profile_picture: string;
 }
 
-
-export interface GetStudentWithAttendanceInterface extends GetStudentByIdInterface {
+export interface GetStudentWithAttendanceInterface
+  extends GetStudentByIdInterface {
   check_in_at: Date | null;
   check_out_at: Date | null;
 }
 
-export interface StudentWithAttendance {
-  student: GetStudentWithAttendanceInterface;
-}
-
 export interface GetStudentsByEventIdInterface {
-  students: StudentWithAttendance[];
+  student: GetStudentWithAttendanceInterface;
 }

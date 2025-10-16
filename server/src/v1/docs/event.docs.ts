@@ -1,5 +1,3 @@
-
-
 const updateAndDeleteEvent = {
   '/event/{event_id}': {
     delete: {
@@ -1230,6 +1228,161 @@ const getAllPastEvents = {
   },
 };
 
+const getAttendeesByEventId = {
+  '/event/{event_id}/attendees': {
+    get: {
+      tags: ['Event'],
+      summary: 'Get attendees by event ID',
+      description:
+        'Retrieve all students who have checked in to a specific event with their attendance details',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'event_id',
+          required: true,
+          schema: { type: 'string' },
+          description: 'The unique ID of the event',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Attendees retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Attendees retrieved successfully',
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        student: {
+                          type: 'object',
+                          properties: {
+                            id: {
+                              type: 'string',
+                              example: '123e4567-e89b-12d3-a456-426614174002',
+                            },
+                            user_id: {
+                              type: 'string',
+                              example: '123e4567-e89b-12d3-a456-426614174003',
+                            },
+                            created_at: {
+                              type: 'string',
+                              format: 'date-time',
+                              example: '2025-09-01T08:00:00.000Z',
+                            },
+                            updated_at: {
+                              type: 'string',
+                              format: 'date-time',
+                              example: '2025-09-01T08:00:00.000Z',
+                            },
+                            student_id: { type: 'number', example: 2023001 },
+                            name: { type: 'string', example: 'Jane Doe' },
+                            department: {
+                              type: 'string',
+                              example: 'College of Computer Studies',
+                            },
+                            program: {
+                              type: 'string',
+                              example:
+                                'Bachelor of Science in Computer Science',
+                            },
+                            profile_picture: {
+                              type: 'string',
+                              example: 'https://example.com/profile.jpg',
+                            },
+                            check_in_at: {
+                              type: 'string',
+                              format: 'date-time',
+                              example: '2025-10-15T09:15:00.000Z',
+                            },
+                            check_out_at: {
+                              type: 'string',
+                              format: 'date-time',
+                              example: '2025-10-15T16:45:00.000Z',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized - authentication required',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
+        },
+        403: {
+          description: 'Forbidden - Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Access denied' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: 'Event not found or no attendees found',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: {
+                    type: 'string',
+                    example: 'Event not found or no attendees for this event',
+                  },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export const event = {
   ...createAndAddEvent,
   ...updateAndDeleteEvent,
@@ -1237,4 +1390,5 @@ export const event = {
   ...checkOut,
   ...addOrganizer,
   ...getAllPastEvents,
+  ...getAttendeesByEventId,
 };

@@ -443,6 +443,34 @@ const getAllPastEvents = async (req: Request, res: Response) => {
   }
 };
 
+const getAttendeesByEventId = async (req: Request, res: Response) => {
+  try {
+    const { event_id } = req.params;
+
+    if (!event_id) {
+      return HTTPErrorResponse(res, 400, 'Event ID is required');
+    }
+
+    const attendees = await eventServices.getAttendeesByEventId(event_id);
+
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Attendees retrieved successfully',
+      attendees
+    );
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    console.error('Unexpected error retrieving attendees:', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+  }
+};
+
 const eventController = {
   addEvent,
   deleteEvent,
@@ -453,6 +481,7 @@ const eventController = {
   getEventDetailsById,
   getAllEvents,
   getAllPastEvents,
+  getAttendeesByEventId,
 };
 
 export default eventController;
