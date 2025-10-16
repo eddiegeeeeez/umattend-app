@@ -22,18 +22,40 @@ import { postEventMutation } from '@/api/client/@tanstack/react-query.gen';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
 import { generateTimeOptions } from '@/lib/utils';
 
-export default function CreateEventForm() {
-  const [eventName, setEventName] = useState('');
-  const [description, setDescription] = useState('');
-  const [requireApproval, setRequireApproval] = useState(false);
-  const [location, setLocation] = useState('');
-  const [startDate, setStartDate] = useState<Date>(new Date(2024, 9, 14));
-  const [startTime, setStartTime] = useState(format(new Date(), 'hh:mm a'));
-  const [endDate, setEndDate] = useState<Date>(new Date(2024, 9, 14));
-  const [endTime, setEndTime] = useState('12:30');
-  const [capacity, setCapacity] = useState('');
-  const [isUnlimitedCapacity, setIsUnlimitedCapacity] = useState(true);
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+// Form validation schema
+const createEventSchema = z
+  .object({
+    title: z.string().min(1, 'Event title is required').max(255, 'Title is too long'),
+    description: z.string().min(10, 'Description must be at least 10 characters').max(5000, 'Description is too long'),
+    department: z.string().min(1, 'Department is required'),
+    location: z.string().min(1, 'Location is required').max(500, 'Location is too long'),
+    startDate: z.date(),
+    startTime: z.string(),
+    endDate: z.date(),
+    endTime: z.string(),
+    isUnlimitedCapacity: z.boolean().default(true),
+    capacity: z.number().int().positive().nullable(),
+    check_out_required: z.boolean().default(false),
+    all_day: z.boolean().default(false)
+  })
+  .refine(
+    (data) => {
+      if (!data.isUnlimitedCapacity && !data.capacity) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Capacity is required when not unlimited',
+      path: ['capacity']
+    }
+  )
+  .refine(
+    (data) => {
+      // Validate that end date/time is after start date/time
+      const start = new Date(data.startDate);
+      const [startHours, startMinutes] = data.startTime.split(':');
+      start.setHours(parseInt(startHours), parseInt(startMinutes));
 
       const end = new Date(data.endDate);
       const [endHours, endMinutes] = data.endTime.split(':');
@@ -463,10 +485,13 @@ export default function CreateEventPage() {
               />
             </div>
 
-          {/* Create Event Button */}
-          <Link href="/events">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 mt-10 w-full rounded-xl py-7 text-lg font-semibold shadow-lg transition-all hover:shadow-xl">
-              Create Event
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={createEvent.isPending}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 mt-10 w-full rounded-xl py-7 text-lg font-semibold shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
+            >
+              {createEvent.isPending ? 'Creating Event...' : 'Create Event'}
             </Button>
           </form>
         </Form>
