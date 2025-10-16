@@ -6,13 +6,13 @@ import { persist } from 'zustand/middleware';
 interface User {
   user_id?: string; // Database ID
   student_id?: number; // Student ID number (e.g., 535940)
-  email: string;
   umindanao_email?: string;
   name?: string;
   department?: string;
   program?: string;
   role: 'student' | 'admin' | 'csg' | 'instructor' | 'organizer';
   done_onboarding: boolean;
+  profile_picture: string;
 }
 
 interface AuthState {
@@ -79,7 +79,7 @@ export const useAuthStore = create<AuthState>()(
       }
     }),
     {
-      name: 'auth-storage'
+      name: 'umattend'
     }
   )
 );

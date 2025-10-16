@@ -7,6 +7,7 @@ export type AccessTokenPayloadTypes = {
   department?: string;
   program?: string;
   done_onboarding?: boolean;
+  profile_picture?: string;
 };
 
 export type RefreshTokenData = {
