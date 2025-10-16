@@ -32,7 +32,10 @@ const EventContent = ({ title, date, dayOfWeek, time, location, hasLocation = fa
         {!isLast && <div className="mx-auto mt-1 flex-1 border-l-2 border-neutral-200" aria-hidden />}
       </div>
 
-      <Card className="mb-4 flex flex-1 cursor-pointer rounded-2xl shadow-md transition-colors sm:mb-6" onClick={onCardClick}>
+      <Card
+        className="mb-4 flex flex-1 cursor-pointer rounded-2xl shadow-md transition-all duration-200 ease-in-out sm:mb-6 hover:shadow-xl hover:scale-[1.025] hover:bg-primary/10 focus-within:shadow-xl focus-within:scale-[1.025] focus-within:bg-primary/10"
+        onClick={onCardClick}
+      >
         <CardContent className="flex h-full flex-col justify-between px-8 py-3">
           <div className="flex flex-1 flex-col justify-center gap-2">
             <div className="mb-1 flex items-center justify-between">

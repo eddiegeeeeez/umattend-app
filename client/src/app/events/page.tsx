@@ -24,13 +24,14 @@ export default function DashboardPage() {
 
           <div className="flex w-full items-center gap-2 rounded-lg bg-stone-200 p-1 sm:w-auto">
             <Link
-              href="/dashboard"
+              href="/events"
               className="bg-background text-foreground w-36 flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium shadow-sm transition-colors sm:flex-none"
+              onClick={e => e.stopPropagation()}
             >
               Upcoming
             </Link>
             <Link
-              href="/dashboard/past"
+              href="/events/past"
               className="text-muted-foreground hover:text-foreground w-36 flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium transition-colors sm:flex-none"
             >
               Past

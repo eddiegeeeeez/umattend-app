@@ -33,14 +33,14 @@ const Navbar = () => {
   };
 
   return (
-    <header className="border-border/40 sticky top-0 z-50 mx-auto border-b bg-white/50 backdrop-blur-sm">
-      <div className="items- container mx-auto flex h-14 justify-between sm:px-6">
+    <header className="border-border bg-background sticky top-0 z-50 border-b">
+      <div className="container mx-auto flex h-14 max-w-4xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4 sm:gap-8">
           <div className="hover:bg-muted rounded-md bg-transparent p-2 transition-colors md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
             <Menu size={18} />
           </div>
 
-          <Link href="/dashboard" className="flex items-center gap-1.5">
+          <Link href="/events" className="flex items-center gap-1.5">
             <h1 className="text-xl font-bold text-balance">
               <span className="text-yellow-500">UM</span>
               <span className="text-foreground">Attend</span>
@@ -50,7 +50,7 @@ const Navbar = () => {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/create-event">
+            <Link href="/events/new">
               <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground hidden cursor-pointer font-medium sm:flex">
                 Create Event
               </Button>

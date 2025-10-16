@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
 import { generateTimeOptions, getDefaultStartTime, addOneHour } from '@/lib/utils';
 
-export function CreateEventForm() {
+export default function CreateEventForm() {
   const [eventName, setEventName] = useState('');
   const [description, setDescription] = useState('');
   const [requireApproval, setRequireApproval] = useState(false);
@@ -266,7 +266,7 @@ export function CreateEventForm() {
           </div>
 
           {/* Create Event Button */}
-          <Link href="/dashboard">
+          <Link href="/events">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 mt-10 w-full rounded-xl py-7 text-lg font-semibold shadow-lg transition-all hover:shadow-xl">
               Create Event
             </Button>
