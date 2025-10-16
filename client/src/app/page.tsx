@@ -87,7 +87,7 @@ export default function LoginContent() {
     }
 
     if (isAuthenticated() && isDoneOnboarding()) {
-      router.push('/dashboard');
+      router.push('/events');
     }
   }, [isAuthenticated, isDoneOnboarding, router]);
 
