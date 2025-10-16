@@ -8,7 +8,8 @@ interface EventContentProps {
   title: string;
   date: string;
   dayOfWeek: string;
-  time: string;
+  startTime: string;
+  endTime: string;
   location?: string | null;
   hasLocation?: boolean;
   attendees?: number;
@@ -19,7 +20,18 @@ interface EventContentProps {
   onManageClick?: (e: React.MouseEvent) => void;
 }
 
-const EventContent = ({ title, date, dayOfWeek, time, location, hasLocation = false, attendees = 0, isLast = false, onCardClick }: EventContentProps) => {
+const EventContent = ({
+  title,
+  date,
+  dayOfWeek,
+  startTime,
+  endTime,
+  location,
+  hasLocation = false,
+  attendees = 0,
+  isLast = false,
+  onCardClick
+}: EventContentProps) => {
   return (
     <div className="flex gap-3 sm:gap-6">
       <div className="w-16 flex-shrink-0 pt-1 sm:w-24">
@@ -32,11 +44,14 @@ const EventContent = ({ title, date, dayOfWeek, time, location, hasLocation = fa
         {!isLast && <div className="mx-auto mt-1 flex-1 border-l-2 border-neutral-200" aria-hidden />}
       </div>
 
-      <Card className="mb-4 flex flex-1 cursor-pointer rounded-2xl shadow-md transition-colors sm:mb-6" onClick={onCardClick}>
+      <Card
+        className="hover:bg-primary/10 focus-within:bg-primary/10 mb-4 flex flex-1 cursor-pointer rounded-2xl shadow-md transition-all duration-200 ease-in-out focus-within:scale-[1.025] focus-within:shadow-xl hover:scale-[1.025] hover:shadow-xl sm:mb-6"
+        onClick={onCardClick}
+      >
         <CardContent className="flex h-full flex-col justify-between px-8 py-3">
           <div className="flex flex-1 flex-col justify-center gap-2">
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-muted-foreground text-xs sm:text-sm">{time}</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">{startTime} - {endTime}</span>
             </div>
             <h3 className="text-foreground mb-2 text-lg leading-tight font-semibold">{title}</h3>
             <div className="mb-1 flex flex-row gap-4">
@@ -53,7 +68,7 @@ const EventContent = ({ title, date, dayOfWeek, time, location, hasLocation = fa
               )}
               <div className="text-muted-foreground flex items-center gap-2 text-xs sm:text-sm">
                 <UsersRound size={14} />
-                <span>{attendees && attendees > 0 ? `${attendees} guests` : 'No guests'}</span>
+                <span>{attendees && attendees > 0 ? `${attendees} attendees` : 'No attendees'}</span>
               </div>
             </div>
           </div>

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Calendar, MapPin, UsersRound, AlertTriangle, Share2 } from 'lucide-react';
+import { Calendar, MapPin, UsersRound, AlertTriangle, Share2, ArrowUpRight, ChevronsLeft } from 'lucide-react';
 import { type StaticImageData } from 'next/image';
 import { Button } from '../ui/button';
 import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
+import { useRouter } from 'next/navigation';
 
 interface EventDetailsProps {
   title: string;
@@ -10,13 +11,15 @@ interface EventDetailsProps {
   image?: string | StaticImageData;
   dayOfWeek?: string;
   date?: string;
-  time?: string;
+  startTime?: string;
+  endTime?: string;
   hasLocation?: boolean;
   location?: string | null;
   attendees?: number;
   category?: string;
   onRSVP?: () => void;
   onShare?: () => void;
+  onClose?: () => void;
 }
 
 const EventDetails = ({
@@ -24,66 +27,90 @@ const EventDetails = ({
   description,
   dayOfWeek,
   date,
-  time,
+  startTime,
+  endTime,
   hasLocation = false,
   location,
   attendees = 0,
   category,
   onRSVP,
-  onShare
+  onShare,
+  onClose
 }: EventDetailsProps) => {
+  const router = useRouter();
   return (
-    <div className="space-y-8 px-0 py-6 sm:px-6">
-      <SheetHeader className="mb-2">
-        <SheetTitle className="mb-1 text-3xl leading-tight font-bold">{title}</SheetTitle>
-        {description && <SheetDescription className="text-muted-foreground mb-2 text-base">{description}</SheetDescription>}
+    <div className="space-y-8">
+      <SheetHeader className="border-border border-b">
+        <div className="flex items-center justify-between space-x-3">
+          <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={onClose}>
+            <ChevronsLeft />
+          </Button>
+          <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push("events/2")}>
+            Event Page
+            <ArrowUpRight />
+          </Button>
+        </div>
       </SheetHeader>
 
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-5 rounded-xl border border-gray-200 bg-gray-50 p-6">
-          <div className="flex items-start gap-3">
-            <Calendar className="text-muted-foreground mt-0.5 h-5 w-5" />
-            <div>
+      <div className="flex flex-col gap-8 px-6 py-4">
+        {/* Title and Guest Count */}
+        <div className="space-y-3">
+          <SheetTitle className="text-3xl leading-tight font-bold tracking-tight">{title}</SheetTitle>
+          <div className="flex items-center gap-2">
+            <UsersRound className="text-muted-foreground h-4 w-4" />
+            <span className="text-muted-foreground text-sm">{attendees > 0 ? `${attendees} attendees` : 'No attendees yet'}</span>
+          </div>
+        </div>
+
+        {/* Event Details */}
+        <div className="space-y-5">
+          {/* Date and Time */}
+          <div className="flex items-center gap-4">
+            <div className="bg-background ring-1 ring-border flex h-12 w-12 flex-shrink-0 flex-col overflow-hidden rounded-lg shadow-sm">
+              <div className="bg-foreground flex items-center justify-center py-0.5">
+                <span className="text-background text-[9px] font-bold uppercase tracking-wide">{date?.split(',')[0]?.slice(0, 3) || 'APR'}</span>
+              </div>
+              <div className="flex flex-1 items-center justify-center">
+                <span className="text-foreground text-base font-medium leading-none">{date?.split(' ')[1] || '5'}</span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-0.5">
               <div className="text-foreground text-base font-semibold">
                 {dayOfWeek}, {date}
               </div>
-              <div className="text-muted-foreground text-sm">{time}</div>
+              <div className="text-muted-foreground text-sm">{startTime} - {endTime}</div>
             </div>
           </div>
+
+          {/* Location */}
           {hasLocation ? (
-            <div className="flex items-start gap-3">
-              <MapPin className="text-muted-foreground mt-0.5 h-5 w-5" />
-              <div>
-                <div className="text-foreground font-medium">{location}</div>
-                <div className="text-muted-foreground text-sm">Location</div>
+            <div className="flex items-center gap-4">
+              <div className="bg-background ring-1 ring-border flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg shadow-sm">
+                <MapPin className="text-foreground h-5 w-5" strokeWidth={2} />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <div className="text-foreground text-base font-medium">{location?.split(',')[0] || location}</div>
+                {/* <div className="text-muted-foreground text-sm">{location?.includes(',') ? location.split(',').slice(1).join(',').trim() : ''}</div> */}
               </div>
             </div>
           ) : (
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="text-primary mt-0.5 h-5 w-5" />
-              <div className="text-primary font-medium">Location Missing</div>
+            <div className="flex items-center gap-4">
+              <div className="bg-primary/10 ring-1 ring-primary/20 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg">
+                <AlertTriangle className="text-primary h-5 w-5" strokeWidth={2} />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <div className="text-primary text-base font-semibold">Location Missing</div>
+                <div className="text-muted-foreground text-sm">No location provided</div>
+              </div>
             </div>
           )}
-          <div className="flex items-start gap-3">
-            <UsersRound className="text-muted-foreground mt-0.5 h-5 w-5" />
-            <div>
-              <div className="text-foreground font-medium">{attendees > 0 ? `${attendees} guests attending` : 'No guests yet'}</div>
-              <div className="text-muted-foreground text-sm">Be the first to RSVP!</div>
-            </div>
+        </div>
+
+        {description && (
+          <div className="border-border border-t pt-6">
+            <SheetDescription className="text-foreground text-base leading-relaxed">{description}</SheetDescription>
           </div>
-        </div>
-        <div className="space-y-3 pt-6">
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground w-full cursor-pointer font-medium" size="lg" onClick={onRSVP}>
-            RSVP to Event
-          </Button>
-          <Button variant="outline" className="w-full cursor-pointer bg-transparent" size="lg" onClick={onShare}>
-            <Share2 className="mr-2 h-4 w-4" />
-            Share Event
-          </Button>
-        </div>
-        <div className="mt-2 flex justify-end">
-          <div className="bg-muted inline-flex items-center rounded-full px-4 py-1 text-sm font-medium"># {category}</div>
-        </div>
+        )}
       </div>
     </div>
   );
