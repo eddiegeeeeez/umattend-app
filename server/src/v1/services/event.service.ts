@@ -56,6 +56,23 @@ const deleteEvent = async (
     throw new ForbiddenError('You are not authorized to delete this event');
   }
 
+  const hasCheckedIn = await eventRepository.getEventCheckinCount(event.id);
+  
+  if (hasCheckedIn > 0) {
+    throw new ForbiddenError(
+      'Cannot delete event with existing check-ins. Please contact support.'
+    );
+  }
+  let hasCheckedOut = 0;
+
+  if (event.check_out_required) {
+    hasCheckedOut = await eventRepository.getEventCheckoutCount(event.id);
+    if (hasCheckedOut > 0) {
+      throw new ForbiddenError(
+        'Cannot delete event with existing check-outs. Please contact support.'
+      );
+    }
+  }
   await eventRepository.deleteEvent(eventId);
   return true;
 };
@@ -179,6 +196,12 @@ const getEventDetailsById = async (
 
   const event = await eventRepository.getEventDetails(event_id);
 
+  const checkin_count = await eventRepository.getEventCheckinCount(event_id);
+  let checkout_count = 0;
+  if (event?.check_out_required) {
+    checkout_count = await eventRepository.getEventCheckoutCount(event_id);
+  }
+
   if (!event) {
     throw new NotFoundError('Event not found');
   }
@@ -193,19 +216,13 @@ const getEventDetailsById = async (
   }
 
   return {
-    id: event.id,
-    title: event.title,
-    description: event.description,
-    department: event.department,
-    location: event.location,
+    ...event,
     capacity: event.capacity ?? undefined,
-    all_day: event.all_day,
     start_time: event.start_time ?? undefined,
     end_time: event.end_time ?? undefined,
-    check_out_required: event.check_out_required,
-    is_done: event.is_done,
-    created_by: event.created_by,
     can_edit,
+    checkin_count: checkin_count ?? 0,
+    checkout_count,
   };
 };
 
@@ -229,6 +246,8 @@ const getAllEvents = async (): Promise<GetAllEventsInterface> => {
     check_out_required: event.check_out_required,
     is_done: event.is_done,
     created_by: event.created_by,
+    checkin_count: event.checkin_count ?? 0,
+    checkout_count: event.checkout_count ?? 0,
   }));
 };
 
@@ -252,6 +271,8 @@ const getAllPastEvents = async (): Promise<GetAllEventsInterface> => {
     check_out_required: event.check_out_required,
     is_done: event.is_done,
     created_by: event.created_by,
+    checkin_count: event.checkin_count ?? 0,
+    checkout_count: event.checkout_count ?? 0,
   }));
 };
 

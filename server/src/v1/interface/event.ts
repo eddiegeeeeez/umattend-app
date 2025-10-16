@@ -62,6 +62,8 @@ export interface GetEventDetailsByIdInterface {
   end_time?: Date;
   check_out_required: boolean;
   is_done: boolean;
+  checkin_count: number;
+  checkout_count?: number;
   created_by: string;
 }
 

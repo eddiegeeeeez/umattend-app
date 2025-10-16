@@ -1,4 +1,3 @@
-
 const updateAndDeleteEvent = {
   '/event/{event_id}': {
     delete: {
@@ -331,6 +330,178 @@ const updateAndDeleteEvent = {
         },
         404: {
           description: 'Event not found - cannot update a non-existent event',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event not found' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    get: {
+      tags: ['Event'],
+      summary: 'Get event details by ID',
+      description:
+        'Retrieve detailed information about a specific event including check-in/check-out counts and edit permissions',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'event_id',
+          required: true,
+          schema: { type: 'string' },
+          description: 'The unique ID of the event',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Event details retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Event details retrieved',
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      id: {
+                        type: 'string',
+                        example: '123e4567-e89b-12d3-a456-426614174000',
+                      },
+                      title: {
+                        type: 'string',
+                        example: 'Annual Tech Conference 2025',
+                      },
+                      description: {
+                        type: 'string',
+                        example:
+                          'Join us for an exciting day of technology talks, networking, and learning from industry experts.',
+                      },
+                      department: {
+                        type: 'string',
+                        example: 'College of Computer Studies',
+                      },
+                      location: {
+                        type: 'string',
+                        example: 'Main Auditorium, Building A',
+                      },
+                      capacity: {
+                        type: 'number',
+                        example: 100,
+                        description: 'Maximum event capacity',
+                      },
+                      all_day: {
+                        type: 'boolean',
+                        example: false,
+                        description: 'Whether the event is an all-day event',
+                      },
+                      start_time: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2025-10-15T09:00:00.000Z',
+                        description: 'Event start time',
+                      },
+                      end_time: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2025-10-15T17:00:00.000Z',
+                        description: 'Event end time',
+                      },
+                      check_out_required: {
+                        type: 'boolean',
+                        example: true,
+                        description:
+                          'Whether check-out is required for the event',
+                      },
+                      is_done: {
+                        type: 'boolean',
+                        example: false,
+                        description: 'Whether the event is marked as completed',
+                      },
+                      checkin_count: {
+                        type: 'number',
+                        example: 45,
+                        description: 'Number of attendees who have checked in',
+                      },
+                      checkout_count: {
+                        type: 'number',
+                        example: 40,
+                        description:
+                          'Number of attendees who have checked out (only if check_out_required is true)',
+                      },
+                      created_by: {
+                        type: 'string',
+                        example: '123e4567-e89b-12d3-a456-426614174001',
+                        description: 'User ID of the event creator',
+                      },
+                      can_edit: {
+                        type: 'boolean',
+                        example: true,
+                        description:
+                          'Whether the current user has permission to edit this event',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: 'Bad request - Event ID is required',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event ID is required' },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized - authentication required',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: 'Event not found',
           content: {
             'application/json': {
               schema: {
@@ -1384,6 +1555,7 @@ const getAttendeesByEventId = {
     },
   },
 };
+
 
 export const event = {
   ...createAndGetEvent,

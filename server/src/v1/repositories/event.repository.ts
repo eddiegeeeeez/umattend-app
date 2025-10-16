@@ -61,21 +61,63 @@ const getEventDetails = async (eventId: string) => {
 };
 
 const getAllEvents = async () => {
-  return prisma.events.findMany({
+  const events = await prisma.events.findMany({
     orderBy: { start_time: 'asc' },
     where: {
       is_done: false,
     },
   });
+
+  return await Promise.all(
+    events.map(async (event) => {
+      const checkin_count = await prisma.attendance.count({
+        where: { event_id: event.id },
+      });
+      const checkout_count = await prisma.attendance.count({
+        where: {
+          event_id: event.id,
+          NOT: {
+            check_out_at: null,
+          },
+        },
+      });
+      return {
+        ...event,
+        checkin_count,
+        checkout_count,
+      };
+    })
+  );
 };
 
 const getAllPastEvents = async () => {
-  return prisma.events.findMany({
+  const events = await prisma.events.findMany({
     orderBy: { end_time: 'desc' },
     where: {
       is_done: true,
     },
   });
+
+  return await Promise.all(
+    events.map(async (event) => {
+      const checkin_count = await prisma.attendance.count({
+        where: { event_id: event.id },
+      });
+      const checkout_count = await prisma.attendance.count({
+        where: {
+          event_id: event.id,
+          NOT: {
+            check_out_at: null,
+          },
+        },
+      });
+      return {
+        ...event,
+        checkin_count,
+        checkout_count,
+      };
+    })
+  );
 };
 
 const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
@@ -231,6 +273,23 @@ const getAttendeesByEventId = async (event_id: string) => {
   });
 };
 
+const getEventCheckoutCount = async (event_id: string) => {
+  return await prisma.attendance.count({
+    where: {
+      event_id,
+      NOT: {
+        check_out_at: null,
+      },
+    },
+  });
+};
+
+const getEventCheckinCount = async (event_id: string) => {
+  return await prisma.attendance.count({
+    where: { event_id },
+  });
+};
+
 const eventRepository = {
   createEvent,
   deleteEvent,
@@ -243,6 +302,8 @@ const eventRepository = {
   getAllEvents,
   getAllPastEvents,
   getAttendeesByEventId,
+  getEventCheckoutCount,
+  getEventCheckinCount,
 };
 
 export default eventRepository;
