@@ -41,13 +41,13 @@ export default function LoginContent() {
       updateUser({
         user_id: apiUser.id,
         student_id: currentUser?.student_id, // Keep from JWT
-        email: apiUser.email || currentUser?.email || '',
         umindanao_email: apiUser.umindanao_email || currentUser?.umindanao_email,
         name: apiUser.name || currentUser?.name,
         department: apiUser.department || currentUser?.department,
         program: apiUser.program || currentUser?.program,
         role: (apiUser.role as 'student' | 'admin' | 'csg' | 'instructor' | 'organizer') || currentUser?.role || 'student',
-        done_onboarding: apiUser.done_onboarding ?? currentUser?.done_onboarding ?? false
+        done_onboarding: apiUser.done_onboarding ?? currentUser?.done_onboarding ?? false,
+        profile_picture: apiUser.profile_picture || currentUser?.profile_picture || ''
       });
     }
   }, [userData, updateUser]);
@@ -59,6 +59,8 @@ export default function LoginContent() {
     const handleAuthCode = async () => {
       if (!auth_code) return;
       const result = await exchangeCode('auth_code', auth_code);
+      console.log(result);
+      
       if (result.accessToken && result.refreshToken) {
         setAuth(result.accessToken, result.refreshToken);
       }

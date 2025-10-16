@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -48,13 +48,13 @@ export default function OnboardingPage() {
       updateUser({
         user_id: apiUser.id,
         student_id: currentUser?.student_id, // Keep from JWT
-        email: apiUser.email || currentUser?.email || '',
         umindanao_email: apiUser.umindanao_email || currentUser?.umindanao_email,
         name: apiUser.name || currentUser?.name,
         department: apiUser.department || currentUser?.department,
         program: apiUser.program || currentUser?.program,
         role: (apiUser.role as 'student' | 'admin' | 'csg' | 'instructor' | 'organizer') || currentUser?.role || 'student',
-        done_onboarding: apiUser.done_onboarding ?? currentUser?.done_onboarding ?? false
+        done_onboarding: apiUser.done_onboarding ?? currentUser?.done_onboarding ?? false,
+        profile_picture: apiUser.profile_picture || currentUser?.profile_picture || ''
       });
     }
   }, [userData, updateUser]); // ✅ Removed 'user' from dependencies
@@ -152,7 +152,7 @@ export default function OnboardingPage() {
   const studentData = {
     name: user?.name || 'User',
     idNumber: user?.student_id?.toString() || 'N/A',
-    email: user?.umindanao_email || user?.email || 'N/A'
+    email: user?.umindanao_email || 'N/A'
   };
 
   return (
@@ -175,6 +175,7 @@ export default function OnboardingPage() {
               <div className="flex flex-col items-start gap-6 sm:flex-row">
                 <div className="flex-shrink-0">
                   <Avatar className="border-border h-20 w-20 border-2 shadow-sm">
+                    <AvatarImage src={user?.profile_picture || undefined} alt={studentData.name} />
                     <AvatarFallback className="bg-foreground text-background text-xl font-semibold">{getInitials(studentData.name)}</AvatarFallback>
                   </Avatar>
                 </div>
