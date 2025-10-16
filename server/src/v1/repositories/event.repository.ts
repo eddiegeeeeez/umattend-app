@@ -226,7 +226,7 @@ const getAttendeesByEventId = async (event_id: string) => {
       },
     },
     orderBy: {
-      check_in_at: 'asc',
+      check_in_at: 'desc',
     },
   });
 };
