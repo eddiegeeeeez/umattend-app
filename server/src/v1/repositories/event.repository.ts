@@ -63,6 +63,18 @@ const getEventDetails = async (eventId: string) => {
 const getAllEvents = async () => {
   return prisma.events.findMany({
     orderBy: { start_time: 'asc' },
+    where: {
+      is_done: false,
+    },
+  });
+};
+
+const getAllPastEvents = async () => {
+  return prisma.events.findMany({
+    orderBy: { end_time: 'desc' },
+    where: {
+      is_done: true,
+    },
   });
 };
 
@@ -174,7 +186,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
 };
 
 const checkOrganizer = async (user_id: string, event_id: string) => {
-  const organizer = await prisma.organizers.findUnique({
+  return await prisma.organizers.findUnique({
     where: {
       user_id_event_id: {
         user_id,
@@ -182,8 +194,6 @@ const checkOrganizer = async (user_id: string, event_id: string) => {
       },
     },
   });
-
-  return !!organizer;
 };
 
 const addOrganizer = async (user_id: string, event_id: string) => {
@@ -205,6 +215,7 @@ const eventRepository = {
   addOrganizer,
   checkOrganizer,
   getAllEvents,
+  getAllPastEvents,
 };
 
 export default eventRepository;

@@ -270,6 +270,7 @@ export type GetUserResponses = {
         message?: string;
         data?: {
             user?: {
+                profile_picture: string | undefined;
                 id?: string;
                 email?: string;
                 umindanao_email?: string;

@@ -1,9 +1,29 @@
-import React from 'react';
+'use client';
+
 import { Calendar, QrCode, Mail, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/store/authStore';
 
-const page = () => {
+const ProfilePage = () => {
+  const user = useAuthStore((state) => state.user);
+
+  const toTitleCase = (str: string) => {
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const getInitials = (name: string) => {
+    const names = name.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
   const pastEvents = [
     {
       id: 1,
@@ -20,7 +40,7 @@ const page = () => {
   ];
   return (
     <div className="min-h-screen bg-neutral-100">
-      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
         {/* Hero Profile Card */}
         <div className="border-border from-card to-card/50 relative mb-10 overflow-hidden rounded-2xl border bg-gradient-to-br shadow-lg">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(250,204,21,0.08),transparent_60%)]" />
@@ -29,15 +49,11 @@ const page = () => {
               {/* Left Column - Avatar and Basic Info */}
               <div className="flex w-full flex-col items-center gap-8 lg:w-80 lg:items-start">
                 <Avatar className="border-background ring-primary/20 h-36 w-36 border-4 shadow-xl ring-2">
-                  <AvatarImage src="/anime-avatar-white-hair.jpg" />
-                  <AvatarFallback className="text-3xl font-bold">MJ</AvatarFallback>
+                  <AvatarImage src={user?.profile_picture || undefined} />
+                  <AvatarFallback className="bg-foreground text-background text-xl font-semibold">{getInitials(user?.name || '')}</AvatarFallback>
                 </Avatar>
                 <div className="w-full text-center lg:text-left">
-                  <h1 className="text-foreground mb-2 text-2xl font-bold text-balance sm:text-3xl">Mario Jr Inguito</h1>
-                  <div className="text-muted-foreground mb-6 flex items-center justify-center gap-2 text-sm lg:justify-start">
-                    <Calendar className="text-primary h-4 w-4" />
-                    <span>Joined July 2024</span>
-                  </div>
+                  <h1 className="text-foreground mb-9 text-2xl font-bold text-balance sm:text-3xl">{toTitleCase(user?.name || '')}</h1>
                   {/* Stats Cards */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="border-border bg-background/90 min-w-0 rounded-xl border p-4 text-center shadow-sm transition-shadow hover:shadow-md">
@@ -80,7 +96,7 @@ const page = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Email</div>
-                      <div className="text-foreground text-sm font-semibold break-all">mauro@umindanao.edu.ph</div>
+                      <div className="text-foreground text-sm font-semibold break-all">{user?.umindanao_email}</div>
                     </div>
                   </div>
                   <div className="border-border bg-background/90 hover:border-primary/50 flex min-w-0 items-center gap-3 rounded-xl border p-4 shadow-sm transition-all hover:shadow-md">
@@ -89,7 +105,7 @@ const page = () => {
                     </div>
                     <div>
                       <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Member Type</div>
-                      <div className="text-foreground text-sm font-semibold">Student</div>
+                      <div className="text-foreground text-sm font-semibold">{toTitleCase(user?.role || '')}</div>
                     </div>
                   </div>
                 </div>
@@ -133,4 +149,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default ProfilePage;

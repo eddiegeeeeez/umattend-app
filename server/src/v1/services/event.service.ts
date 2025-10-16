@@ -16,7 +16,7 @@ const addEvent = async (event_data: AddEventInterface) => {
   try {
     const event = await eventRepository.createEvent(event_data);
 
-    await scheduleEventStatusJob(event);
+    await scheduleEventStatusDoneJob(event);
 
     return event;
   } catch (error) {
@@ -70,7 +70,7 @@ const updateEvent = async (eventId: string, event_data: AddEventInterface) => {
   const updated_event = await eventRepository.updateEvent(eventId, event_data);
 
   await eventStatusQueue.remove(`event-done-${updated_event.id}`);
-  await scheduleEventStatusJob(updated_event);
+  await scheduleEventStatusDoneJob(updated_event);
 
   return updated_event;
 };
@@ -129,7 +129,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
   }
 };
 
-const scheduleEventStatusJob = async (event: events) => {
+const scheduleEventStatusDoneJob = async (event: events) => {
   if (!event.id) {
     return;
   }
@@ -171,10 +171,23 @@ const addOrganizer = async (umindanao_email: string, event_id: string) => {
 };
 
 const getEventDetailsById = async (event_id: string) => {
+  let can_edit = false;
+
   const event = await eventRepository.getEventDetails(event_id);
+
   if (!event) {
     throw new NotFoundError('Event not found');
   }
+
+  const is_organizer = await eventRepository.checkOrganizer(
+    event_id,
+    event.created_by
+  );
+
+  if (is_organizer) {
+    can_edit = true;
+  }
+
   return {
     id: event.id,
     title: event.title,
@@ -188,6 +201,7 @@ const getEventDetailsById = async (event_id: string) => {
     check_out_required: event.check_out_required,
     is_done: event.is_done,
     created_by: event.created_by,
+    can_edit,
   };
 };
 
@@ -214,6 +228,29 @@ const getAllEvents = async (): Promise<GetAllEventsInterface> => {
   }));
 };
 
+const getAllPastEvents = async (): Promise<GetAllEventsInterface> => {
+  const events = await eventRepository.getAllPastEvents();
+
+  if (events.length === 0) {
+    throw new NotFoundError('No past events found');
+  }
+
+  return events.map((event) => ({
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    department: event.department,
+    location: event.location,
+    capacity: event.capacity ?? undefined,
+    all_day: event.all_day,
+    start_time: event.start_time ?? undefined,
+    end_time: event.end_time ?? undefined,
+    check_out_required: event.check_out_required,
+    is_done: event.is_done,
+    created_by: event.created_by,
+  }));
+};
+
 const eventServices = {
   addEvent,
   deleteEvent,
@@ -221,9 +258,10 @@ const eventServices = {
   getAllEvents,
   createCheckInEvent,
   createCheckOutEvent,
-  scheduleEventStatusJob,
+  scheduleEventStatusDoneJob,
   addOrganizer,
   getEventDetailsById,
+  getAllPastEvents,
 };
 
 export default eventServices;
