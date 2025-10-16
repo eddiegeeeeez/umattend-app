@@ -20,7 +20,7 @@ export default function ForbiddenPage() {
         <EmptyContent>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Button asChild className="bg-primary hover:bg-primary/90">
-              <Link href="/dashboard">
+              <Link href="/events">
                 <HomeIcon />
                 Back to Dashboard
               </Link>

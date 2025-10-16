@@ -64,10 +64,10 @@ export default function EventDetailsPage() {
   };
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-neutral-100 min-h-screen">
       {/* Hero Section */}
       <section className="border-border bg-muted/30 border-b">
-        <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
           <div className="mx-auto max-w-4xl">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
               {/* Event Info */}
@@ -106,7 +106,7 @@ export default function EventDetailsPage() {
                 {/* Primary CTA */}
                 <div className="flex flex-wrap gap-3 pt-2">
                   {attendanceStatus === 'joined' ? (
-                    <Badge variant="secondary" className="px-4 py-2 text-sm">
+                    <Badge className="px-4 py-2 text-sm bg-neutral-200">
                       ✓ You&apos;re attending
                     </Badge>
                   ) : (
@@ -122,7 +122,7 @@ export default function EventDetailsPage() {
       </section>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 md:py-12">
+      <main className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mx-auto max-w-4xl space-y-8">
           {/* Status Card - Only show if joined */}
           {attendanceStatus === 'joined' && (
