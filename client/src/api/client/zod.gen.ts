@@ -204,7 +204,7 @@ export const zPostEventResponse = z.object({
         description: z.optional(z.string()),
         department: z.optional(z.string()),
         location: z.optional(z.string()),
-        capacity: z.optional(z.number()),
+        capacity: z.optional(z.number()).nullable(),
         all_day: z.optional(z.boolean()),
         start_time: z.optional(z.iso.datetime()),
         end_time: z.optional(z.iso.datetime()),
@@ -237,7 +237,7 @@ export const zPutEventByEventIdData = z.object({
         description: z.string().min(20).max(500).default('Updated Join us for an exciting day of technology talks, networking, and learning from industry experts.'),
         department: z.string().min(3).default('Updated College of Computer Studies'),
         location: z.string().min(3).max(140).default('Updated Main Auditorium, Building A'),
-        capacity: z.optional(z.int()).default(100),
+        capacity: z.optional(z.int()).default(100).nullable(),
         all_day: z.optional(z.boolean()).default(false),
         start_time: z.iso.datetime().default('2025-10-15T09:00:00Z'),
         end_time: z.iso.datetime().default('2025-10-15T17:00:00Z'),
@@ -255,7 +255,7 @@ export const zPutEventByEventIdData = z.object({
         })).min(1)).default([
             {
                 field_name: 'Dietary Restrictions',
-                fieldType: 'short-text'
+                fieldType: 'short_text'
             },
             {
                 field_name: 'T-Shirt Size',

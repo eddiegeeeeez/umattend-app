@@ -20,9 +20,10 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { postEventMutation } from '@/api/client/@tanstack/react-query.gen';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
-import { generateTimeOptions } from '@/lib/utils';
+import { generateTimeOptions, getDefaultStartTime, addOneHour, parseTimeToMinutes } from '@/lib/utils';
 
 // Form validation schema
+
 const createEventSchema = z
   .object({
     title: z.string().min(1, 'Event title is required').max(255, 'Title is too long'),
@@ -40,10 +41,7 @@ const createEventSchema = z
   })
   .refine(
     (data) => {
-      if (!data.isUnlimitedCapacity && !data.capacity) {
-        return false;
-      }
-      return true;
+      return data.isUnlimitedCapacity || data.capacity != null;
     },
     {
       message: 'Capacity is required when not unlimited',
@@ -52,22 +50,53 @@ const createEventSchema = z
   )
   .refine(
     (data) => {
-      // Validate that end date/time is after start date/time
-      const start = new Date(data.startDate);
-      const [startHours, startMinutes] = data.startTime.split(':');
-      start.setHours(parseInt(startHours), parseInt(startMinutes));
-
-      const end = new Date(data.endDate);
-      const [endHours, endMinutes] = data.endTime.split(':');
-      end.setHours(parseInt(endHours), parseInt(endMinutes));
-
-      return end > start;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const startDate = new Date(data.startDate);
+      startDate.setHours(0, 0, 0, 0);
+      return startDate >= today;
     },
     {
-      message: 'End date/time must be after start date/time',
-      path: ['endDate']
+      message: 'Start date cannot be in the past',
+      path: ['startDate']
     }
-  );
+  )
+  .superRefine((data, ctx) => {
+    console.log('startDate:', data.startDate);
+    console.log('endDate:', data.endDate);
+    console.log('startTime:', data.startTime);
+    console.log('endTime:', data.endTime);
+
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
+
+    // Normalize to midnight
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
+    if (end < start) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'End date must be on or after start date',
+        path: ['endDate']
+      });
+      return;
+    }
+
+    // 2️⃣ Check time only if dates are the same
+    if (end.getTime() === start.getTime()) {
+      const startMinutes = parseTimeToMinutes(data.startTime);
+      const endMinutes = parseTimeToMinutes(data.endTime);
+
+      if (endMinutes <= startMinutes) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'End time must be after start time',
+          path: ['endTime']
+        });
+      }
+    }
+  });
 
 type CreateEventFormValues = z.infer<typeof createEventSchema>;
 
@@ -75,22 +104,22 @@ export default function CreateEventPage() {
   const router = useRouter();
   const timeOptions = generateTimeOptions();
   const departments = Object.keys(DepartmentAndPrograms);
+  const defaultStartTime = getDefaultStartTime();
+  const defaultEndTime = addOneHour(defaultStartTime);
 
-  // Initialize form with default values
-  // @ts-expect-error - RHF type inference issue with zod resolver, functionality works correctly
   const form = useForm<CreateEventFormValues>({
-    resolver: zodResolver(createEventSchema),
+    resolver: zodResolver(createEventSchema) as never,
     defaultValues: {
       title: '',
       description: '',
       department: '',
       location: '',
       startDate: new Date(),
-      startTime: '09:00',
+      startTime: defaultStartTime,
       endDate: new Date(),
-      endTime: '10:00',
+      endTime: defaultEndTime,
       isUnlimitedCapacity: true,
-      capacity: undefined,
+      capacity: null, // optional/null matches schema
       check_out_required: false,
       all_day: false
     }
@@ -106,7 +135,6 @@ export default function CreateEventPage() {
     onError: (error) => {
       console.error('Create event error:', error);
 
-      // Extract error message
       const response = error.response;
       const errorData = response?.data;
       let errorMessage = 'Failed to create event';
@@ -215,112 +243,172 @@ export default function CreateEventPage() {
             <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6">
               <div className="space-y-4">
                 {/* Start Date/Time */}
-                <div className="flex items-center justify-between gap-4">
-                  <Label className="text-foreground text-md min-w-[80px] font-medium">Start</Label>
-                  <div className="flex flex-1 items-center justify-end gap-1">
-                    <FormField
-                      control={form.control}
-                      name="startDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className="bg-background text-foreground hover:bg-muted hover:border-primary/50 h-9 w-[155px] justify-start rounded-r-none text-left font-medium shadow-none"
-                                >
-                                  {field.value ? format(field.value, 'EEE, MMMM d') : 'Pick a date'}
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <Label className="text-foreground text-md min-w-[80px] font-medium">Start</Label>
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="flex flex-1 items-center justify-end gap-1">
+                        <FormField
+                          control={form.control}
+                          name="startDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className="bg-background text-foreground hover:bg-muted hover:border-primary/50 h-9 w-[155px] justify-start rounded-r-none text-left font-medium shadow-none"
+                                    >
+                                      {field.value ? format(field.value, 'EEE, MMMM d') : 'Pick a date'}
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={(date) => {
+                                      field.onChange(date);
+                                      form.trigger(['startDate', 'startTime']);
+                                    }}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="startTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="hover:bg-muted hover:border-primary/50 h-9 w-[90px] rounded-l-none font-medium [&>svg]:hidden">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-[300px]">
-                              {timeOptions.map((time) => (
-                                <SelectItem key={time} value={time}>
-                                  {time}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="startTime"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="hover:bg-muted hover:border-primary/50 h-9 w-[90px] rounded-l-none font-medium [&>svg]:hidden">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-[300px]">
+                                  {timeOptions.map((time) => (
+                                    <SelectItem key={time} value={time}>
+                                      {time}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      {/* Start Date/Time Errors */}
+                      <div>
+                        <FormField
+                          control={form.control}
+                          name="startDate"
+                          render={() => (
+                            <FormItem>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="startTime"
+                          render={() => (
+                            <FormItem>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* End Date/Time */}
-                <div className="flex items-center justify-between gap-4">
-                  <Label className="text-foreground text-md min-w-[80px] font-medium">End</Label>
-                  <div className="flex flex-1 items-center justify-end gap-1">
-                    <FormField
-                      control={form.control}
-                      name="endDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className="bg-background text-foreground hover:bg-muted hover:border-primary/50 h-9 w-[155px] justify-start rounded-r-none text-left font-medium shadow-none"
-                                >
-                                  {field.value ? format(field.value, 'EEE, MMMM d') : 'Pick a date'}
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <Label className="text-foreground text-md min-w-[80px] font-medium">End</Label>
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="flex flex-1 items-center justify-end gap-1">
+                        <FormField
+                          control={form.control}
+                          name="endDate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className="bg-background text-foreground hover:bg-muted hover:border-primary/50 h-9 w-[155px] justify-start rounded-r-none text-left font-medium shadow-none"
+                                    >
+                                      {field.value ? format(field.value, 'EEE, MMMM d') : 'Pick a date'}
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={(date) => {
+                                      field.onChange(date);
+                                      form.trigger(['endDate', 'endTime']);
+                                    }}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="endTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="hover:bg-muted hover:border-primary/50 h-9 w-[90px] rounded-l-none font-medium [&>svg]:hidden">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-[300px]">
-                              {timeOptions.map((time) => (
-                                <SelectItem key={time} value={time}>
-                                  {time}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="endTime"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="hover:bg-muted hover:border-primary/50 h-9 w-[90px] rounded-l-none font-medium [&>svg]:hidden">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-[300px]">
+                                  {timeOptions.map((time) => (
+                                    <SelectItem key={time} value={time}>
+                                      {time}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      {/* End Date/Time Errors */}
+                      <div>
+                        <FormField
+                          control={form.control}
+                          name="endDate"
+                          render={() => (
+                            <FormItem>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="endTime"
+                          render={() => (
+                            <FormItem>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -453,7 +541,8 @@ export default function CreateEventPage() {
                             placeholder="Enter maximum capacity"
                             className="focus-visible:border-primary focus-visible:ring-primary/20 font-normal transition-colors"
                             min="1"
-                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
                           />
                         </FormControl>
                         <FormMessage />

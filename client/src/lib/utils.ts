@@ -81,3 +81,15 @@ export const formatDate = (date: Date) => {
     year: 'numeric'
   });
 };
+
+export const parseTimeToMinutes = (timeStr: string) => {
+  const [time, period] = timeStr.split(' ');
+  const [hoursStr, minutes] = time.split(':').map(Number);
+  let hours = hoursStr;
+
+  if (period.toUpperCase() === 'PM' && hours !== 12) hours += 12;
+  if (period.toUpperCase() === 'AM' && hours === 12) hours = 0;
+
+  console.log(`${timeStr} = ${hours * 60 + minutes} minutes`);
+  return hours * 60 + minutes;
+};

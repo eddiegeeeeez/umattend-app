@@ -1,3 +1,4 @@
+
 const updateAndDeleteEvent = {
   '/event/{event_id}': {
     delete: {
@@ -765,7 +766,7 @@ const addOrganizer = {
   },
 };
 
-const createAndAddEvent = {
+const createAndGetEvent = {
   '/event': {
     post: {
       tags: ['Event'],
@@ -811,6 +812,7 @@ const createAndAddEvent = {
                   type: 'integer',
                   default: 100,
                   description: 'Event capacity',
+                  nullable: true,
                 },
                 all_day: {
                   type: 'boolean',
@@ -1384,7 +1386,7 @@ const getAttendeesByEventId = {
 };
 
 export const event = {
-  ...createAndAddEvent,
+  ...createAndGetEvent,
   ...updateAndDeleteEvent,
   ...checkIn,
   ...checkOut,
