@@ -4,6 +4,7 @@ import {
   AddCheckOutInterface,
   AddEventInterface,
   GetAllEventsInterface,
+  GetEventDetailsWithEditByIdInterface,
 } from '../interface/event';
 import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
@@ -11,6 +12,7 @@ import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
 import { events } from '@prisma/client';
 import { eventStatusQueue } from '../queues/event.queue';
 import authRepository from '../repositories/auth.repository';
+import { GetStudentsByEventIdInterface } from '../interface/student';
 
 const addEvent = async (event_data: AddEventInterface) => {
   try {
@@ -170,7 +172,9 @@ const addOrganizer = async (umindanao_email: string, event_id: string) => {
   return await eventRepository.addOrganizer(user_id, event_id);
 };
 
-const getEventDetailsById = async (event_id: string) => {
+const getEventDetailsById = async (
+  event_id: string
+): Promise<GetEventDetailsWithEditByIdInterface> => {
   let can_edit = false;
 
   const event = await eventRepository.getEventDetails(event_id);
@@ -251,6 +255,32 @@ const getAllPastEvents = async (): Promise<GetAllEventsInterface> => {
   }));
 };
 
+const getAttendeesByEventId = async (
+  event_id: string
+): Promise<GetStudentsByEventIdInterface[]> => {
+  const attendees = await eventRepository.getAttendeesByEventId(event_id);
+
+  if (attendees.length === 0) {
+    throw new NotFoundError('No attendees found for this event');
+  }
+
+  return attendees.map((attendee) => ({
+    student: {
+      id: attendee.student.id,
+      user_id: attendee.student.user_id,
+      student_id: attendee.student.student_id,
+      name: attendee.student.name,
+      department: attendee.student.department,
+      program: attendee.student.program,
+      profile_picture: attendee.student.profile_picture,
+      created_at: attendee.student.created_at,
+      updated_at: attendee.student.updated_at,
+      check_in_at: attendee.check_in_at,
+      check_out_at: attendee.check_out_at,
+    },
+  }));
+};
+
 const eventServices = {
   addEvent,
   deleteEvent,
@@ -262,6 +292,7 @@ const eventServices = {
   addOrganizer,
   getEventDetailsById,
   getAllPastEvents,
+  getAttendeesByEventId,
 };
 
 export default eventServices;
