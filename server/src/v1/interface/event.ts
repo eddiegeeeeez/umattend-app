@@ -65,5 +65,10 @@ export interface GetEventDetailsByIdInterface {
   created_by: string;
 }
 
+export interface GetEventDetailsWithEditByIdInterface
+  extends GetEventDetailsByIdInterface {
+  can_edit: boolean;
+}
+
 export interface GetAllEventsInterface
   extends Array<GetEventDetailsByIdInterface> {}

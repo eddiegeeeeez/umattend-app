@@ -9,3 +9,13 @@ export interface GetStudentByIdInterface {
   program: string | null;
   profile_picture: string;
 }
+
+export interface GetStudentWithAttendanceInterface
+  extends GetStudentByIdInterface {
+  check_in_at: Date | null;
+  check_out_at: Date | null;
+}
+
+export interface GetStudentsByEventIdInterface {
+  student: GetStudentWithAttendanceInterface;
+}

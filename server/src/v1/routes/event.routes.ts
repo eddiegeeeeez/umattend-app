@@ -60,4 +60,11 @@ router.get('/past', authMiddleware, eventController.getAllPastEvents);
 
 router.get('/:event_id', authMiddleware, eventController.getEventDetailsById);
 
+router.get(
+  '/:event_id/attendees',
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  eventController.getAttendeesByEventId
+);
+
 export default router;

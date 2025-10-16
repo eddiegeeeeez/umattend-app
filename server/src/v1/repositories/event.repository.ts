@@ -205,6 +205,32 @@ const addOrganizer = async (user_id: string, event_id: string) => {
   });
 };
 
+const getAttendeesByEventId = async (event_id: string) => {
+  return await prisma.attendance.findMany({
+    where: {
+      event_id: event_id,
+    },
+    include: {
+      student: {
+        select: {
+          id: true,
+          user_id: true,
+          student_id: true,
+          name: true,
+          department: true,
+          program: true,
+          profile_picture: true,
+          created_at: true,
+          updated_at: true,
+        },
+      },
+    },
+    orderBy: {
+      check_in_at: 'desc',
+    },
+  });
+};
+
 const eventRepository = {
   createEvent,
   deleteEvent,
@@ -216,6 +242,7 @@ const eventRepository = {
   checkOrganizer,
   getAllEvents,
   getAllPastEvents,
+  getAttendeesByEventId,
 };
 
 export default eventRepository;
