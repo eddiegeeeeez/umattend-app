@@ -90,7 +90,7 @@ const EventDetails = ({
               </div>
               <div className="flex flex-col gap-0.5">
                 <div className="text-foreground text-base font-medium">{location?.split(',')[0] || location}</div>
-                <div className="text-muted-foreground text-sm">{location?.includes(',') ? location.split(',').slice(1).join(',').trim() : ''}</div>
+                {/* <div className="text-muted-foreground text-sm">{location?.includes(',') ? location.split(',').slice(1).join(',').trim() : ''}</div> */}
               </div>
             </div>
           ) : (
