@@ -56,6 +56,8 @@ router.post(
 
 router.get('/', authMiddleware, eventController.getAllEvents);
 
+router.get('/past', authMiddleware, eventController.getAllPastEvents);
+
 router.get('/:event_id', authMiddleware, eventController.getEventDetailsById);
 
 export default router;

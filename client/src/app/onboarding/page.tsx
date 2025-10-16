@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { Building2, GraduationCap, Mail, User, Hash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
