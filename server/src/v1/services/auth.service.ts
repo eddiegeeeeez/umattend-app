@@ -72,7 +72,11 @@ const googleAuthWithCode = async (
     name: user.student?.name,
     department: user.student?.department ?? '',
     program: user.student?.program ?? '',
+    profile_picture: user.student?.profile_picture ?? '',
   });
+
+  console.log(user);
+  
 
   const refresh_token = await generateRefreshToken(
     user.id,
