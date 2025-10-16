@@ -351,6 +351,59 @@ export type PostUserOnboardingResponses = {
 
 export type PostUserOnboardingResponse = PostUserOnboardingResponses[keyof PostUserOnboardingResponses];
 
+export type GetUserEventsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/user/events';
+};
+
+export type GetUserEventsErrors = {
+    /**
+     * Unauthorized - No token provided or invalid token
+     */
+    401: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * No attended events found for the user
+     */
+    404: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Internal server error
+     */
+    500: {
+        success?: boolean;
+        message?: string;
+    };
+};
+
+export type GetUserEventsError = GetUserEventsErrors[keyof GetUserEventsErrors];
+
+export type GetUserEventsResponses = {
+    /**
+     * List of attended events retrieved successfully
+     */
+    200: {
+        success?: boolean;
+        message?: string;
+        data?: Array<{
+            id?: string;
+            title?: string;
+            start_time?: string;
+            end_time?: string;
+            check_in_at?: string;
+            check_out_at?: string;
+        }>;
+    };
+};
+
+export type GetUserEventsResponse = GetUserEventsResponses[keyof GetUserEventsResponses];
+
 export type PostEventData = {
     body: {
         /**
