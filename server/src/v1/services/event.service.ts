@@ -3,7 +3,7 @@ import {
   AddCheckInInterface,
   AddCheckOutInterface,
   AddEventInterface,
-  GetAllEventsInterface,
+  GetAllEventsInterface, GetEventDetailsWithEditByIdInterface
 } from '../interface/event';
 import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
@@ -170,7 +170,7 @@ const addOrganizer = async (umindanao_email: string, event_id: string) => {
   return await eventRepository.addOrganizer(user_id, event_id);
 };
 
-const getEventDetailsById = async (event_id: string) => {
+const getEventDetailsById = async (event_id: string): Promise<GetEventDetailsWithEditByIdInterface> => {
   let can_edit = false;
 
   const event = await eventRepository.getEventDetails(event_id);
