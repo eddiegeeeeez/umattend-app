@@ -134,6 +134,28 @@ export const zPostUserOnboardingResponse = z.object({
     }))
 });
 
+export const zGetUserEventsData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * List of attended events retrieved successfully
+ */
+export const zGetUserEventsResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.string()),
+    data: z.optional(z.array(z.object({
+        id: z.optional(z.string()),
+        title: z.optional(z.string()),
+        start_time: z.optional(z.iso.datetime()),
+        end_time: z.optional(z.iso.datetime()),
+        check_in_at: z.optional(z.iso.datetime()),
+        check_out_at: z.optional(z.iso.datetime())
+    })))
+});
+
 export const zPostEventData = z.object({
     body: z.object({
         title: z.string().min(1).max(140).default('Annual Tech Conference 2025'),
