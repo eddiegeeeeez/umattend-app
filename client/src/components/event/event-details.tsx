@@ -3,6 +3,7 @@ import { Calendar, MapPin, UsersRound, AlertTriangle, Share2, ArrowUpRight, Chev
 import { type StaticImageData } from 'next/image';
 import { Button } from '../ui/button';
 import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
+import { useRouter } from 'next/navigation';
 
 interface EventDetailsProps {
   title: string;
@@ -36,6 +37,7 @@ const EventDetails = ({
   onShare,
   onClose
 }: EventDetailsProps) => {
+  const router = useRouter();
   return (
     <div className="space-y-8">
       <SheetHeader className="border-border border-b">
@@ -43,7 +45,7 @@ const EventDetails = ({
           <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={onClose}>
             <ChevronsLeft />
           </Button>
-          <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800">
+          <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push("events/2")}>
             Event Page
             <ArrowUpRight />
           </Button>
