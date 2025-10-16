@@ -64,7 +64,7 @@ export default function EventDetailsPage() {
   };
 
   return (
-    <div className="bg-neutral-100 min-h-screen">
+    <div className="min-h-screen bg-neutral-100">
       {/* Hero Section */}
       <section className="border-border bg-muted/30 border-b">
         <div className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
@@ -106,9 +106,7 @@ export default function EventDetailsPage() {
                 {/* Primary CTA */}
                 <div className="flex flex-wrap gap-3 pt-2">
                   {attendanceStatus === 'joined' ? (
-                    <Badge className="px-4 py-2 text-sm bg-neutral-200">
-                      ✓ You&apos;re attending
-                    </Badge>
+                    <Badge className="bg-neutral-200 px-4 py-2 text-sm">✓ You&apos;re attending</Badge>
                   ) : (
                     <Button size="lg" className="font-semibold">
                       RSVP Now

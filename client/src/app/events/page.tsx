@@ -26,7 +26,7 @@ export default function DashboardPage() {
             <Link
               href="/events"
               className="bg-background text-foreground w-36 flex-1 rounded-md px-4 py-1.5 text-center text-sm font-medium shadow-sm transition-colors sm:flex-none"
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               Upcoming
             </Link>

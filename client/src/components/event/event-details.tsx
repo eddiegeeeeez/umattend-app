@@ -1,9 +1,9 @@
 import React from 'react';
-import { Calendar, MapPin, UsersRound, AlertTriangle, Share2, ArrowUpRight, ChevronsLeft } from 'lucide-react';
+import { MapPin, UsersRound, AlertTriangle, ArrowUpRight, ChevronsLeft } from 'lucide-react';
 import { type StaticImageData } from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
-import { useRouter } from 'next/navigation';
 
 interface EventDetailsProps {
   title: string;
@@ -32,9 +32,6 @@ const EventDetails = ({
   hasLocation = false,
   location,
   attendees = 0,
-  category,
-  onRSVP,
-  onShare,
   onClose
 }: EventDetailsProps) => {
   const router = useRouter();
@@ -45,7 +42,7 @@ const EventDetails = ({
           <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={onClose}>
             <ChevronsLeft />
           </Button>
-          <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push("events/2")}>
+          <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push('events/2')}>
             Event Page
             <ArrowUpRight />
           </Button>
@@ -66,26 +63,28 @@ const EventDetails = ({
         <div className="space-y-5">
           {/* Date and Time */}
           <div className="flex items-center gap-4">
-            <div className="bg-background ring-1 ring-border flex h-12 w-12 flex-shrink-0 flex-col overflow-hidden rounded-lg shadow-sm">
+            <div className="bg-background ring-border flex h-12 w-12 flex-shrink-0 flex-col overflow-hidden rounded-lg shadow-sm ring-1">
               <div className="bg-foreground flex items-center justify-center py-0.5">
-                <span className="text-background text-[9px] font-bold uppercase tracking-wide">{date?.split(',')[0]?.slice(0, 3) || 'APR'}</span>
+                <span className="text-background text-[9px] font-bold tracking-wide uppercase">{date?.split(',')[0]?.slice(0, 3) || 'APR'}</span>
               </div>
               <div className="flex flex-1 items-center justify-center">
-                <span className="text-foreground text-base font-medium leading-none">{date?.split(' ')[1] || '5'}</span>
+                <span className="text-foreground text-base leading-none font-medium">{date?.split(' ')[1] || '5'}</span>
               </div>
             </div>
             <div className="flex flex-col gap-0.5">
               <div className="text-foreground text-base font-semibold">
                 {dayOfWeek}, {date}
               </div>
-              <div className="text-muted-foreground text-sm">{startTime} - {endTime}</div>
+              <div className="text-muted-foreground text-sm">
+                {startTime} - {endTime}
+              </div>
             </div>
           </div>
 
           {/* Location */}
           {hasLocation ? (
             <div className="flex items-center gap-4">
-              <div className="bg-background ring-1 ring-border flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg shadow-sm">
+              <div className="bg-background ring-border flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg shadow-sm ring-1">
                 <MapPin className="text-foreground h-5 w-5" strokeWidth={2} />
               </div>
               <div className="flex flex-col gap-0.5">
@@ -95,7 +94,7 @@ const EventDetails = ({
             </div>
           ) : (
             <div className="flex items-center gap-4">
-              <div className="bg-primary/10 ring-1 ring-primary/20 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg">
+              <div className="bg-primary/10 ring-primary/20 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg ring-1">
                 <AlertTriangle className="text-primary h-5 w-5" strokeWidth={2} />
               </div>
               <div className="flex flex-col gap-0.5">

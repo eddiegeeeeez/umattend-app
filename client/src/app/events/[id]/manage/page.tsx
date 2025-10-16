@@ -56,7 +56,6 @@ export default function ManageSingleEventPage() {
   });
 
   const handleUpdateEvent = (updatedEvent: Event) => {
-    console.log('[v0] Updating event with new data:', updatedEvent);
     setEvent(updatedEvent);
     setIsSheetOpen(false);
   };

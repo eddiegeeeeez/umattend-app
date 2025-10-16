@@ -51,7 +51,9 @@ const EventContent = ({
         <CardContent className="flex h-full flex-col justify-between px-8 py-3">
           <div className="flex flex-1 flex-col justify-center gap-2">
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-muted-foreground text-xs sm:text-sm">{startTime} - {endTime}</span>
+              <span className="text-muted-foreground text-xs sm:text-sm">
+                {startTime} - {endTime}
+              </span>
             </div>
             <h3 className="text-foreground mb-2 text-lg leading-tight font-semibold">{title}</h3>
             <div className="mb-1 flex flex-row gap-4">

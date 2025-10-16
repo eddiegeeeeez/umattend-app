@@ -57,7 +57,7 @@ const deleteEvent = async (
   }
 
   const hasCheckedIn = await eventRepository.getEventCheckinCount(event.id);
-  
+
   if (hasCheckedIn > 0) {
     throw new ForbiddenError(
       'Cannot delete event with existing check-ins. Please contact support.'

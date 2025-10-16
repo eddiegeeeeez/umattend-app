@@ -62,11 +62,6 @@ const createEventSchema = z
     }
   )
   .superRefine((data, ctx) => {
-    console.log('startDate:', data.startDate);
-    console.log('endDate:', data.endDate);
-    console.log('startTime:', data.startTime);
-    console.log('endTime:', data.endTime);
-
     const start = new Date(data.startDate);
     const end = new Date(data.endDate);
 

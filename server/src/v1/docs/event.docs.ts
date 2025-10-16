@@ -1556,7 +1556,6 @@ const getAttendeesByEventId = {
   },
 };
 
-
 export const event = {
   ...createAndGetEvent,
   ...updateAndDeleteEvent,

@@ -30,7 +30,6 @@ export default function LoginContent() {
     enabled: isAuthenticated(),
     staleTime: Infinity // Don't refetch unless manually invalidated
   });
-  
 
   // Update user data in store when fetched (merge with existing JWT data)
   useEffect(() => {
@@ -61,7 +60,7 @@ export default function LoginContent() {
       if (!auth_code) return;
       const result = await exchangeCode('auth_code', auth_code);
       console.log(result);
-      
+
       if (result.accessToken && result.refreshToken) {
         setAuth(result.accessToken, result.refreshToken);
       }
