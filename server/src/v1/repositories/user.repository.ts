@@ -42,8 +42,6 @@ const getUserAttendedEvents = async (user_id: string) => {
   const attendedEvents = await prisma.attendance.findMany({
     where: {
       userId: user_id,
-      check_in_at: { not: undefined },
-      check_out_at: { not: undefined },
     },
     select: {
       event: {
@@ -54,19 +52,16 @@ const getUserAttendedEvents = async (user_id: string) => {
           end_time: true,
         },
       },
-      check_in_at: true,
-      check_out_at: true,
     },
     orderBy: {
-      check_in_at: 'desc',
+      event: {
+        start_time: 'desc',
+      },
     },
   });
 
-  // Flatten so you don't have `event: { ... }` nested
   return attendedEvents.map((record) => ({
     ...record.event,
-    check_in_at: record.check_in_at,
-    check_out_at: record.check_out_at,
   }));
 };
 
