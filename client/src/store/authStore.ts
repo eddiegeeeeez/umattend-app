@@ -10,9 +10,9 @@ interface User {
   name?: string;
   department?: string;
   program?: string;
-  role: 'student' | 'admin' | 'csg' | 'instructor' | 'organizer';
-  done_onboarding: boolean;
-  profile_picture: string;
+  role: 'student' | 'admin' | 'csg' | 'instructor' | 'organizer' | undefined;
+  done_onboarding: boolean | undefined;
+  profile_picture: string | undefined;
 }
 
 interface AuthState {
@@ -61,6 +61,7 @@ export const useAuthStore = create<AuthState>()(
           accessToken: null,
           refreshToken: null
         });
+        localStorage.removeItem('umattend');
       },
 
       isAdmin: () => {

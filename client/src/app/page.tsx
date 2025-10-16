@@ -29,6 +29,7 @@ export default function LoginContent() {
     enabled: isAuthenticated(),
     staleTime: Infinity // Don't refetch unless manually invalidated
   });
+  
 
   // Update user data in store when fetched (merge with existing JWT data)
   useEffect(() => {
