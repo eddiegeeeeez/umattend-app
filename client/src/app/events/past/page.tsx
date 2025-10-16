@@ -47,7 +47,8 @@ export default function PastEventsPage() {
               title={event.title}
               date={event.date}
               dayOfWeek={event.dayOfWeek}
-              time={event.time}
+              startTime={event.startTime}
+              endTime={event.endTime}
               location={event.location}
               hasLocation={event.hasLocation}
               attendees={event.attendees}
@@ -61,7 +62,7 @@ export default function PastEventsPage() {
       </main>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+        <SheetContent className="w-full overflow-y-auto sm:max-w-lg" hideClose>
           {selectedEvent && (
             <EventDetails
               title={selectedEvent.title}
@@ -69,7 +70,8 @@ export default function PastEventsPage() {
               image={selectedEvent.image}
               dayOfWeek={selectedEvent.dayOfWeek}
               date={selectedEvent.date}
-              time={selectedEvent.time}
+              startTime={selectedEvent.startTime}
+              endTime={selectedEvent.endTime}
               hasLocation={selectedEvent.hasLocation}
               location={selectedEvent.location}
               attendees={selectedEvent.attendees}
@@ -80,6 +82,7 @@ export default function PastEventsPage() {
               onShare={() => {
                 /* placeholder - share logic */
               }}
+              onClose={() => setIsSheetOpen(false)}
             />
           )}
         </SheetContent>

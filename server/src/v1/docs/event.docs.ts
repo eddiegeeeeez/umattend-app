@@ -1,232 +1,4 @@
-const createEvent = {
-  '/event': {
-    post: {
-      tags: ['Event'],
-      summary: 'Create event',
-      description: 'Create a new event (Admin/CSG only)',
-      security: [{ bearerAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                title: {
-                  type: 'string',
-                  minLength: 1,
-                  maxLength: 140,
-                  default: 'Annual Tech Conference 2025',
-                  description: 'Event title',
-                },
-                description: {
-                  type: 'string',
-                  minLength: 20,
-                  maxLength: 500,
-                  default:
-                    'Join us for an exciting day of technology talks, networking, and learning from industry experts.',
-                  description: 'Event description',
-                },
-                department: {
-                  type: 'string',
-                  minLength: 3,
-                  default: 'College of Computer Studies',
-                  description: 'College/Department',
-                },
-                location: {
-                  type: 'string',
-                  minLength: 3,
-                  maxLength: 140,
-                  default: 'Main Auditorium, Building A',
-                  description: 'Event location',
-                },
-                capacity: {
-                  type: 'integer',
-                  default: 100,
-                  description: 'Event capacity',
-                },
-                all_day: {
-                  type: 'boolean',
-                  default: false,
-                  description: 'All day event flag',
-                },
-                start_time: {
-                  type: 'string',
-                  format: 'date-time',
-                  default: '2025-10-15T09:00:00Z',
-                  example: '2025-10-15T09:00:00.000Z',
-                  description: 'Event start time (ISO 8601 format)',
-                },
-                end_time: {
-                  type: 'string',
-                  format: 'date-time',
-                  default: '2025-10-15T17:00:00Z',
-                  example: '2025-10-15T17:00:00.000Z',
-                  description: 'Event end time (ISO 8601 format)',
-                },
-                check_out_required: {
-                  type: 'boolean',
-                  default: false,
-                  description: 'Check out required flag',
-                },
-                is_done: {
-                  type: 'boolean',
-                  default: false,
-                  description: 'Event completion status',
-                },
-                form_fields: {
-                  type: 'array',
-                  minItems: 1,
-                  default: [
-                    {
-                      field_name: 'Dietary Restrictions',
-                      fieldType: 'short_text',
-                    },
-                    {
-                      field_name: 'T-Shirt Size',
-                      fieldType: 'dropdown',
-                    },
-                  ],
-                  items: {
-                    type: 'object',
-                    properties: {
-                      field_name: {
-                        type: 'string',
-                        minLength: 1,
-                        maxLength: 140,
-                        default: 'Sample Field',
-                        description: 'Form field name',
-                      },
-                      fieldType: {
-                        type: 'string',
-                        enum: [
-                          'dropdown',
-                          'short_text',
-                          'long_text',
-                          'checkbox',
-                          'radio',
-                        ],
-                        default: 'short_text',
-                        description: 'Form field type',
-                      },
-                    },
-                    required: ['field_name', 'fieldType'],
-                  },
-                  description: 'Custom form fields',
-                },
-              },
-              required: [
-                'title',
-                'description',
-                'department',
-                'location',
-                'start_time',
-                'end_time',
-              ],
-            },
-          },
-        },
-      },
-      responses: {
-        200: {
-          description: 'Event created successfully',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Event Created' },
-                  data: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string' },
-                      title: { type: 'string' },
-                      description: { type: 'string' },
-                      department: { type: 'string' },
-                      location: { type: 'string' },
-                      capacity: { type: 'number' },
-                      all_day: { type: 'boolean' },
-                      start_time: {
-                        type: 'string',
-                        format: 'date-time',
-                        example: '2025-10-15T09:00:00.000Z',
-                      },
-                      end_time: {
-                        type: 'string',
-                        format: 'date-time',
-                        example: '2025-10-15T17:00:00.000Z',
-                      },
-                      check_out_required: { type: 'boolean' },
-                      is_done: { type: 'boolean' },
-                      created_by: { type: 'string' },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        400: {
-          description: 'Bad request - Validation errors',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: false },
-                  message: { type: 'array', items: { type: 'object' } },
-                },
-              },
-            },
-          },
-        },
-        401: {
-          description: 'Unauthorized',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'Unauthorized' },
-                },
-              },
-            },
-          },
-        },
-        403: {
-          description: 'Forbidden - Insufficient permissions',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'Access denied' },
-                },
-              },
-            },
-          },
-        },
-        500: {
-          description: 'Internal server error',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'Internal server error' },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-};
+
 
 const updateAndDeleteEvent = {
   '/event/{event_id}': {
@@ -995,8 +767,233 @@ const addOrganizer = {
   },
 };
 
-const getAllEvents = {
+const createAndAddEvent = {
   '/event': {
+    post: {
+      tags: ['Event'],
+      summary: 'Create event',
+      description: 'Create a new event (Admin/CSG only)',
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                title: {
+                  type: 'string',
+                  minLength: 1,
+                  maxLength: 140,
+                  default: 'Annual Tech Conference 2025',
+                  description: 'Event title',
+                },
+                description: {
+                  type: 'string',
+                  minLength: 20,
+                  maxLength: 500,
+                  default:
+                    'Join us for an exciting day of technology talks, networking, and learning from industry experts.',
+                  description: 'Event description',
+                },
+                department: {
+                  type: 'string',
+                  minLength: 3,
+                  default: 'College of Computer Studies',
+                  description: 'College/Department',
+                },
+                location: {
+                  type: 'string',
+                  minLength: 3,
+                  maxLength: 140,
+                  default: 'Main Auditorium, Building A',
+                  description: 'Event location',
+                },
+                capacity: {
+                  type: 'integer',
+                  default: 100,
+                  description: 'Event capacity',
+                },
+                all_day: {
+                  type: 'boolean',
+                  default: false,
+                  description: 'All day event flag',
+                },
+                start_time: {
+                  type: 'string',
+                  format: 'date-time',
+                  default: '2025-10-15T09:00:00Z',
+                  example: '2025-10-15T09:00:00.000Z',
+                  description: 'Event start time (ISO 8601 format)',
+                },
+                end_time: {
+                  type: 'string',
+                  format: 'date-time',
+                  default: '2025-10-15T17:00:00Z',
+                  example: '2025-10-15T17:00:00.000Z',
+                  description: 'Event end time (ISO 8601 format)',
+                },
+                check_out_required: {
+                  type: 'boolean',
+                  default: false,
+                  description: 'Check out required flag',
+                },
+                is_done: {
+                  type: 'boolean',
+                  default: false,
+                  description: 'Event completion status',
+                },
+                form_fields: {
+                  type: 'array',
+                  minItems: 1,
+                  default: [
+                    {
+                      field_name: 'Dietary Restrictions',
+                      fieldType: 'short_text',
+                    },
+                    {
+                      field_name: 'T-Shirt Size',
+                      fieldType: 'dropdown',
+                    },
+                  ],
+                  items: {
+                    type: 'object',
+                    properties: {
+                      field_name: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 140,
+                        default: 'Sample Field',
+                        description: 'Form field name',
+                      },
+                      fieldType: {
+                        type: 'string',
+                        enum: [
+                          'dropdown',
+                          'short_text',
+                          'long_text',
+                          'checkbox',
+                          'radio',
+                        ],
+                        default: 'short_text',
+                        description: 'Form field type',
+                      },
+                    },
+                    required: ['field_name', 'fieldType'],
+                  },
+                  description: 'Custom form fields',
+                },
+              },
+              required: [
+                'title',
+                'description',
+                'department',
+                'location',
+                'start_time',
+                'end_time',
+              ],
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Event created successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Event Created' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      title: { type: 'string' },
+                      description: { type: 'string' },
+                      department: { type: 'string' },
+                      location: { type: 'string' },
+                      capacity: { type: 'number' },
+                      all_day: { type: 'boolean' },
+                      start_time: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2025-10-15T09:00:00.000Z',
+                      },
+                      end_time: {
+                        type: 'string',
+                        format: 'date-time',
+                        example: '2025-10-15T17:00:00.000Z',
+                      },
+                      check_out_required: { type: 'boolean' },
+                      is_done: { type: 'boolean' },
+                      created_by: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: 'Bad request - Validation errors',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'array', items: { type: 'object' } },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Unauthorized' },
+                },
+              },
+            },
+          },
+        },
+        403: {
+          description: 'Forbidden - Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Access denied' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     get: {
       tags: ['Event'],
       summary: 'Get all events',
@@ -1234,11 +1231,10 @@ const getAllPastEvents = {
 };
 
 export const event = {
-  ...createEvent,
+  ...createAndAddEvent,
   ...updateAndDeleteEvent,
   ...checkIn,
   ...checkOut,
   ...addOrganizer,
-  ...getAllEvents,
   ...getAllPastEvents,
 };

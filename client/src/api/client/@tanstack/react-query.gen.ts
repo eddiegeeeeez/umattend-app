@@ -4,8 +4,8 @@ import { queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
 import { client } from '../client.gen';
-import { deleteEventByEventId, getAuthLoginHistory, getUser, type Options, postAuthExchange, postAuthLogout, postAuthRefresh, postEvent, postEventAddOrganizerByEventId, postEventCheckInByEventIdByUserId, postEventCheckOutByEventIdByUserId, postUserOnboarding, putEventByEventId } from '../sdk.gen';
-import type { DeleteEventByEventIdData, DeleteEventByEventIdError, DeleteEventByEventIdResponse, GetAuthLoginHistoryData, GetUserData, PostAuthExchangeData, PostAuthExchangeError, PostAuthExchangeResponse, PostAuthLogoutData, PostAuthLogoutError, PostAuthLogoutResponse, PostAuthRefreshData, PostAuthRefreshError, PostAuthRefreshResponse, PostEventAddOrganizerByEventIdData, PostEventAddOrganizerByEventIdError, PostEventAddOrganizerByEventIdResponse, PostEventCheckInByEventIdByUserIdData, PostEventCheckInByEventIdByUserIdError, PostEventCheckInByEventIdByUserIdResponse, PostEventCheckOutByEventIdByUserIdData, PostEventCheckOutByEventIdByUserIdError, PostEventCheckOutByEventIdByUserIdResponse, PostEventData, PostEventError, PostEventResponse, PostUserOnboardingData, PostUserOnboardingError, PostUserOnboardingResponse, PutEventByEventIdData, PutEventByEventIdError, PutEventByEventIdResponse } from '../types.gen';
+import { Authentication, Event, type Options, User } from '../sdk.gen';
+import type { DeleteEventByEventIdData, DeleteEventByEventIdError, DeleteEventByEventIdResponse, GetAuthLoginHistoryData, GetUserData, GetUserEventsData, PostAuthExchangeData, PostAuthExchangeError, PostAuthExchangeResponse, PostAuthLogoutData, PostAuthLogoutError, PostAuthLogoutResponse, PostAuthRefreshData, PostAuthRefreshError, PostAuthRefreshResponse, PostEventAddOrganizerByEventIdData, PostEventAddOrganizerByEventIdError, PostEventAddOrganizerByEventIdResponse, PostEventCheckInByEventIdByUserIdData, PostEventCheckInByEventIdByUserIdError, PostEventCheckInByEventIdByUserIdResponse, PostEventCheckOutByEventIdByUserIdData, PostEventCheckOutByEventIdByUserIdError, PostEventCheckOutByEventIdByUserIdResponse, PostEventData, PostEventError, PostEventResponse, PostUserOnboardingData, PostUserOnboardingError, PostUserOnboardingResponse, PutEventByEventIdData, PutEventByEventIdError, PutEventByEventIdResponse } from '../types.gen';
 
 /**
  * Refresh access token
@@ -15,7 +15,7 @@ import type { DeleteEventByEventIdData, DeleteEventByEventIdError, DeleteEventBy
 export const postAuthRefreshMutation = (options?: Partial<Options<PostAuthRefreshData>>): UseMutationOptions<PostAuthRefreshResponse, AxiosError<PostAuthRefreshError>, Options<PostAuthRefreshData>> => {
     const mutationOptions: UseMutationOptions<PostAuthRefreshResponse, AxiosError<PostAuthRefreshError>, Options<PostAuthRefreshData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postAuthRefresh({
+            const { data } = await Authentication.postAuthRefresh({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -34,7 +34,7 @@ export const postAuthRefreshMutation = (options?: Partial<Options<PostAuthRefres
 export const postAuthLogoutMutation = (options?: Partial<Options<PostAuthLogoutData>>): UseMutationOptions<PostAuthLogoutResponse, AxiosError<PostAuthLogoutError>, Options<PostAuthLogoutData>> => {
     const mutationOptions: UseMutationOptions<PostAuthLogoutResponse, AxiosError<PostAuthLogoutError>, Options<PostAuthLogoutData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postAuthLogout({
+            const { data } = await Authentication.postAuthLogout({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -53,7 +53,7 @@ export const postAuthLogoutMutation = (options?: Partial<Options<PostAuthLogoutD
 export const postAuthExchangeMutation = (options?: Partial<Options<PostAuthExchangeData>>): UseMutationOptions<PostAuthExchangeResponse, AxiosError<PostAuthExchangeError>, Options<PostAuthExchangeData>> => {
     const mutationOptions: UseMutationOptions<PostAuthExchangeResponse, AxiosError<PostAuthExchangeError>, Options<PostAuthExchangeData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postAuthExchange({
+            const { data } = await Authentication.postAuthExchange({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -109,7 +109,7 @@ export const getAuthLoginHistoryQueryKey = (options?: Options<GetAuthLoginHistor
 export const getAuthLoginHistoryOptions = (options?: Options<GetAuthLoginHistoryData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getAuthLoginHistory({
+            const { data } = await Authentication.getAuthLoginHistory({
                 ...options,
                 ...queryKey[0],
                 signal,
@@ -131,7 +131,7 @@ export const getUserQueryKey = (options?: Options<GetUserData>) => createQueryKe
 export const getUserOptions = (options?: Options<GetUserData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getUser({
+            const { data } = await User.getUser({
                 ...options,
                 ...queryKey[0],
                 signal,
@@ -151,7 +151,7 @@ export const getUserOptions = (options?: Options<GetUserData>) => {
 export const postUserOnboardingMutation = (options?: Partial<Options<PostUserOnboardingData>>): UseMutationOptions<PostUserOnboardingResponse, AxiosError<PostUserOnboardingError>, Options<PostUserOnboardingData>> => {
     const mutationOptions: UseMutationOptions<PostUserOnboardingResponse, AxiosError<PostUserOnboardingError>, Options<PostUserOnboardingData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postUserOnboarding({
+            const { data } = await User.postUserOnboarding({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -162,6 +162,28 @@ export const postUserOnboardingMutation = (options?: Partial<Options<PostUserOnb
     return mutationOptions;
 };
 
+export const getUserEventsQueryKey = (options?: Options<GetUserEventsData>) => createQueryKey('getUserEvents', options);
+
+/**
+ * Get user attended events
+ *
+ * Retrieve all events the user has attended (checked in and checked out)
+ */
+export const getUserEventsOptions = (options?: Options<GetUserEventsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await User.getUserEvents({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getUserEventsQueryKey(options)
+    });
+};
+
 /**
  * Create event
  *
@@ -170,7 +192,7 @@ export const postUserOnboardingMutation = (options?: Partial<Options<PostUserOnb
 export const postEventMutation = (options?: Partial<Options<PostEventData>>): UseMutationOptions<PostEventResponse, AxiosError<PostEventError>, Options<PostEventData>> => {
     const mutationOptions: UseMutationOptions<PostEventResponse, AxiosError<PostEventError>, Options<PostEventData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postEvent({
+            const { data } = await Event.postEvent({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -189,7 +211,7 @@ export const postEventMutation = (options?: Partial<Options<PostEventData>>): Us
 export const deleteEventByEventIdMutation = (options?: Partial<Options<DeleteEventByEventIdData>>): UseMutationOptions<DeleteEventByEventIdResponse, AxiosError<DeleteEventByEventIdError>, Options<DeleteEventByEventIdData>> => {
     const mutationOptions: UseMutationOptions<DeleteEventByEventIdResponse, AxiosError<DeleteEventByEventIdError>, Options<DeleteEventByEventIdData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await deleteEventByEventId({
+            const { data } = await Event.deleteEventByEventId({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -208,7 +230,7 @@ export const deleteEventByEventIdMutation = (options?: Partial<Options<DeleteEve
 export const putEventByEventIdMutation = (options?: Partial<Options<PutEventByEventIdData>>): UseMutationOptions<PutEventByEventIdResponse, AxiosError<PutEventByEventIdError>, Options<PutEventByEventIdData>> => {
     const mutationOptions: UseMutationOptions<PutEventByEventIdResponse, AxiosError<PutEventByEventIdError>, Options<PutEventByEventIdData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await putEventByEventId({
+            const { data } = await Event.putEventByEventId({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -227,7 +249,7 @@ export const putEventByEventIdMutation = (options?: Partial<Options<PutEventByEv
 export const postEventCheckInByEventIdByUserIdMutation = (options?: Partial<Options<PostEventCheckInByEventIdByUserIdData>>): UseMutationOptions<PostEventCheckInByEventIdByUserIdResponse, AxiosError<PostEventCheckInByEventIdByUserIdError>, Options<PostEventCheckInByEventIdByUserIdData>> => {
     const mutationOptions: UseMutationOptions<PostEventCheckInByEventIdByUserIdResponse, AxiosError<PostEventCheckInByEventIdByUserIdError>, Options<PostEventCheckInByEventIdByUserIdData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postEventCheckInByEventIdByUserId({
+            const { data } = await Event.postEventCheckInByEventIdByUserId({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -246,7 +268,7 @@ export const postEventCheckInByEventIdByUserIdMutation = (options?: Partial<Opti
 export const postEventCheckOutByEventIdByUserIdMutation = (options?: Partial<Options<PostEventCheckOutByEventIdByUserIdData>>): UseMutationOptions<PostEventCheckOutByEventIdByUserIdResponse, AxiosError<PostEventCheckOutByEventIdByUserIdError>, Options<PostEventCheckOutByEventIdByUserIdData>> => {
     const mutationOptions: UseMutationOptions<PostEventCheckOutByEventIdByUserIdResponse, AxiosError<PostEventCheckOutByEventIdByUserIdError>, Options<PostEventCheckOutByEventIdByUserIdData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postEventCheckOutByEventIdByUserId({
+            const { data } = await Event.postEventCheckOutByEventIdByUserId({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -265,7 +287,7 @@ export const postEventCheckOutByEventIdByUserIdMutation = (options?: Partial<Opt
 export const postEventAddOrganizerByEventIdMutation = (options?: Partial<Options<PostEventAddOrganizerByEventIdData>>): UseMutationOptions<PostEventAddOrganizerByEventIdResponse, AxiosError<PostEventAddOrganizerByEventIdError>, Options<PostEventAddOrganizerByEventIdData>> => {
     const mutationOptions: UseMutationOptions<PostEventAddOrganizerByEventIdResponse, AxiosError<PostEventAddOrganizerByEventIdError>, Options<PostEventAddOrganizerByEventIdData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postEventAddOrganizerByEventId({
+            const { data } = await Event.postEventAddOrganizerByEventId({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

@@ -4,15 +4,21 @@ import { defineConfig } from '@hey-api/openapi-ts';
 config();
 
 export default defineConfig({
-  input: `${process.env.API_URL}/docs/openapi.json`,
+  input: {
+    path: `${process.env.API_URL}/docs/openapi.json`,
+    watch: true
+  },
   output: 'src/api/client',
   plugins: [
     {
-      asClass: false,
-      name: '@hey-api/sdk'
+      name: '@hey-api/client-axios',
+      runtimeConfigPath: './src/api/client-config.ts'
     },
-    '@tanstack/react-query',
-    'zod',
-    '@hey-api/client-axios'
+    '@tanstack/react-query', // generate TanStack Query hooks
+    {
+      asClass: true,
+      name: '@hey-api/sdk',
+      validator: 'zod'
+    }
   ]
 });

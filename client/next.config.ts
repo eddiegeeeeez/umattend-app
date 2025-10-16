@@ -8,7 +8,8 @@ const nextConfig: NextConfig = {
         destination: 'http://localhost:4000/api/:path*'
       }
     ];
-  }
+  },
+  allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev']
 };
 
 export default nextConfig;
