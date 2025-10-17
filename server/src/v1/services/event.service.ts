@@ -310,16 +310,27 @@ const getAllPastEvents = async (): Promise<GetAllEventsInterface> => {
   }));
 };
 
-const getAttendeesByEventId = async (
-  event_id: string
-): Promise<GetStudentsByEventIdInterface[]> => {
-  const attendees = await eventRepository.getAttendeesByEventId(event_id);
+const getPaginatedAttendeesByEventId = async (
+  event_id: string,
+  page: number,
+  limit: number
+): Promise<{
+  data: GetStudentsByEventIdInterface[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}> => {
+  const { attendees, total } =
+    await eventRepository.getPaginatedAttendeesByEventId(event_id, page, limit);
 
   if (attendees.length === 0) {
     throw new NotFoundError('No attendees found for this event');
   }
 
-  return Promise.all(
+  const result = await Promise.all(
     attendees.map(async (attendee) => {
       const checkInBy = attendee.check_in_by_user?.id
         ? await studentRepository.getStudentByUserId(
@@ -333,6 +344,57 @@ const getAttendeesByEventId = async (
           )
         : null;
 
+      return {
+        student: {
+          id: attendee.student.id,
+          user_id: attendee.student.user_id,
+          student_id: attendee.student.student_id,
+          name: attendee.student.name,
+          umindanao_email: attendee.user?.umindanao_email,
+          department: attendee.student.department,
+          program: attendee.student.program,
+          profile_picture: attendee.student.profile_picture,
+          created_at: attendee.student.created_at,
+          updated_at: attendee.student.updated_at,
+          check_in_at: attendee.check_in_at,
+          check_out_at: attendee.check_out_at,
+          check_in_by: checkInBy?.name ?? null,
+          check_out_by: checkOutBy?.name ?? null,
+        },
+      };
+    })
+  );
+
+  return {
+    data: result,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+const getAttendeesByEventId = async (
+  event_id: string
+): Promise<GetStudentsByEventIdInterface[]> => {
+  const attendees = await eventRepository.getAttendeesByEventId(event_id);
+  if (attendees.length === 0) {
+    throw new NotFoundError('No attendees found for this event');
+  }
+  return Promise.all(
+    attendees.map(async (attendee) => {
+      const checkInBy = attendee.check_in_by_user?.id
+        ? await studentRepository.getStudentByUserId(
+            attendee.check_in_by_user.id
+          )
+        : null;
+      const checkOutBy = attendee.check_out_by_user?.id
+        ? await studentRepository.getStudentByUserId(
+            attendee.check_out_by_user.id
+          )
+        : null;
       return {
         student: {
           id: attendee.student.id,
@@ -377,6 +439,7 @@ const eventServices = {
   getAllPastEvents,
   getAttendeesByEventId,
   getEventNameById,
+  getPaginatedAttendeesByEventId,
 };
 
 export default eventServices;

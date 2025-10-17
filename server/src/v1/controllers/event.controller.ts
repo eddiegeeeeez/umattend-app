@@ -458,22 +458,28 @@ const getAllPastEvents = async (req: Request, res: Response) => {
   }
 };
 
-const getAttendeesByEventId = async (req: Request, res: Response) => {
+const getPaginatedAttendeesByEventId = async (req: Request, res: Response) => {
   try {
     const { event_id } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
     if (!event_id) {
       return HTTPErrorResponse(res, 400, 'Event ID is required');
     }
 
-    const attendees = await eventServices.getAttendeesByEventId(event_id);
+    const { data, pagination } =
+      await eventServices.getPaginatedAttendeesByEventId(event_id, page, limit);
 
-    return HTTPSuccessResponse(
-      res,
-      200,
-      'Attendees retrieved successfully',
-      attendees
-    );
+    return HTTPSuccessResponse(res, 200, 'Attendees retrieved successfully', {
+      data,
+      pagination: {
+        page: pagination.page,
+        limit: pagination.limit,
+        total: pagination.total,
+        totalPages: pagination.totalPages,
+      },
+    });
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, error.message);
@@ -570,7 +576,7 @@ const eventController = {
   getEventDetailsById,
   getAllEvents,
   getAllPastEvents,
-  getAttendeesByEventId,
+  getPaginatedAttendeesByEventId,
   exportEventAttendeesToExcel,
 };
 

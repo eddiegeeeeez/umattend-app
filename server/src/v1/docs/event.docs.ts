@@ -1401,13 +1401,13 @@ const getAllPastEvents = {
   },
 };
 
-const getAttendeesByEventId = {
+const getPaginatedAttendeesByEventId = {
   '/event/{event_id}/attendees': {
     get: {
       tags: ['Event'],
-      summary: 'Get attendees by event ID',
+      summary: 'Get paginated attendees by event ID',
       description:
-        'Retrieve all students who have checked in to a specific event with their attendance details',
+        'Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -1416,6 +1416,20 @@ const getAttendeesByEventId = {
           required: true,
           schema: { type: 'string' },
           description: 'The unique ID of the event',
+        },
+        {
+          in: 'query',
+          name: 'page',
+          required: false,
+          schema: { type: 'integer', example: 1, minimum: 1 },
+          description: 'Page number for pagination (default: 1)',
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          required: false,
+          schema: { type: 'integer', example: 10, minimum: 1 },
+          description: 'Number of attendees per page (default: 10)',
         },
       ],
       responses: {
@@ -1432,61 +1446,106 @@ const getAttendeesByEventId = {
                     example: 'Attendees retrieved successfully',
                   },
                   data: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        student: {
+                    type: 'object',
+                    properties: {
+                      data: {
+                        type: 'array',
+                        items: {
                           type: 'object',
                           properties: {
-                            id: {
-                              type: 'string',
-                              example: '123e4567-e89b-12d3-a456-426614174002',
-                            },
-                            user_id: {
-                              type: 'string',
-                              example: '123e4567-e89b-12d3-a456-426614174003',
-                            },
-                            created_at: {
-                              type: 'string',
-                              format: 'date-time',
-                              example: '2025-09-01T08:00:00.000Z',
-                            },
-                            updated_at: {
-                              type: 'string',
-                              format: 'date-time',
-                              example: '2025-09-01T08:00:00.000Z',
-                            },
-                            student_id: { type: 'number', example: 2023001 },
-                            name: { type: 'string', example: 'Jane Doe' },
-                            department: {
-                              type: 'string',
-                              example: 'College of Computer Studies',
-                            },
-                            program: {
-                              type: 'string',
-                              example:
-                                'Bachelor of Science in Computer Science',
-                            },
-                            profile_picture: {
-                              type: 'string',
-                              example: 'https://example.com/profile.jpg',
-                            },
-                            check_in_at: {
-                              type: 'string',
-                              format: 'date-time',
-                              example: '2025-10-15T09:15:00.000Z',
-                            },
-                            check_out_at: {
-                              type: 'string',
-                              format: 'date-time',
-                              example: '2025-10-15T16:45:00.000Z',
+                            student: {
+                              type: 'object',
+                              properties: {
+                                id: {
+                                  type: 'string',
+                                  example:
+                                    '123e4567-e89b-12d3-a456-426614174002',
+                                },
+                                user_id: {
+                                  type: 'string',
+                                  example:
+                                    '123e4567-e89b-12d3-a456-426614174003',
+                                },
+                                student_id: {
+                                  type: 'number',
+                                  example: 2023001,
+                                },
+                                name: { type: 'string', example: 'Jane Doe' },
+                                umindanao_email: {
+                                  type: 'string',
+                                  example: 'jane.doe@umindanao.edu.ph',
+                                },
+                                department: {
+                                  type: 'string',
+                                  example: 'College of Computer Studies',
+                                },
+                                program: {
+                                  type: 'string',
+                                  example:
+                                    'Bachelor of Science in Computer Science',
+                                },
+                                profile_picture: {
+                                  type: 'string',
+                                  example: 'https://example.com/profile.jpg',
+                                },
+                                created_at: {
+                                  type: 'string',
+                                  format: 'date-time',
+                                  example: '2025-09-01T08:00:00.000Z',
+                                },
+                                updated_at: {
+                                  type: 'string',
+                                  format: 'date-time',
+                                  example: '2025-09-01T08:00:00.000Z',
+                                },
+                                check_in_at: {
+                                  type: 'string',
+                                  format: 'date-time',
+                                  example: '2025-10-15T09:15:00.000Z',
+                                },
+                                check_out_at: {
+                                  type: 'string',
+                                  format: 'date-time',
+                                  example: '2025-10-15T16:45:00.000Z',
+                                },
+                                check_in_by: {
+                                  type: ['string', 'null'],
+                                  example: 'John Admin',
+                                },
+                                check_out_by: {
+                                  type: ['string', 'null'],
+                                  example: null,
+                                },
+                              },
                             },
                           },
                         },
                       },
+                      pagination: {
+                        type: 'object',
+                        properties: {
+                          page: { type: 'integer', example: 1 },
+                          limit: { type: 'integer', example: 10 },
+                          total: { type: 'integer', example: 47 },
+                          totalPages: { type: 'integer', example: 5 },
+                        },
+                      },
                     },
                   },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: 'Invalid request or missing parameters',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Validation error' },
                 },
               },
             },
@@ -1670,6 +1729,6 @@ export const event = {
   ...checkOut,
   ...addOrganizer,
   ...getAllPastEvents,
-  ...getAttendeesByEventId,
+  ...getPaginatedAttendeesByEventId,
   ...exportEventAttendeesToExcel,
 };
