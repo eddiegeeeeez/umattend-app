@@ -247,17 +247,57 @@ const addOrganizer = async (user_id: string, event_id: string) => {
   });
 };
 
-const getAttendeesByEventId = async (event_id: string) => {
-  return await prisma.attendance.findMany({
-    where: {
-      event_id: event_id,
-    },
-    include: {
-      user: {
-        select: {
-          umindanao_email: true,
+const getPaginatedAttendeesByEventId = async (
+  event_id: string,
+  page: number,
+  limit: number
+) => {
+  const skip = (page - 1) * limit;
+
+  const [attendees, total] = await Promise.all([
+    prisma.attendance.findMany({
+      where: { event_id },
+      include: {
+        user: {
+          select: { umindanao_email: true },
+        },
+        student: {
+          select: {
+            id: true,
+            user_id: true,
+            student_id: true,
+            name: true,
+            department: true,
+            program: true,
+            profile_picture: true,
+            created_at: true,
+            updated_at: true,
+          },
+        },
+        check_in_by_user: {
+          select: { id: true },
+        },
+        check_out_by_user: {
+          select: { id: true },
         },
       },
+      orderBy: {
+        check_in_at: 'desc',
+      },
+      skip,
+      take: limit,
+    }),
+    prisma.attendance.count({ where: { event_id } }),
+  ]);
+
+  return { attendees, total };
+};
+
+const getAttendeesByEventId = async (event_id: string) => {
+  return await prisma.attendance.findMany({
+    where: { event_id: event_id },
+    include: {
+      user: { select: { umindanao_email: true } },
       student: {
         select: {
           id: true,
@@ -271,20 +311,10 @@ const getAttendeesByEventId = async (event_id: string) => {
           updated_at: true,
         },
       },
-      check_in_by_user: {
-        select: {
-          id: true,
-        },
-      },
-      check_out_by_user: {
-        select: {
-          id: true,
-        },
-      },
+      check_in_by_user: { select: { id: true } },
+      check_out_by_user: { select: { id: true } },
     },
-    orderBy: {
-      check_in_at: 'desc',
-    },
+    orderBy: { check_in_at: 'desc' },
   });
 };
 
@@ -319,6 +349,7 @@ const eventRepository = {
   getAttendeesByEventId,
   getEventCheckoutCount,
   getEventCheckinCount,
+  getPaginatedAttendeesByEventId
 };
 
 export default eventRepository;

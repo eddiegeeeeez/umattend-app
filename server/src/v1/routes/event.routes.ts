@@ -64,13 +64,15 @@ router.get(
   '/:event_id/attendees',
   authMiddleware,
   checkRole('admin', 'csg'),
-  eventController.getAttendeesByEventId
+  checkOrganizer,
+  eventController.getPaginatedAttendeesByEventId
 );
 
 router.get(
   '/export/:event_id',
   authMiddleware,
   checkRole('admin', 'csg'),
+  checkOrganizer,
   eventController.exportEventAttendeesToExcel
 );
 
