@@ -54,7 +54,7 @@ export default function OnboardingPage() {
         program: apiUser.program || currentUser?.program,
         role: (apiUser.role as 'student' | 'admin' | 'csg' | 'instructor' | 'organizer') || currentUser?.role || 'student',
         done_onboarding: apiUser.done_onboarding ?? currentUser?.done_onboarding ?? false,
-        profile_picture: apiUser.profile_picture || currentUser?.profile_picture || ''
+        profile_picture: currentUser?.profile_picture || ''
       });
     }
   }, [userData, updateUser]); // ✅ Removed 'user' from dependencies
