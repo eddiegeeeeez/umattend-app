@@ -1,11 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Settings2, ChevronRight, ChevronLeft } from 'lucide-react';
 import {
   type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
+  type VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -14,6 +15,7 @@ import {
   useReactTable
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
@@ -26,6 +28,7 @@ export function AttendanceDataTable<TData, TValue>({ columns, data }: DataTableP
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10
@@ -42,6 +45,7 @@ export function AttendanceDataTable<TData, TValue>({ columns, data }: DataTableP
     getFilteredRowModel: getFilteredRowModel(),
     onPaginationChange: setPagination,
     onGlobalFilterChange: setGlobalFilter,
+    onColumnVisibilityChange: setColumnVisibility,
     globalFilterFn: (row, columnId, filterValue) => {
       const searchValue = filterValue.toLowerCase();
       const id = String(row.getValue('id')).toLowerCase();
@@ -54,62 +58,91 @@ export function AttendanceDataTable<TData, TValue>({ columns, data }: DataTableP
       sorting,
       columnFilters,
       globalFilter,
+      columnVisibility,
       pagination
     }
   });
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="relative">
-        <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2 md:left-4 md:size-5" />
-        <Input
-          placeholder="Search by name, student ID, or email..."
-          value={globalFilter ?? ''}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-          className="focus-visible:ring-primary/20 h-10 border-2 pl-10 text-sm shadow-sm focus-visible:ring-2 md:h-12 md:pl-12 md:text-base"
-        />
-      </div>
-
-      <div className="border-border bg-card overflow-hidden rounded-xl border-2 shadow-md">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="bg-muted/50 hover:bg-muted/50 border-b-2">
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id} className="text-foreground h-12 text-xs font-bold whitespace-nowrap md:h-14 md:text-sm">
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className="hover:bg-muted/30 border-b transition-colors">
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="py-3 text-xs whitespace-nowrap md:py-4 md:text-sm">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center text-sm md:h-32 md:text-base">
-                    No records found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+    <div className="w-full">
+      <div className="flex items-center justify-between gap-4 py-4">
+        <div className="relative max-w-sm flex-1">
+          <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2 transform" />
+          <Input
+            placeholder="Search by Student ID, Name, or Email..."
+            value={globalFilter}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className="pl-10"
+          />
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="ml-auto bg-transparent">
+              <Settings2 className="mr-2 h-4 w-4" />
+              Columns
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            {table
+              .getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => {
+                let headerText = '';
+                if (typeof column.columnDef.header === 'string') {
+                  headerText = column.columnDef.header;
+                } else if (column.columnDef.header === undefined) {
+                  headerText = column.id;
+                } else {
+                  headerText = column.id.charAt(0).toUpperCase() + column.id.slice(1);
+                }
+
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  >
+                    {headerText}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <div className="flex flex-col items-start justify-between gap-4 text-xs sm:flex-row sm:items-center md:text-sm">
+      <div className="rounded-md border">
+        <Table className='p-5'>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return <TableHead key={header.id}>{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}</TableHead>;
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  No records found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex flex-col items-start justify-between gap-4 text-xs sm:flex-row sm:items-center md:text-sm mt-5">
         <p className="text-muted-foreground font-medium">
           Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
           {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)} of{' '}

@@ -8,6 +8,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 export type AttendanceRecord = {
   id: string;
   name: string;
+  department: string;
+  program: string;
   email: string;
   checkInAt: string;
   checkInBy: string;
@@ -23,14 +25,14 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="text-foreground p-0 text-xs font-bold hover:bg-transparent md:text-sm"
+          className="text-foreground p-0 text-xs font-medium md:text-sm"
         >
           Student ID
-          <ArrowUpDown className="ml-1 size-3 md:ml-2 md:size-4" />
+          <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-foreground text-xs font-semibold md:text-sm">{row.getValue('id')}</div>
+    cell: ({ row }) => <div className="text-foreground font-semimedium pl-3 text-xs md:text-sm">{row.getValue('id')}</div>
   },
   {
     accessorKey: 'name',
@@ -39,14 +41,46 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="text-foreground p-0 text-xs font-bold hover:bg-transparent md:text-sm"
+          className="text-foreground p-0 text-xs font-medium md:text-sm"
         >
           Name
-          <ArrowUpDown className="ml-1 size-3 md:ml-2 md:size-4" />
+          <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-foreground text-xs font-medium md:text-sm">{row.getValue('name')}</div>
+    cell: ({ row }) => <div className="text-foreground pl-3 text-xs font-medium md:text-sm">{row.getValue('name')}</div>
+  },
+  {
+    accessorKey: 'department',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="text-foreground p-0 text-xs font-medium md:text-sm"
+        >
+          Department
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="text-muted-foreground pl-3 text-xs font-medium md:text-sm">{row.getValue('department')}</div>
+  },
+  {
+    accessorKey: 'program',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="text-foreground p-0 text-xs font-medium md:text-sm"
+        >
+          Program
+          <ArrowUpDown />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="text-muted-foreground pl-3 text-xs font-medium md:text-sm">{row.getValue('program')}</div>
   },
   {
     accessorKey: 'email',
@@ -55,14 +89,14 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="text-foreground p-0 text-xs font-bold hover:bg-transparent md:text-sm"
+          className="text-foreground p-0 text-xs font-medium md:text-sm"
         >
-          Umindanao Email
-          <ArrowUpDown className="ml-1 size-3 md:ml-2 md:size-4" />
+          UMindanao Email
+          <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-muted-foreground text-xs font-medium md:text-sm">{row.getValue('email')}</div>
+    cell: ({ row }) => <div className="text-muted-foreground pl-3 text-xs font-medium md:text-sm">{row.getValue('email')}</div>
   },
   {
     accessorKey: 'checkInAt',
@@ -71,19 +105,19 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="text-foreground p-0 text-xs font-bold hover:bg-transparent md:text-sm"
+          className="text-foreground p-0 text-xs font-medium md:text-sm"
         >
           Check in at
-          <ArrowUpDown className="ml-1 size-3 md:ml-2 md:size-4" />
+          <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-foreground text-xs font-medium md:text-sm">{row.getValue('checkInAt')}</div>
+    cell: ({ row }) => <div className="text-foreground pl-3 text-xs font-medium md:text-sm">{row.getValue('checkInAt')}</div>
   },
   {
     accessorKey: 'checkInBy',
-    header: () => <div className="text-foreground text-xs font-bold md:text-sm">Check in by</div>,
-    cell: ({ row }) => <div className="text-muted-foreground text-xs font-medium md:text-sm">{row.getValue('checkInBy')}</div>
+    header: () => <div className="text-foreground text-xs font-medium md:text-sm pl-3">Check in by</div>,
+    cell: ({ row }) => <div className="text-muted-foreground text-xs font-medium md:text-sm pl-3">{row.getValue('checkInBy')}</div>
   },
   {
     accessorKey: 'checkOutAt',
@@ -92,25 +126,24 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="text-foreground p-0 text-xs font-bold hover:bg-transparent md:text-sm"
+          className="text-foreground p-0 text-xs font-medium md:text-sm"
         >
           Check out at
-          <ArrowUpDown className="ml-1 size-3 md:ml-2 md:size-4" />
+          <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-foreground text-xs font-medium md:text-sm">{row.getValue('checkOutAt')}</div>
+    cell: ({ row }) => <div className="text-foreground text-xs font-medium md:text-sm pl-3">{row.getValue('checkOutAt')}</div>
   },
   {
     accessorKey: 'checkOutBy',
-    header: () => <div className="text-foreground text-xs font-bold md:text-sm">Check out by</div>,
-    cell: ({ row }) => <div className="text-muted-foreground text-xs font-medium md:text-sm">{row.getValue('checkOutBy')}</div>
+    header: () => <div className="text-foreground text-xs font-medium md:text-sm pl-3">Check out by</div>,
+    cell: ({ row }) => <div className="text-muted-foreground text-xs font-medium md:text-sm pl-3">{row.getValue('checkOutBy')}</div>
   },
   {
     id: 'actions',
-    header: () => <div className="text-foreground text-center text-xs font-bold md:text-sm">Actions</div>,
+    header: () => <div className="text-foreground text-center text-xs font-medium md:text-sm px-4">Actions</div>,
     cell: ({ row }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const record = row.original;
 
       return (
