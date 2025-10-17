@@ -10,15 +10,17 @@ import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
 import { events } from '@prisma/client';
-import { eventStatusQueue } from '../queues/event.queue';
+import { endEventStatusQueue } from '../queues/endEvent.queue';
 import authRepository from '../repositories/auth.repository';
+import { startEventStatusQueue } from '../queues/startEvent.queue';
 import { GetStudentsByEventIdInterface } from '../interface/student';
 
 const addEvent = async (event_data: AddEventInterface) => {
   try {
     const event = await eventRepository.createEvent(event_data);
 
-    await scheduleEventStatusDoneJob(event);
+    await scheduleStartEventStatusJob(event);
+    await scheduleEndEventStatusJob(event);
 
     return event;
   } catch (error) {
@@ -88,8 +90,10 @@ const updateEvent = async (eventId: string, event_data: AddEventInterface) => {
   }
   const updated_event = await eventRepository.updateEvent(eventId, event_data);
 
-  await eventStatusQueue.remove(`event-done-${updated_event.id}`);
-  await scheduleEventStatusDoneJob(updated_event);
+  await startEventStatusQueue.remove(`event-start-${updated_event.id}`);
+  await endEventStatusQueue.remove(`event-done-${updated_event.id}`);
+  await scheduleStartEventStatusJob(updated_event);
+  await scheduleEndEventStatusJob(updated_event);
 
   return updated_event;
 };
@@ -148,7 +152,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
   }
 };
 
-const scheduleEventStatusDoneJob = async (event: events) => {
+const scheduleEndEventStatusJob = async (event: events) => {
   if (!event.id) {
     return;
   }
@@ -166,7 +170,7 @@ const scheduleEventStatusDoneJob = async (event: events) => {
 
   const jobId = `event-done-${event.id}`;
 
-  await eventStatusQueue.add(
+  await endEventStatusQueue.add(
     'mark-event-done',
     { event_id: event.id },
     { delay, jobId }
@@ -174,6 +178,35 @@ const scheduleEventStatusDoneJob = async (event: events) => {
 
   console.log(
     `Scheduled event ${event.id} to be marked done in ${delay / 1000}s`
+  );
+};
+
+const scheduleStartEventStatusJob = async (event: events) => {
+  if (!event.id) {
+    return;
+  }
+
+  if (!event.all_day && !event.start_time) {
+    console.warn(`Event ${event.id} has no start_time, skipping schedule.`);
+    return;
+  }
+
+  const delay = event.all_day
+    ? 0 // all-day events start immediately
+    : event.start_time
+      ? Math.max(0, new Date(event.start_time).getTime() - Date.now())
+      : 0;
+
+  const jobId = `event-start-${event.id}`;
+
+  await startEventStatusQueue.add(
+    'mark-event-started',
+    { event_id: event.id },
+    { delay, jobId }
+  );
+
+  console.log(
+    `Scheduled event ${event.id} to be marked started in ${delay / 1000}s`
   );
 };
 
@@ -309,7 +342,6 @@ const eventServices = {
   getAllEvents,
   createCheckInEvent,
   createCheckOutEvent,
-  scheduleEventStatusDoneJob,
   addOrganizer,
   getEventDetailsById,
   getAllPastEvents,

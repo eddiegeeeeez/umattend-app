@@ -543,10 +543,10 @@ const checkIn = {
       parameters: [
         {
           in: 'path',
-          name: 'user_id',
+          name: 'student_id',
           required: true,
           schema: { type: 'string' },
-          description: 'User ID',
+          description: 'Student ID',
         },
         {
           in: 'path',
@@ -675,10 +675,10 @@ const checkOut = {
       parameters: [
         {
           in: 'path',
-          name: 'user_id',
+          name: 'student_id',
           required: true,
           schema: { type: 'string' },
-          description: 'User ID',
+          description: 'Student ID',
         },
         {
           in: 'path',
