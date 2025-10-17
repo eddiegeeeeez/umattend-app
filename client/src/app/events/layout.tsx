@@ -1,5 +1,6 @@
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
+import ProtectedRoute from '@/components/protected-routes';
 
 export default function RootLayout({
   children
@@ -7,10 +8,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
-      <Navbar />
-      {children}
-      <Footer />
-    </div>
+    <ProtectedRoute>
+      <div>
+        <Navbar />
+        {children}
+        <Footer />
+      </div>
+    </ProtectedRoute>
   );
 }
