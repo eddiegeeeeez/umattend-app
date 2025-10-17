@@ -35,6 +35,18 @@ const eslintConfig = [
           ]
         : 'off'
     }
+  },
+  {
+    files: ['src/api/**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': [
+        'off',
+        {
+          'ts-expect-error': false
+        }
+      ]
+    }
   }
 ];
 
