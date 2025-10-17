@@ -4,19 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { Menu, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from './ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
-import { getUserOptions } from '@/api/client/@tanstack/react-query.gen';
+import { Skeleton } from './ui/skeleton';
 import { useAuthStore } from '@/store/authStore';
 
 const Navbar = () => {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [now, setNow] = useState<Date>(new Date());
-  const updateUser = useAuthStore((state) => state.updateUser);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
@@ -47,35 +45,7 @@ const Navbar = () => {
     return `${timeStr} ${formatGmtOffset(date)}`;
   };
 
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
   // Fetch user data after authentication
-  const { data: userData } = useQuery({
-    ...getUserOptions(),
-    enabled: isAuthenticated(),
-    staleTime: Infinity // Don't refetch unless manually invalidated
-  });
-
-  // Update user data in store when fetched (merge with existing JWT data)
-  useEffect(() => {
-    if (userData?.success && userData?.data?.user) {
-      const apiUser = userData.data.user;
-      const currentUser = useAuthStore.getState().user;
-
-      // Merge API data with existing JWT data (preserve student_id from JWT)
-      updateUser({
-        user_id: apiUser.id,
-        student_id: currentUser?.student_id, // Keep from JWT
-        umindanao_email: apiUser.umindanao_email || currentUser?.umindanao_email,
-        name: apiUser.name || currentUser?.name,
-        department: apiUser.department || currentUser?.department,
-        program: apiUser.program || currentUser?.program,
-        role: (apiUser.role as 'student' | 'admin' | 'csg' | 'instructor' | 'organizer') || currentUser?.role || 'student',
-        done_onboarding: apiUser.done_onboarding ?? currentUser?.done_onboarding ?? false,
-        profile_picture: apiUser.profile_picture || currentUser?.profile_picture || ''
-      });
-    }
-  }, [userData, updateUser]);
 
   const studentData = {
     name: user?.name || 'User',
@@ -119,10 +89,14 @@ const Navbar = () => {
 
           <Popover>
             <PopoverTrigger className="cursor-pointer">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.profile_picture || undefined} />
-                <AvatarFallback className="bg-foreground text-background text-sm font-semibold">{getInitials(studentData.name)}</AvatarFallback>
-              </Avatar>
+              {!user ? (
+                <Skeleton className="h-8 w-8 bg-neutral-200 rounded-full" />
+              ) : (
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.profile_picture || undefined} />
+                  <AvatarFallback className="bg-foreground text-background text-sm font-semibold">{getInitials(studentData.name)}</AvatarFallback>
+                </Avatar>
+              )}
             </PopoverTrigger>
             <PopoverContent className="w-64 rounded-xl border border-gray-200 p-0 shadow-lg">
               <div className="flex items-center gap-3 border-b px-4 py-3">
