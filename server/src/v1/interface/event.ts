@@ -49,3 +49,28 @@ export interface AddEventRequest extends Request {
     event_data: AddEventInterface;
   };
 }
+
+export interface GetEventDetailsByIdInterface {
+  id: string;
+  title: string;
+  description: string;
+  department: string;
+  location: string;
+  capacity?: number;
+  all_day: boolean;
+  start_time?: Date;
+  end_time?: Date;
+  check_out_required: boolean;
+  is_done: boolean;
+  checkin_count: number;
+  checkout_count?: number;
+  created_by: string;
+}
+
+export interface GetEventDetailsWithEditByIdInterface
+  extends GetEventDetailsByIdInterface {
+  can_edit: boolean;
+}
+
+export interface GetAllEventsInterface
+  extends Array<GetEventDetailsByIdInterface> {}

@@ -8,6 +8,22 @@ export const formatDate = (date: Date): string => {
   return `${mm}${dd}${yyyy}_${hh}${min}${ss}`;
 };
 
+export const formatDateTime = (date: Date | null): string => {
+  if (!date) {
+    return '';
+  }
+
+  return new Date(date).toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
+};
+
 export const toKebabCase = (str: string): string => {
   return str
     .replace(/([a-z])([A-Z])/g, '$1-$2')
@@ -15,6 +31,9 @@ export const toKebabCase = (str: string): string => {
     .toLowerCase();
 };
 
-export const generateExportFileName = (eventId: string, eventName: string): string => {
+export const generateExportFileName = (
+  eventId: string,
+  eventName: string
+): string => {
   return `${eventId}_${toKebabCase(eventName)}_${formatDate(new Date())}.xlsx`;
 };

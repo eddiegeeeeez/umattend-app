@@ -60,10 +60,67 @@ const getEventDetails = async (eventId: string) => {
   });
 };
 
-const createCheckInEvent = async (
-  userId: string,
-  attendance_data: AddCheckInInterface
-) => {
+const getAllEvents = async () => {
+  const events = await prisma.events.findMany({
+    orderBy: { start_time: 'asc' },
+    where: {
+      is_done: false,
+    },
+  });
+
+  return await Promise.all(
+    events.map(async (event) => {
+      const checkin_count = await prisma.attendance.count({
+        where: { event_id: event.id },
+      });
+      const checkout_count = await prisma.attendance.count({
+        where: {
+          event_id: event.id,
+          NOT: {
+            check_out_at: null,
+          },
+        },
+      });
+      return {
+        ...event,
+        checkin_count,
+        checkout_count,
+      };
+    })
+  );
+};
+
+const getAllPastEvents = async () => {
+  const events = await prisma.events.findMany({
+    orderBy: { end_time: 'desc' },
+    where: {
+      is_done: true,
+    },
+  });
+
+  return await Promise.all(
+    events.map(async (event) => {
+      const checkin_count = await prisma.attendance.count({
+        where: { event_id: event.id },
+      });
+      const checkout_count = await prisma.attendance.count({
+        where: {
+          event_id: event.id,
+          NOT: {
+            check_out_at: null,
+          },
+        },
+      });
+      return {
+        ...event,
+        checkin_count,
+        checkout_count,
+      };
+    })
+  );
+};
+
+const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
   const { event_id, student_id, check_in_at, check_in_by } = attendance_data;
   return await prisma.$transaction(async (tx) => {
     const event = await tx.events.findUnique({
@@ -103,7 +160,7 @@ const createCheckInEvent = async (
         student_id,
         check_in_by,
         check_in_at: check_in_at ?? new Date().toISOString(),
-        userId,
+        userId: student.user_id,
       },
       include: {
         event: true,
@@ -171,7 +228,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
 };
 
 const checkOrganizer = async (user_id: string, event_id: string) => {
-  const organizer = await prisma.organizers.findUnique({
+  return await prisma.organizers.findUnique({
     where: {
       user_id_event_id: {
         user_id,
@@ -179,8 +236,6 @@ const checkOrganizer = async (user_id: string, event_id: string) => {
       },
     },
   });
-
-  return !!organizer;
 };
 
 const addOrganizer = async (user_id: string, event_id: string) => {
@@ -189,6 +244,64 @@ const addOrganizer = async (user_id: string, event_id: string) => {
       user_id,
       event_id,
     },
+  });
+};
+
+const getAttendeesByEventId = async (event_id: string) => {
+  return await prisma.attendance.findMany({
+    where: {
+      event_id: event_id,
+    },
+    include: {
+      user: {
+        select: {
+          umindanao_email: true,
+        },
+      },
+      student: {
+        select: {
+          id: true,
+          user_id: true,
+          student_id: true,
+          name: true,
+          department: true,
+          program: true,
+          profile_picture: true,
+          created_at: true,
+          updated_at: true,
+        },
+      },
+      check_in_by_user: {
+        select: {
+          id: true,
+        },
+      },
+      check_out_by_user: {
+        select: {
+          id: true,
+        },
+      },
+    },
+    orderBy: {
+      check_in_at: 'desc',
+    },
+  });
+};
+
+const getEventCheckoutCount = async (event_id: string) => {
+  return await prisma.attendance.count({
+    where: {
+      event_id,
+      NOT: {
+        check_out_at: null,
+      },
+    },
+  });
+};
+
+const getEventCheckinCount = async (event_id: string) => {
+  return await prisma.attendance.count({
+    where: { event_id },
   });
 };
 
@@ -201,6 +314,11 @@ const eventRepository = {
   createCheckOutEvent,
   addOrganizer,
   checkOrganizer,
+  getAllEvents,
+  getAllPastEvents,
+  getAttendeesByEventId,
+  getEventCheckoutCount,
+  getEventCheckinCount,
 };
 
 export default eventRepository;

@@ -38,9 +38,37 @@ const onboardUser = async (
   return user;
 };
 
+const getUserAttendedEvents = async (user_id: string) => {
+  const attendedEvents = await prisma.attendance.findMany({
+    where: {
+      userId: user_id,
+    },
+    select: {
+      event: {
+        select: {
+          id: true,
+          title: true,
+          start_time: true,
+          end_time: true,
+        },
+      },
+    },
+    orderBy: {
+      event: {
+        start_time: 'desc',
+      },
+    },
+  });
+
+  return attendedEvents.map((record) => ({
+    ...record.event,
+  }));
+};
+
 const userRepository = {
   findUserById,
   onboardUser,
+  getUserAttendedEvents,
 };
 
 export default userRepository;

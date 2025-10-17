@@ -207,8 +207,122 @@ const onboarding = {
     },
   },
 };
-
+const getUserAttendedEvents = {
+  '/user/events': {
+    get: {
+      tags: ['User'],
+      summary: 'Get user attended events',
+      description:
+        'Retrieve all events the user has attended (checked in and checked out)',
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: {
+          description: 'List of attended events retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Attended events fetched successfully',
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: {
+                          type: 'string',
+                          example: 'evt_12345',
+                        },
+                        title: {
+                          type: 'string',
+                          example: 'Orientation Day',
+                        },
+                        start_time: {
+                          type: 'string',
+                          format: 'date-time',
+                          example: '2025-10-10T08:00:00Z',
+                        },
+                        end_time: {
+                          type: 'string',
+                          format: 'date-time',
+                          example: '2025-10-10T10:00:00Z',
+                        },
+                        check_in_at: {
+                          type: 'string',
+                          format: 'date-time',
+                          example: '2025-10-10T07:55:00Z',
+                        },
+                        check_out_at: {
+                          type: 'string',
+                          format: 'date-time',
+                          example: '2025-10-10T10:05:00Z',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized - No token provided or invalid token',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Unauthorized' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: 'No attended events found for the user',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: {
+                    type: 'string',
+                    example: 'No attended events found',
+                  },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: {
+                    type: 'string',
+                    example: 'Internal server error',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
 export const user = {
   ...getUser,
   ...onboarding,
+  ...getUserAttendedEvents,
 };

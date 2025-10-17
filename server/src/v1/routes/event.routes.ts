@@ -31,7 +31,7 @@ router.put(
   eventController.updateEvent
 );
 router.post(
-  `/check_in/:event_id/:user_id`,
+  `/check_in/:event_id/:student_id`,
   authMiddleware,
   checkRole('admin', 'csg'),
   checkOrganizer,
@@ -54,11 +54,23 @@ router.post(
   eventController.addOrganizer
 );
 
+router.get('/', authMiddleware, eventController.getAllEvents);
+
+router.get('/past', authMiddleware, eventController.getAllPastEvents);
+
+router.get('/:event_id', authMiddleware, eventController.getEventDetailsById);
+
 router.get(
-  `/export`,
+  '/:event_id/attendees',
   authMiddleware,
   checkRole('admin', 'csg'),
-  checkOrganizer,
+  eventController.getAttendeesByEventId
+);
+
+router.get(
+  '/export/:event_id',
+  authMiddleware,
+  checkRole('admin', 'csg'),
   eventController.exportEventAttendeesToExcel
 );
 

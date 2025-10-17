@@ -36,6 +36,13 @@ export interface FetchUserInfoResult {
   role: string;
 }
 
+export interface FetchUserAttendedEvents {
+  id: string;
+  title: string;
+  start_time: Date | null;
+  end_time: Date | null;
+}
+
 export interface OnboardedUserInfoResult {
   access_token: string;
   user: {
