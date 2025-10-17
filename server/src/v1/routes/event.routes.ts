@@ -67,4 +67,11 @@ router.get(
   eventController.getAttendeesByEventId
 );
 
+router.get(
+  '/export/:event_id',
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  eventController.exportEventAttendeesToExcel
+);
+
 export default router;
