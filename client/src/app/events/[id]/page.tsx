@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Mock single event data
 type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
@@ -45,13 +46,95 @@ const mockEvent: Event = {
   checkOutRequired: true
 };
 
+const EventDetailsSkeleton = () => {
+  return (
+    <div className="min-h-screen bg-neutral-100">
+      {/* Hero Section Skeleton */}
+      <section className="border-border bg-muted/30 border-b">
+        <div className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+          <div className="mx-auto max-w-4xl">
+            <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
+              <div className="flex-1 space-y-4">
+                {/* Title Skeleton */}
+                <Skeleton className="h-10 w-3/4 bg-neutral-200 md:h-12 lg:h-14" />
+
+                {/* Meta Info Skeleton */}
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded bg-neutral-200" />
+                    <Skeleton className="h-4 w-40 bg-neutral-200" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded bg-neutral-200" />
+                    <Skeleton className="h-4 w-32 bg-neutral-200" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded bg-neutral-200" />
+                    <Skeleton className="h-4 w-28 bg-neutral-200" />
+                  </div>
+                </div>
+
+                {/* Location Skeleton */}
+                <div className="flex items-start gap-2">
+                  <Skeleton className="mt-0.5 h-4 w-4 rounded bg-neutral-200" />
+                  <Skeleton className="h-4 w-48 bg-neutral-200" />
+                </div>
+
+                {/* Button Skeleton */}
+                <div className="pt-2">
+                  <Skeleton className="h-10 w-32 bg-neutral-200" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Skeleton */}
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl space-y-8">
+          {/* Status Card Skeleton */}
+          <Card className="border-primary/20 bg-primary/5 border-2">
+            <CardContent className="flex items-start gap-4 p-6">
+              <Skeleton className="h-12 w-12 rounded-full bg-neutral-200" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-5 w-48 bg-neutral-200" />
+                <Skeleton className="h-4 w-64 bg-neutral-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* About Event Skeleton */}
+          <section className="space-y-4">
+            <Skeleton className="h-8 w-40 bg-neutral-200" />
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-full bg-neutral-200" />
+              <Skeleton className="h-4 w-full bg-neutral-200" />
+              <Skeleton className="h-4 w-5/6 bg-neutral-200" />
+            </div>
+          </section>
+
+          <Separator />
+        </div>
+      </main>
+    </div>
+  );
+};
+
 export default function EventDetailsPage() {
-  const [event, setEvent] = useState<Event>(mockEvent);
+  const [event, setEvent] = useState<Event | null>(null);
   const [attendanceStatus, setAttendanceStatus] = useState<'joined' | 'not_joined'>('joined');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setEvent(mockEvent);
-    setAttendanceStatus('joined');
+    // Simulate loading - Replace with actual API call
+    const timer = setTimeout(() => {
+      setEvent(mockEvent);
+      setAttendanceStatus('joined');
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const formatDate = (date: Date) => {
@@ -62,6 +145,10 @@ export default function EventDetailsPage() {
       year: 'numeric'
     });
   };
+
+  if (isLoading || !event) {
+    return <EventDetailsSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-neutral-100">

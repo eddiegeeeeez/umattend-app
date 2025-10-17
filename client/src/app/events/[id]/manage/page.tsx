@@ -52,7 +52,7 @@ export default function ManageSingleEventPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useState(() => {
-    setTimeout(() => setIsLoading(false), 1500);
+    setTimeout(() => setIsLoading(false), 1000);
   });
 
   const handleUpdateEvent = (updatedEvent: Event) => {
@@ -78,17 +78,13 @@ export default function ManageSingleEventPage() {
               <BarChart3 className="mr-2 h-4 w-4" />
               Details
             </TabsTrigger>
-            <TabsTrigger value="overview" className="rounded-md px-4 py-2 text-sm font-medium">
+            {/* <TabsTrigger value="overview" className="rounded-md px-4 py-2 text-sm font-medium">
               <BarChart3 className="mr-2 h-4 w-4" />
               Overview
-            </TabsTrigger>
+            </TabsTrigger> */}
             <TabsTrigger value="attendees" className="rounded-md px-4 py-2 text-sm font-medium">
               <UserCheck className="mr-2 h-4 w-4" />
               Attendees
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-md px-4 py-2 text-sm font-medium">
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
             </TabsTrigger>
           </TabsList>
 
@@ -96,9 +92,9 @@ export default function ManageSingleEventPage() {
             <EventDetails event={event} />
           </TabsContent>
 
-          <TabsContent value="overview" className="space-y-6">
+          {/* <TabsContent value="overview" className="space-y-6">
             <EventOverview event={event} />
-          </TabsContent>
+          </TabsContent> */}
 
           <TabsContent value="attendees">
             <EventAttendees />
