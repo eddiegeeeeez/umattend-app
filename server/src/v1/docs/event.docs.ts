@@ -543,10 +543,10 @@ const checkIn = {
       parameters: [
         {
           in: 'path',
-          name: 'user_id',
+          name: 'student_id',
           required: true,
           schema: { type: 'string' },
-          description: 'User ID',
+          description: 'Student ID',
         },
         {
           in: 'path',
@@ -675,10 +675,10 @@ const checkOut = {
       parameters: [
         {
           in: 'path',
-          name: 'user_id',
+          name: 'student_id',
           required: true,
           schema: { type: 'string' },
-          description: 'User ID',
+          description: 'Student ID',
         },
         {
           in: 'path',
@@ -1556,6 +1556,113 @@ const getAttendeesByEventId = {
   },
 };
 
+const exportEventAttendeesToExcel = {
+  '/event/export/:event_id': {
+    get: {
+      tags: ['Event'],
+      summary: 'Export event attendees',
+      description:
+        'Export the list of attendees for a specific event to an Excel file `xlsx` (Admin/CSG/Organizer only).',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'event_id',
+          required: true,
+          schema: { type: 'string' },
+          description: 'The unique ID of the event',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Excel file generated successfully',
+          content: {
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: {
+                  type: 'string',
+                  format: 'binary',
+                  description: 'Binary Excel file content',
+                },
+              },
+          },
+        },
+        400: {
+          description: 'Bad request - Event ID is required',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event ID is required' },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
+        },
+        403: {
+          description: 'Forbidden - Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'Access Denied' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description:
+            'Event not found - the specified event ID does not exist',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event not found' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export const event = {
   ...createAndGetEvent,
   ...updateAndDeleteEvent,
@@ -1564,4 +1671,5 @@ export const event = {
   ...addOrganizer,
   ...getAllPastEvents,
   ...getAttendeesByEventId,
+  ...exportEventAttendeesToExcel,
 };

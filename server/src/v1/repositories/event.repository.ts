@@ -253,6 +253,11 @@ const getAttendeesByEventId = async (event_id: string) => {
       event_id: event_id,
     },
     include: {
+      user: {
+        select: {
+          umindanao_email: true,
+        },
+      },
       student: {
         select: {
           id: true,
@@ -264,6 +269,16 @@ const getAttendeesByEventId = async (event_id: string) => {
           profile_picture: true,
           created_at: true,
           updated_at: true,
+        },
+      },
+      check_in_by_user: {
+        select: {
+          id: true,
+        },
+      },
+      check_out_by_user: {
+        select: {
+          id: true,
         },
       },
     },

@@ -10,15 +10,18 @@ import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
 import { events } from '@prisma/client';
-import { eventStatusQueue } from '../queues/event.queue';
+import { endEventStatusQueue } from '../queues/endEvent.queue';
 import authRepository from '../repositories/auth.repository';
+import { startEventStatusQueue } from '../queues/startEvent.queue';
 import { GetStudentsByEventIdInterface } from '../interface/student';
+import studentRepository from '../repositories/student.repository';
 
 const addEvent = async (event_data: AddEventInterface) => {
   try {
     const event = await eventRepository.createEvent(event_data);
 
-    await scheduleEventStatusDoneJob(event);
+    await scheduleStartEventStatusJob(event);
+    await scheduleEndEventStatusJob(event);
 
     return event;
   } catch (error) {
@@ -88,8 +91,10 @@ const updateEvent = async (eventId: string, event_data: AddEventInterface) => {
   }
   const updated_event = await eventRepository.updateEvent(eventId, event_data);
 
-  await eventStatusQueue.remove(`event-done-${updated_event.id}`);
-  await scheduleEventStatusDoneJob(updated_event);
+  await startEventStatusQueue.remove(`event-start-${updated_event.id}`);
+  await endEventStatusQueue.remove(`event-done-${updated_event.id}`);
+  await scheduleStartEventStatusJob(updated_event);
+  await scheduleEndEventStatusJob(updated_event);
 
   return updated_event;
 };
@@ -148,7 +153,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
   }
 };
 
-const scheduleEventStatusDoneJob = async (event: events) => {
+const scheduleEndEventStatusJob = async (event: events) => {
   if (!event.id) {
     return;
   }
@@ -166,7 +171,7 @@ const scheduleEventStatusDoneJob = async (event: events) => {
 
   const jobId = `event-done-${event.id}`;
 
-  await eventStatusQueue.add(
+  await endEventStatusQueue.add(
     'mark-event-done',
     { event_id: event.id },
     { delay, jobId }
@@ -174,6 +179,35 @@ const scheduleEventStatusDoneJob = async (event: events) => {
 
   console.log(
     `Scheduled event ${event.id} to be marked done in ${delay / 1000}s`
+  );
+};
+
+const scheduleStartEventStatusJob = async (event: events) => {
+  if (!event.id) {
+    return;
+  }
+
+  if (!event.all_day && !event.start_time) {
+    console.warn(`Event ${event.id} has no start_time, skipping schedule.`);
+    return;
+  }
+
+  const delay = event.all_day
+    ? 0 // all-day events start immediately
+    : event.start_time
+      ? Math.max(0, new Date(event.start_time).getTime() - Date.now())
+      : 0;
+
+  const jobId = `event-start-${event.id}`;
+
+  await startEventStatusQueue.add(
+    'mark-event-started',
+    { event_id: event.id },
+    { delay, jobId }
+  );
+
+  console.log(
+    `Scheduled event ${event.id} to be marked started in ${delay / 1000}s`
   );
 };
 
@@ -285,21 +319,50 @@ const getAttendeesByEventId = async (
     throw new NotFoundError('No attendees found for this event');
   }
 
-  return attendees.map((attendee) => ({
-    student: {
-      id: attendee.student.id,
-      user_id: attendee.student.user_id,
-      student_id: attendee.student.student_id,
-      name: attendee.student.name,
-      department: attendee.student.department,
-      program: attendee.student.program,
-      profile_picture: attendee.student.profile_picture,
-      created_at: attendee.student.created_at,
-      updated_at: attendee.student.updated_at,
-      check_in_at: attendee.check_in_at,
-      check_out_at: attendee.check_out_at,
-    },
-  }));
+  return Promise.all(
+    attendees.map(async (attendee) => {
+      const checkInBy = attendee.check_in_by_user?.id
+        ? await studentRepository.getStudentByUserId(
+            attendee.check_in_by_user.id
+          )
+        : null;
+
+      const checkOutBy = attendee.check_out_by_user?.id
+        ? await studentRepository.getStudentByUserId(
+            attendee.check_out_by_user.id
+          )
+        : null;
+
+      return {
+        student: {
+          id: attendee.student.id,
+          user_id: attendee.student.user_id,
+          student_id: attendee.student.student_id,
+          name: attendee.student.name,
+          umindanao_email: attendee.user?.umindanao_email,
+          department: attendee.student.department,
+          program: attendee.student.program,
+          profile_picture: attendee.student.profile_picture,
+          created_at: attendee.student.created_at,
+          updated_at: attendee.student.updated_at,
+          check_in_at: attendee.check_in_at,
+          check_out_at: attendee.check_out_at,
+          check_in_by: checkInBy?.name ?? null,
+          check_out_by: checkOutBy?.name ?? null,
+        },
+      };
+    })
+  );
+};
+
+const getEventNameById = async (event_id: string): Promise<string> => {
+  const eventData = await eventRepository.getEventDetails(event_id);
+
+  if (!eventData) {
+    throw new NotFoundError('No event found with this ID');
+  }
+
+  return eventData.title;
 };
 
 const eventServices = {
@@ -309,11 +372,11 @@ const eventServices = {
   getAllEvents,
   createCheckInEvent,
   createCheckOutEvent,
-  scheduleEventStatusDoneJob,
   addOrganizer,
   getEventDetailsById,
   getAllPastEvents,
   getAttendeesByEventId,
+  getEventNameById,
 };
 
 export default eventServices;
