@@ -7,6 +7,7 @@ import EventDetails from '@/components/event/event-details';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { events } from '@/constants';
 import EventsSkeleton from '@/components/event/events-skeleton';
+import EventContentEmpty from '@/components/event/event-content-empty';
 
 
 export default function DashboardPage() {
@@ -52,7 +53,7 @@ export default function DashboardPage() {
 
         {isLoading ? (
           <EventsSkeleton />
-        ) : (
+        ) : events.length > 0 ? (
           <div className="space-y-6 sm:space-y-4">
             {events.map((event, index) => (
               <EventContent
@@ -68,6 +69,8 @@ export default function DashboardPage() {
               />
             ))}
           </div>
+        ) : (
+          <EventContentEmpty />
         )}
       </main>
 
