@@ -251,6 +251,22 @@ const removeOrganizer = async (umindanao_email: string, event_id: string) => {
   return await eventRepository.removeOrganizer(user_id, event_id);
 };
 
+const getOrganizersByEventId = async (event_id: string) => {
+  // Check if event exists
+  const event = await eventRepository.getEventDetails(event_id);
+  if (!event) {
+    throw new NotFoundError('Event not found');
+  }
+
+  const organizers = await eventRepository.getOrganizersByEventId(event_id);
+  
+  if (!organizers || organizers.length === 0) {
+    throw new NotFoundError('No organizers found for this event');
+  }
+
+  return organizers;
+};
+
 const getEventDetailsById = async (
   event_id: string
 ): Promise<GetEventDetailsWithEditByIdInterface> => {
@@ -479,6 +495,7 @@ const eventServices = {
   createCheckOutEvent,
   addOrganizer,
   removeOrganizer,
+  getOrganizersByEventId,
   getEventDetailsById,
   getAllPastEvents,
   getAttendeesByEventId,

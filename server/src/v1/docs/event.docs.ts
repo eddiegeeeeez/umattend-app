@@ -196,7 +196,7 @@ const updateAndDeleteEvent = {
                   default: [
                     {
                       field_name: 'Dietary Restrictions',
-                      fieldType: 'short-text',
+                      fieldType: 'short_text',
                     },
                     {
                       field_name: 'T-Shirt Size',
@@ -1797,6 +1797,163 @@ const getPaginatedAttendeesByEventId = {
   },
 };
 
+const getOrganizersByEventId = {
+  '/event/{event_id}/organizers': {
+    get: {
+      tags: ['Event'],
+      summary: 'Get event organizers',
+      description:
+        'Retrieve the list of organizers for a specific event (Admin/CSG/Organizer only).',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'event_id',
+          required: true,
+          schema: { type: 'string' },
+          description: 'The unique ID of the event',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Organizers retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Organizers retrieved successfully',
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        student_id: {
+                          type: ['number', 'null'],
+                          example: 2023001,
+                          description: 'Student ID number',
+                        },
+                        name: {
+                          type: 'string',
+                          example: 'John Doe',
+                          description: 'Organizer full name',
+                        },
+                        department: {
+                          type: 'string',
+                          example: 'College of Computer Studies',
+                          description: 'Department/College',
+                        },
+                        program: {
+                          type: 'string',
+                          example: 'Bachelor of Science in Computer Science',
+                          description: 'Program/Course',
+                        },
+                        umindanao_email: {
+                          type: 'string',
+                          example: 'j.doe.202301@umindanao.edu.ph',
+                          description: 'UMindanao email address',
+                        },
+                        added_by: {
+                          type: 'string',
+                          example: 'Jane Admin',
+                          description: 'Name of the user who added this organizer',
+                        },
+                        added_at: {
+                          type: 'string',
+                          format: 'date-time',
+                          example: '2025-10-15T08:00:00.000Z',
+                          description: 'Date and time when organizer was added',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: 'Bad request - Event ID is required',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event ID is required' },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
+        },
+        403: {
+          description: 'Forbidden - Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Access denied' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: 'Event not found or no organizers found',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: {
+                    type: 'string',
+                    example: 'No organizers found for this event',
+                  },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 const exportEventAttendeesToExcel = {
   '/event/export/:event_id': {
     get: {
@@ -1913,5 +2070,6 @@ export const event = {
   ...removeOrganizer,
   ...getAllPastEvents,
   ...getPaginatedAttendeesByEventId,
+  ...getOrganizersByEventId,
   ...exportEventAttendeesToExcel,
 };

@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [
     {
       name: '@hey-api/client-axios',
-      runtimeConfigPath: './src/api/client-config.ts'
+      runtimeConfigPath: '../client-config'
     },
     '@tanstack/react-query', // generate TanStack Query hooks
     {
