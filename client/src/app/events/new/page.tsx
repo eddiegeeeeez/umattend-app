@@ -35,7 +35,7 @@ const createEventSchema = z
     endDate: z.date(),
     endTime: z.string(),
     isUnlimitedCapacity: z.boolean().default(true),
-    capacity: z.number().int().positive().nullable(),
+    capacity: z.number().int().positive().optional().nullable(),
     check_out_required: z.boolean().default(false),
     all_day: z.boolean().default(false)
   })
@@ -65,20 +65,21 @@ const createEventSchema = z
     const start = new Date(data.startDate);
     const end = new Date(data.endDate);
 
-    // Normalize to midnight
+    // Normalize to midnight for date comparison
     start.setHours(0, 0, 0, 0);
     end.setHours(0, 0, 0, 0);
 
+    // Check if end date is before start date
     if (end < start) {
       ctx.addIssue({
         code: 'custom',
-        message: 'End date must be on or after start date',
+        message: 'End date cannot be before start date',
         path: ['endDate']
       });
       return;
     }
 
-    // 2️⃣ Check time only if dates are the same
+    // Check time only if dates are the same
     if (end.getTime() === start.getTime()) {
       const startMinutes = parseTimeToMinutes(data.startTime);
       const endMinutes = parseTimeToMinutes(data.endTime);
@@ -114,7 +115,7 @@ export default function CreateEventPage() {
       endDate: new Date(),
       endTime: defaultEndTime,
       isUnlimitedCapacity: true,
-      capacity: null, // optional/null matches schema
+      capacity: null,
       check_out_required: false,
       all_day: false
     }
@@ -155,14 +156,30 @@ export default function CreateEventPage() {
 
   // Form submission handler
   const onSubmit = (data: CreateEventFormValues) => {
+    // Helper function to parse 12-hour time format to 24-hour
+    const parseTime = (timeStr: string) => {
+      const [time, period] = timeStr.split(' ');
+      const [hoursStr, minutes] = time.split(':');
+      let hours = parseInt(hoursStr);
+      
+      // Convert to 24-hour format
+      if (period === 'PM' && hours !== 12) {
+        hours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+      }
+      
+      return { hours, minutes: parseInt(minutes) };
+    };
+
     // Combine date and time for start and end
     const startDateTime = new Date(data.startDate);
-    const [startHours, startMinutes] = data.startTime.split(':');
-    startDateTime.setHours(parseInt(startHours), parseInt(startMinutes), 0, 0);
+    const { hours: startHours, minutes: startMinutes } = parseTime(data.startTime);
+    startDateTime.setHours(startHours, startMinutes, 0, 0);
 
     const endDateTime = new Date(data.endDate);
-    const [endHours, endMinutes] = data.endTime.split(':');
-    endDateTime.setHours(parseInt(endHours), parseInt(endMinutes), 0, 0);
+    const { hours: endHours, minutes: endMinutes } = parseTime(data.endTime);
+    endDateTime.setHours(endHours, endMinutes, 0, 0);
 
     // Prepare payload for API - only include capacity if not unlimited
     const payload: {
@@ -182,8 +199,8 @@ export default function CreateEventPage() {
       department: data.department,
       location: data.location,
       all_day: data.all_day,
-      start_time: startDateTime.toISOString(),
-      end_time: endDateTime.toISOString(),
+      start_time: startDateTime.toISOString(), 
+      end_time: endDateTime.toISOString(), 
       check_out_required: data.check_out_required,
       is_done: false
     };

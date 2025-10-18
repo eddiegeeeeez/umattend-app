@@ -264,7 +264,12 @@ const updateAndDeleteEvent = {
                       description: { type: 'string' },
                       department: { type: 'string' },
                       location: { type: 'string' },
-                      capacity: { type: 'number' },
+                      capacity: { 
+                        oneOf: [
+                          { type: 'number' },
+                          { type: 'null' }
+                        ]
+                      },
                       all_day: { type: 'boolean' },
                       start_time: {
                         type: 'string',
@@ -411,7 +416,10 @@ const updateAndDeleteEvent = {
                         example: 'Main Auditorium, Building A',
                       },
                       capacity: {
-                        type: 'number',
+                        oneOf: [
+                          { type: 'number' },
+                          { type: 'null' }
+                        ],
                         example: 100,
                         description: 'Maximum event capacity',
                       },
@@ -464,6 +472,27 @@ const updateAndDeleteEvent = {
                         example: true,
                         description:
                           'Whether the current user has permission to edit this event',
+                      },
+                      user_attendance: {
+                        type: 'object',
+                        description:
+                          "The current user's attendance information for this event",
+                        properties: {
+                          check_in_at: {
+                            type: ['string', 'null'],
+                            format: 'date-time',
+                            example: '2025-10-15T09:15:00.000Z',
+                            description:
+                              'When the user checked in to the event, or null if not checked in',
+                          },
+                          check_out_at: {
+                            type: ['string', 'null'],
+                            format: 'date-time',
+                            example: '2025-10-15T16:45:00.000Z',
+                            description:
+                              'When the user checked out from the event, or null if not checked out',
+                          },
+                        },
                       },
                     },
                   },
@@ -820,12 +849,12 @@ const addOrganizer = {
             schema: {
               type: 'object',
               properties: {
-                userId: {
+                umindanao_email: {
                   type: 'string',
-                  description: 'User ID of the organizer to add',
+                  description: 'umindanao email of the organizer to add',
                 },
               },
-              required: ['userId'],
+              required: ['umindanao_email'],
             },
           },
         },
@@ -849,6 +878,7 @@ const addOrganizer = {
                       id: { type: 'string' },
                       user_id: { type: 'string' },
                       event_id: { type: 'string' },
+                      added_by: { type: 'string' },
                       created_at: {
                         type: 'string',
                         format: 'date-time',
@@ -1085,7 +1115,12 @@ const createAndGetEvent = {
                       description: { type: 'string' },
                       department: { type: 'string' },
                       location: { type: 'string' },
-                      capacity: { type: 'number' },
+                      capacity: { 
+                        oneOf: [
+                          { type: 'number' },
+                          { type: 'null' }
+                        ]
+                      },
                       all_day: { type: 'boolean' },
                       start_time: {
                         type: 'string',
@@ -1209,7 +1244,13 @@ const createAndGetEvent = {
                           type: 'string',
                           example: 'Main Auditorium, Building A',
                         },
-                        capacity: { type: 'number', example: 100 },
+                        capacity: { 
+                          oneOf: [
+                            { type: 'number' },
+                            { type: 'null' }
+                          ],
+                          example: 100
+                        },
                         all_day: { type: 'boolean', example: false },
                         start_time: {
                           type: 'string',
@@ -1328,7 +1369,13 @@ const getAllPastEvents = {
                           type: 'string',
                           example: 'Main Auditorium, Building A',
                         },
-                        capacity: { type: 'number', example: 100 },
+                        capacity: { 
+                          oneOf: [
+                            { type: 'number' },
+                            { type: 'null' }
+                          ],
+                          example: 100
+                        },
                         all_day: { type: 'boolean', example: false },
                         start_time: {
                           type: 'string',

@@ -65,6 +65,10 @@ export interface GetEventDetailsByIdInterface {
   checkin_count: number;
   checkout_count?: number;
   created_by: string;
+  user_attendance?: {
+    check_in_at: Date | null;
+    check_out_at: Date | null;
+  };
 }
 
 export interface GetEventDetailsWithEditByIdInterface

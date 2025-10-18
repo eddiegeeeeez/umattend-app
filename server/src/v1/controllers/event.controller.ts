@@ -60,11 +60,19 @@ const addEvent = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
     }
 
-    if (event_data.start_time > event_data.end_time) {
+    console.log('start time', event_data.start_time);
+
+    console.log('end time ', event_data.end_time);
+
+    // Validate that end time is not before start time
+    if (event_data.end_time < event_data.start_time) {
+
+      console.log("End time cannot be before start time");
+      
       return HTTPErrorResponse(
         res,
         400,
-        'Start time cannot be later than end time'
+        'End time cannot be before start time'
       );
     }
 
@@ -86,6 +94,9 @@ const addEvent = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
+
+    console.log(error);
+
     if (NODE_ENV === 'development') {
       console.error('Error: ', error);
     }
@@ -195,25 +206,40 @@ const createCheckInEvent = async (
 ): Promise<Response> => {
   try {
     const { qr_code, event_id } = req.params;
+    const { student_id: student_id_body } = req.body;
+
+    if (!event_id) {
+      return HTTPErrorResponse(res, 400, 'event_id is required');
+    }
+
+    if (!student_id_body && !qr_code) {
+      return HTTPErrorResponse(
+        res,
+        400,
+        'Either student_id or qr_code is required'
+      );
+    }
+
+    let student_id: string = student_id_body ?? '';
+
+    if (!student_id && qr_code) {
+      try {
+        const { valid, student_id: qrStudentId } = decodeAndVerifyQR(qr_code);
+
+        if (!valid || !qrStudentId) {
+          return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
+        }
+
+        student_id = qrStudentId;
+      } catch {
+        return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
+      }
+    }
 
     const { umindanao_email, done_onboarding } = req.user;
 
     if (!done_onboarding) {
       throw new ForbiddenError('User has not completed onboarding');
-    }
-
-    if (!qr_code || !event_id) {
-      return HTTPErrorResponse(
-        res,
-        400,
-        'student_id and event_id are required'
-      );
-    }
-
-    const { student_id } = decodeAndVerifyQR(qr_code);
-
-    if (!student_id) {
-      return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
     }
 
     const check_in_data = {
@@ -277,25 +303,36 @@ const createCheckOutEvent = async (
 ): Promise<Response> => {
   try {
     const { qr_code, event_id } = req.params;
+    const { student_id: student_id_body } = req.body;
+
+    if (!event_id) {
+      return HTTPErrorResponse(res, 400, 'event_id is required');
+    }
+
+    if (!student_id_body && !qr_code) {
+      return HTTPErrorResponse(res, 400, 'Invalid Body or QR Code');
+    }
+
+    let student_id: string = student_id_body ?? '';
+
+    if (!student_id && qr_code) {
+      try {
+        const { valid, student_id: qrStudentId } = decodeAndVerifyQR(qr_code);
+
+        if (!valid || !qrStudentId) {
+          return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
+        }
+
+        student_id = qrStudentId;
+      } catch {
+        return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
+      }
+    }
 
     const { umindanao_email, done_onboarding } = req.user;
 
     if (!done_onboarding) {
       throw new ForbiddenError('User has not completed onboarding');
-    }
-
-    if (!qr_code || !event_id) {
-      return HTTPErrorResponse(
-        res,
-        400,
-        'student_id and event_id are required'
-      );
-    }
-
-    const { student_id } = decodeAndVerifyQR(qr_code);
-
-    if (!student_id) {
-      return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
     }
 
     const check_out_data = {
@@ -356,6 +393,7 @@ const createCheckOutEvent = async (
 const addOrganizer = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
+    const { id: added_by } = req.user;
 
     if (!errors.isEmpty()) {
       return HTTPErrorResponse(res, 400, errors.array());
@@ -376,6 +414,7 @@ const addOrganizer = async (req: Request, res: Response) => {
     }
     const new_organizer = await eventServices.addOrganizer(
       umindanao_email,
+      added_by,
       event_id
     );
     return HTTPSuccessResponse(
