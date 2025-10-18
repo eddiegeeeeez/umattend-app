@@ -4,18 +4,7 @@ import { ArrowUpDown, MoreVertical, Eye, Edit, Trash2 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-
-export type AttendanceRecord = {
-  id: string;
-  name: string;
-  department: string;
-  program: string;
-  email: string;
-  checkInAt: string;
-  checkInBy: string;
-  checkOutAt: string;
-  checkOutBy: string;
-};
+import type { AttendanceRecord } from '@/types/manage';
 
 export const columns: ColumnDef<AttendanceRecord>[] = [
   {

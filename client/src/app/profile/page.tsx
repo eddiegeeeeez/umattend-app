@@ -3,7 +3,7 @@
 import { useRef, useEffect, useMemo } from 'react';
 import { Calendar, Mail, Users } from 'lucide-react';
 import QRCodeStyling, { Options } from 'qr-code-styling';
-import ProfileSkeleton from '@/components/profile/profile-skeleton';
+import ProfileSkeleton from '@/components/skeletons/profile-skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
@@ -11,14 +11,20 @@ import { useAuthStore } from '@/store/authStore';
 const ProfilePage = () => {
   const user = useAuthStore((state) => state.user);
 
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const date = String(now.getDate()).padStart(2, '0');
-  const year = String(now.getFullYear()).slice(-2);
-  const hour = String(now.getHours()).padStart(2, '0');
-  const time = `${month}${date}${year}${hour}`;
-  const QRCode = btoa(`${time}${String(user?.student_id)}`);
   const ref = useRef<HTMLDivElement>(null);
+  
+  // Generate QR code data on client side only to avoid hydration mismatch
+  const QRCode = useMemo(() => {
+    if (typeof window === 'undefined') return '';
+    
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const date = String(now.getDate()).padStart(2, '0');
+    const year = String(now.getFullYear()).slice(-2);
+    const hour = String(now.getHours()).padStart(2, '0');
+    const time = `${month}${date}${year}${hour}`;
+    return btoa(`${time}${String(user?.student_id)}`);
+  }, [user?.student_id]);
 
   const options: Options = useMemo(
     () => ({

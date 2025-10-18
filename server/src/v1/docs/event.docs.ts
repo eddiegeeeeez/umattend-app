@@ -1391,10 +1391,22 @@ const createAndGetEvent = {
                           example: '2025-10-15T17:00:00.000Z',
                         },
                         check_out_required: { type: 'boolean', example: true },
-                        is_done: { type: 'boolean', example: false },
+                        is_started: { type: 'boolean', example: false },
                         created_by: {
                           type: 'string',
                           example: '123e4567-e89b-12d3-a456-426614174001',
+                        },
+                        checkin_count: {
+                          type: 'number',
+                          example: 25,
+                        },
+                        checkout_count: {
+                          type: 'number',
+                          example: 20,
+                        },
+                        can_edit: {
+                          type: 'boolean',
+                          example: false,
                         },
                       },
                     },
@@ -1516,10 +1528,22 @@ const getAllPastEvents = {
                           example: '2025-10-15T17:00:00.000Z',
                         },
                         check_out_required: { type: 'boolean', example: true },
-                        is_done: { type: 'boolean', example: false },
+                        is_done: { type: 'boolean', example: true },
                         created_by: {
                           type: 'string',
                           example: '123e4567-e89b-12d3-a456-426614174001',
+                        },
+                        checkin_count: {
+                          type: 'number',
+                          example: 25,
+                        },
+                        checkout_count: {
+                          type: 'number',
+                          example: 20,
+                        },
+                        can_edit: {
+                          type: 'boolean',
+                          example: false,
                         },
                       },
                     },

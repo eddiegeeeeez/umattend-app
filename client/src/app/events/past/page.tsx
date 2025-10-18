@@ -2,30 +2,30 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import EventContent from '@/components/event/event-content';
-import EventDetails from '@/components/event/event-details';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { pastEvents } from '@/constants';
-import EventsSkeleton from '@/components/event/events-skeleton';
 import EventContentEmpty from '@/components/event/event-content-empty';
+import EventDetails from '@/components/event/event-details';
+import EventsSkeleton from '@/components/skeletons/events-skeleton';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { getEventPastOptions } from '@/api/client/@tanstack/react-query.gen';
+import { transformEventData } from '@/utils/events-utils';
 
 export default function PastEventsPage() {
-  const [selectedEvent, setSelectedEvent] = useState<(typeof pastEvents)[0] | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const handleEventClick = (event: (typeof pastEvents)[0]) => {
-    setSelectedEvent(event);
+  // Fetch past events
+  const { data: eventsData, isLoading } = useQuery(getEventPastOptions());
+
+  const pastEvents = eventsData?.data || [];
+  const transformedEvents = pastEvents.map(transformEventData);
+  const selectedEvent = transformedEvents.find((event) => event.apiId === selectedEventId);
+
+  const handleEventClick = (eventId: string) => {
+    setSelectedEventId(eventId);
     setIsSheetOpen(true);
   };
-
-  // Simulate loading - Replace with actual data fetching logic
-  useState(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  });
 
   return (
     <div className="min-h-screen bg-neutral-100">
@@ -51,18 +51,18 @@ export default function PastEventsPage() {
 
         {isLoading ? (
           <EventsSkeleton />
-        ) : pastEvents.length > 0 ? (
+        ) : transformedEvents.length > 0 ? (
           <div className="space-y-6 sm:space-y-4">
-            {pastEvents.map((event, index) => (
+            {transformedEvents.map((event, index) => (
               <EventContent
-                key={event.id}
+                key={event.apiId}
                 event={event}
                 index={index}
-                isLast={index === pastEvents.length - 1}
-                onCardClick={() => handleEventClick(event)}
+                isLast={index === transformedEvents.length - 1}
+                onCardClick={() => handleEventClick(event.apiId)}
                 onManageClick={(e) => {
                   e.stopPropagation();
-                  handleEventClick(event);
+                  handleEventClick(event.apiId);
                 }}
               />
             ))}
@@ -74,12 +74,7 @@ export default function PastEventsPage() {
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg" hideClose>
-          {selectedEvent && (
-            <EventDetails
-              event={selectedEvent}
-              onClose={() => setIsSheetOpen(false)}
-            />
-          )}
+          {selectedEvent && <EventDetails event={selectedEvent} onClose={() => setIsSheetOpen(false)} />}
         </SheetContent>
       </Sheet>
     </div>

@@ -483,10 +483,17 @@ const removeOrganizer = async (req: Request, res: Response) => {
 const getEventDetailsById = async (req: Request, res: Response) => {
   try {
     const { event_id } = req.params;
+    const user_id = req.user?.id;
+    
     if (!event_id) {
       return HTTPErrorResponse(res, 400, 'Event ID is required');
     }
-    const event = await eventServices.getEventDetailsById(event_id);
+    
+    if (!user_id) {
+      return HTTPErrorResponse(res, 401, 'Unauthorized');
+    }
+    
+    const event = await eventServices.getEventDetailsById(event_id, user_id);
     return HTTPSuccessResponse(res, 200, 'Event details retrieved', event);
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {
@@ -527,7 +534,13 @@ const getOrganizersByEventId = async (req: Request, res: Response) => {
 
 const getAllEvents = async (req: Request, res: Response) => {
   try {
-    const events = await eventServices.getAllEvents();
+    const user_id = req.user?.id;
+    
+    if (!user_id) {
+      return HTTPErrorResponse(res, 401, 'Unauthorized');
+    }
+    
+    const events = await eventServices.getAllEvents(user_id);
     return HTTPSuccessResponse(
       res,
       200,
@@ -548,7 +561,13 @@ const getAllEvents = async (req: Request, res: Response) => {
 
 const getAllPastEvents = async (req: Request, res: Response) => {
   try {
-    const events = await eventServices.getAllPastEvents();
+    const user_id = req.user?.id;
+    
+    if (!user_id) {
+      return HTTPErrorResponse(res, 401, 'Unauthorized');
+    }
+    
+    const events = await eventServices.getAllPastEvents(user_id);
     return HTTPSuccessResponse(
       res,
       200,

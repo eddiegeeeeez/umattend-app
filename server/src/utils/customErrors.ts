@@ -65,6 +65,12 @@ export class ExchangeCodeError extends AppError {
   }
 }
 
+export class NoCheckoutRequiredError extends AppError {
+  constructor(message = 'No check-out required for this event') {
+    super(message, 400, 'NoCheckoutRequiredError');
+  }
+}
+
 export class RateLimitError extends AppError {
   constructor(message = 'Too many requests, please try again later.') {
     super(message, 429, 'RateLimitError');

@@ -1,33 +1,29 @@
 import React from 'react';
-import { Calendar, MapPin, UsersRound, AlertTriangle, Share2, ArrowUpRight, ChevronsLeft, Settings } from 'lucide-react';
+import { MapPin, UsersRound, AlertTriangle, ArrowUpRight, ChevronsLeft, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
+import type { EventCardData, EventStatus } from '@/types/events';
 import { useAuthStore } from '@/store/authStore';
-import type { EventCardData } from './event-content';
 
 interface EventDetailsProps {
-  event: EventCardData;
+  event: EventCardData & { apiId?: string; eventStatus?: EventStatus };
   onClose?: () => void;
 }
 
 const EventDetails = ({ event, onClose }: EventDetailsProps) => {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const isAdmin = user?.role && ['admin', 'organizer', 'csg'].includes(user.role);
-  
-  const {
-    id,
-    title,
-    description,
-    dayOfWeek,
-    date,
-    startTime,
-    endTime,
-    hasLocation = false,
-    location,
-    attendees = 0,
-  } = event;
+  const isAdmin = user?.role && ['admin'].includes(user.role);
+
+  const { id, apiId, title, description, dayOfWeek, date, startTime, endTime, hasLocation = false, location, attendees = 0 } = event;
+
+  const eventStatus = event.eventStatus || 'upcoming';
+
+  // Use apiId (UUID) for routing if available, otherwise fall back to numeric id
+  const eventId = apiId || id;
+
   return (
     <div className="space-y-8">
       <SheetHeader className="border-border border-b">
@@ -36,16 +32,13 @@ const EventDetails = ({ event, onClose }: EventDetailsProps) => {
             <ChevronsLeft />
           </Button>
           <div className="flex items-center gap-2">
-            {isAdmin && (
-              <Button 
-                className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" 
-                onClick={() => router.push(`/events/${id}/manage`)}
-              >
+            {(event.can_edit || isAdmin) && (
+              <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push(`/events/${eventId}/manage`)}>
                 <Settings className="h-4 w-4" />
                 Manage
               </Button>
             )}
-            <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push('events/2')}>
+            <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push(`/events/${eventId}`)}>
               Event Page
               <ArrowUpRight />
             </Button>
@@ -56,6 +49,19 @@ const EventDetails = ({ event, onClose }: EventDetailsProps) => {
       <div className="flex flex-col gap-8 px-6 py-4">
         {/* Title and Guest Count */}
         <div className="space-y-3">
+          <Badge
+            variant="outline"
+            className={`w-fit border ${
+              eventStatus === 'upcoming'
+                ? 'border-blue-200 bg-blue-100 text-blue-700'
+                : eventStatus === 'ongoing'
+                  ? 'border-green-200 bg-green-100 text-green-700'
+                  : 'border-gray-200 bg-gray-100 text-gray-700'
+            }`}
+          >
+            {eventStatus === 'ongoing' && <span className="mr-1.5 inline-block h-2 w-2 animate-pulse rounded-full bg-green-600" />}
+            {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1)}
+          </Badge>
           <SheetTitle className="text-3xl leading-tight font-bold tracking-tight">{title}</SheetTitle>
           <div className="flex items-center gap-2">
             <UsersRound className="text-muted-foreground h-4 w-4" />
@@ -111,7 +117,7 @@ const EventDetails = ({ event, onClose }: EventDetailsProps) => {
 
         {description && (
           <div className="border-border border-t pt-6">
-            <SheetDescription className="text-foreground text-base leading-relaxed">{description}</SheetDescription>
+            <SheetDescription className="text-foreground text-base leading-relaxed break-words whitespace-pre-wrap">{description}</SheetDescription>
           </div>
         )}
       </div>

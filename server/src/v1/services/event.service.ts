@@ -8,7 +8,11 @@ import {
 } from '../interface/event';
 import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
-import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
+import {
+  NotFoundError,
+  ForbiddenError,
+  NoCheckoutRequiredError,
+} from '@/utils/customErrors';
 import { events } from '@prisma/client';
 import { endEventStatusQueue } from '../queues/endEvent.queue';
 import authRepository from '../repositories/auth.repository';
@@ -130,6 +134,17 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
   try {
     if (!attendance_data.event_id) {
       throw new NotFoundError('Event ID is required');
+    }
+
+    const event = await eventRepository.getEventDetails(
+      attendance_data.event_id
+    );
+    if (!event) {
+      throw new NotFoundError('Event not found');
+    }
+
+    if (event.check_out_required === false) {
+      throw new NoCheckoutRequiredError();
     }
 
     return eventRepository.createCheckOutEvent(attendance_data);
@@ -259,7 +274,7 @@ const getOrganizersByEventId = async (event_id: string) => {
   }
 
   const organizers = await eventRepository.getOrganizersByEventId(event_id);
-  
+
   if (!organizers || organizers.length === 0) {
     throw new NotFoundError('No organizers found for this event');
   }
@@ -268,25 +283,24 @@ const getOrganizersByEventId = async (event_id: string) => {
 };
 
 const getEventDetailsById = async (
-  event_id: string
+  event_id: string,
+  user_id: string
 ): Promise<GetEventDetailsWithEditByIdInterface> => {
-  let can_edit = false;
-
   const event = await eventRepository.getEventDetails(event_id);
-
-  const checkin_count = await eventRepository.getEventCheckinCount(event_id);
-  let checkout_count = 0;
-  if (event?.check_out_required) {
-    checkout_count = await eventRepository.getEventCheckoutCount(event_id);
-  }
 
   if (!event) {
     throw new NotFoundError('Event not found');
   }
 
+  const checkin_count = await eventRepository.getEventCheckinCount(event_id);
+  let checkout_count = 0;
+  if (event.check_out_required) {
+    checkout_count = await eventRepository.getEventCheckoutCount(event_id);
+  }
+
   const attendanceData = await eventRepository.checkIfUserAttended(
     event_id,
-    event.created_by
+    user_id
   );
   const check_in_at = attendanceData?.check_in_at ?? null;
   const check_out_at =
@@ -294,21 +308,14 @@ const getEventDetailsById = async (
       ? attendanceData.check_out_at
       : null;
 
-  const is_organizer = await eventRepository.checkOrganizer(
-    event.created_by,
-    event_id
-  );
-
-  if (is_organizer) {
-    can_edit = true;
-  }
+  const is_organizer = await eventRepository.checkOrganizer(user_id, event_id);
 
   return {
     ...event,
     capacity: event.capacity ?? undefined,
     start_time: event.start_time ?? undefined,
     end_time: event.end_time ?? undefined,
-    can_edit,
+    can_edit: !!is_organizer,
     checkin_count: checkin_count ?? 0,
     checkout_count,
     user_attendance: {
@@ -318,54 +325,78 @@ const getEventDetailsById = async (
   };
 };
 
-const getAllEvents = async (): Promise<GetAllEventsInterface> => {
+const getAllEvents = async (
+  user_id: string
+): Promise<GetAllEventsInterface> => {
   const events = await eventRepository.getAllEvents();
 
   if (events.length === 0) {
     throw new NotFoundError('No events found');
   }
 
-  return events.map((event) => ({
-    id: event.id,
-    title: event.title,
-    description: event.description,
-    department: event.department,
-    location: event.location,
-    capacity: event.capacity ?? undefined,
-    all_day: event.all_day,
-    start_time: event.start_time ?? undefined,
-    end_time: event.end_time ?? undefined,
-    check_out_required: event.check_out_required,
-    is_done: event.is_done,
-    created_by: event.created_by,
-    checkin_count: event.checkin_count ?? 0,
-    checkout_count: event.checkout_count ?? 0,
-  }));
+  return Promise.all(
+    events.map(async (event) => {
+      const is_organizer = await eventRepository.checkOrganizer(
+        user_id,
+        event.id
+      );
+
+      return {
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        department: event.department,
+        location: event.location,
+        capacity: event.capacity ?? undefined,
+        all_day: event.all_day,
+        start_time: event.start_time ?? undefined,
+        end_time: event.end_time ?? undefined,
+        check_out_required: event.check_out_required,
+        is_started: event.is_started,
+        created_by: event.created_by,
+        checkin_count: event.checkin_count ?? 0,
+        checkout_count: event.checkout_count ?? 0,
+        can_edit: !!is_organizer,
+      };
+    })
+  );
 };
 
-const getAllPastEvents = async (): Promise<GetAllEventsInterface> => {
+const getAllPastEvents = async (
+  user_id: string
+): Promise<GetAllEventsInterface> => {
   const events = await eventRepository.getAllPastEvents();
 
   if (events.length === 0) {
     throw new NotFoundError('No past events found');
   }
 
-  return events.map((event) => ({
-    id: event.id,
-    title: event.title,
-    description: event.description,
-    department: event.department,
-    location: event.location,
-    capacity: event.capacity ?? undefined,
-    all_day: event.all_day,
-    start_time: event.start_time ?? undefined,
-    end_time: event.end_time ?? undefined,
-    check_out_required: event.check_out_required,
-    is_done: event.is_done,
-    created_by: event.created_by,
-    checkin_count: event.checkin_count ?? 0,
-    checkout_count: event.checkout_count ?? 0,
-  }));
+  return Promise.all(
+    events.map(async (event) => {
+      const is_organizer = await eventRepository.checkOrganizer(
+        user_id,
+        event.id
+      );
+
+      return {
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        department: event.department,
+        location: event.location,
+        capacity: event.capacity ?? undefined,
+        all_day: event.all_day,
+        start_time: event.start_time ?? undefined,
+        end_time: event.end_time ?? undefined,
+        check_out_required: event.check_out_required,
+        is_done: event.is_done,
+        created_by: event.created_by,
+        checkin_count: event.checkin_count ?? 0,
+        checkout_count: event.checkout_count ?? 0,
+        can_edit: !!is_organizer,
+      };
+    })
+  );
 };
 
 const getPaginatedAttendeesByEventId = async (
@@ -383,7 +414,12 @@ const getPaginatedAttendeesByEventId = async (
   };
 }> => {
   const { attendees, total } =
-    await eventRepository.getPaginatedAttendeesByEventId(event_id, page, limit, search);
+    await eventRepository.getPaginatedAttendeesByEventId(
+      event_id,
+      page,
+      limit,
+      search
+    );
 
   if (attendees.length === 0) {
     throw new NotFoundError('No attendees found for this event');
