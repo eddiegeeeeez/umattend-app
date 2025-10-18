@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { is } from 'date-fns/locale';
 import { Download, Users, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { columns } from './data-table/attendance-columns';
@@ -27,7 +26,7 @@ export default function EventAttendees() {
   };
 
   if (isLoading) {
-    return <EvenAttendeesSkeleton isLoading={isLoading} />;
+    return <EvenAttendeesSkeleton />;
   }
 
   return (
@@ -72,10 +71,10 @@ export default function EventAttendees() {
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:mb-8">
         <div>
-          <h1 className="text-foreground text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl">Attendance Records</h1>
-          <p className="text-muted-foreground mt-1 text-sm md:text-base">Manage student check-in and check-out records</p>
+          <h1 className="text-foreground text-2xl font-bold tracking-tight md:text-4xl">Attendance Records</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:mt-2 md:text-lg">Manage student check-in and check-out records</p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex gap-2">
           <Button onClick={handleRefresh} variant="outline" className="w-full gap-2 bg-transparent font-semibold shadow-sm sm:w-auto">
             Refresh
           </Button>

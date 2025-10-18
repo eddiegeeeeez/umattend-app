@@ -1,12 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, BarChart3, UserCheck } from 'lucide-react';
+import { BarChart3, UserCheck } from 'lucide-react';
 import EventAttendees from '@/components/event/manage/attendees/event-attendees';
 import EventDetails from '@/components/event/manage/details/event-details';
 import HeroSection from '@/components/event/manage/hero/hero-section';
 import ManageEventSkeleton from '@/components/event/manage/manage-event-skeleton';
-import EventOverview from '@/components/event/manage/overview/event-overview';
 import { UpdateEventSheet } from '@/components/event/manage/update-event-sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -65,42 +64,41 @@ export default function ManageSingleEventPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <div className="bg-background min-h-screen">
+      {/* Hero Section */}
+      <HeroSection event={event} setIsSheetOpen={setIsSheetOpen} />
+
       {/* Main Content */}
-      <main className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        {/* Hero Section */}
-        <HeroSection event={event} setIsSheetOpen={setIsSheetOpen} />
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Tabs Section */}
-        <div className="my-4">
-          <Tabs defaultValue="details" className="space-y-6">
-            <TabsList className="bg-muted text-muted-foreground inline-flex h-11 items-center justify-center rounded-lg p-1">
-              <TabsTrigger value="details" className="rounded-md px-4 py-2 text-sm font-medium cursor-pointer">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Details
-              </TabsTrigger>
-              {/* <TabsTrigger value="overview" className="rounded-md px-4 py-2 text-sm font-medium">
+        <Tabs defaultValue="details" className="space-y-6">
+          <TabsList className="bg-muted text-muted-foreground inline-flex h-11 items-center justify-center rounded-lg p-1">
+            <TabsTrigger value="details" className="rounded-md px-4 py-2 text-sm font-medium">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Details
+            </TabsTrigger>
+            {/* <TabsTrigger value="overview" className="rounded-md px-4 py-2 text-sm font-medium">
               <BarChart3 className="mr-2 h-4 w-4" />
               Overview
             </TabsTrigger> */}
-              <TabsTrigger value="attendees" className="rounded-md px-4 py-2 text-sm font-medium cursor-pointer">
-                <UserCheck className="mr-2 h-4 w-4" />
-                Attendees
-              </TabsTrigger>
-            </TabsList>
+            <TabsTrigger value="attendees" className="rounded-md px-4 py-2 text-sm font-medium">
+              <UserCheck className="mr-2 h-4 w-4" />
+              Attendees
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="details">
-              <EventDetails event={event} />
-            </TabsContent>
+          <TabsContent value="details">
+            <EventDetails event={event} />
+          </TabsContent>
 
-            {/* <TabsContent value="overview" className="space-y-6">
+          {/* <TabsContent value="overview" className="space-y-6">
             <EventOverview event={event} />
           </TabsContent> */}
 
-            <TabsContent value="attendees">
-              <EventAttendees />
-            </TabsContent>
-          </Tabs>
-        </div>
+          <TabsContent value="attendees">
+            <EventAttendees />
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Update Event Sheet */}

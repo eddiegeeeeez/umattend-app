@@ -105,8 +105,8 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
   },
   {
     accessorKey: 'checkInBy',
-    header: () => <div className="text-foreground text-xs font-medium md:text-sm pl-3">Check in by</div>,
-    cell: ({ row }) => <div className="text-muted-foreground text-xs font-medium md:text-sm pl-3">{row.getValue('checkInBy')}</div>
+    header: () => <div className="text-foreground pl-3 text-xs font-medium md:text-sm">Check in by</div>,
+    cell: ({ row }) => <div className="text-muted-foreground pl-3 text-xs font-medium md:text-sm">{row.getValue('checkInBy')}</div>
   },
   {
     accessorKey: 'checkOutAt',
@@ -122,17 +122,18 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="text-foreground text-xs font-medium md:text-sm pl-3">{row.getValue('checkOutAt')}</div>
+    cell: ({ row }) => <div className="text-foreground pl-3 text-xs font-medium md:text-sm">{row.getValue('checkOutAt')}</div>
   },
   {
     accessorKey: 'checkOutBy',
-    header: () => <div className="text-foreground text-xs font-medium md:text-sm pl-3">Check out by</div>,
-    cell: ({ row }) => <div className="text-muted-foreground text-xs font-medium md:text-sm pl-3">{row.getValue('checkOutBy')}</div>
+    header: () => <div className="text-foreground pl-3 text-xs font-medium md:text-sm">Check out by</div>,
+    cell: ({ row }) => <div className="text-muted-foreground pl-3 text-xs font-medium md:text-sm">{row.getValue('checkOutBy')}</div>
   },
   {
     id: 'actions',
-    header: () => <div className="text-foreground text-center text-xs font-medium md:text-sm px-4">Actions</div>,
+    header: () => <div className="text-foreground px-4 text-center text-xs font-medium md:text-sm">Actions</div>,
     cell: ({ row }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const record = row.original;
 
       return (

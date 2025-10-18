@@ -161,14 +161,14 @@ export default function CreateEventPage() {
       const [time, period] = timeStr.split(' ');
       const [hoursStr, minutes] = time.split(':');
       let hours = parseInt(hoursStr);
-      
+
       // Convert to 24-hour format
       if (period === 'PM' && hours !== 12) {
         hours += 12;
       } else if (period === 'AM' && hours === 12) {
         hours = 0;
       }
-      
+
       return { hours, minutes: parseInt(minutes) };
     };
 
@@ -199,8 +199,8 @@ export default function CreateEventPage() {
       department: data.department,
       location: data.location,
       all_day: data.all_day,
-      start_time: startDateTime.toISOString(), 
-      end_time: endDateTime.toISOString(), 
+      start_time: startDateTime.toISOString(),
+      end_time: endDateTime.toISOString(),
       check_out_required: data.check_out_required,
       is_done: false
     };

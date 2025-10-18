@@ -72,7 +72,7 @@ export function AttendanceDataTable<TData, TValue>({ columns, data }: DataTableP
             placeholder="Search by Student ID, Name, or Email..."
             value={globalFilter}
             onChange={(event) => setGlobalFilter(event.target.value)}
-            className="pl-10 bg-background"
+            className="pl-10"
           />
         </div>
         <DropdownMenu>
@@ -112,7 +112,7 @@ export function AttendanceDataTable<TData, TValue>({ columns, data }: DataTableP
       </div>
 
       <div className="rounded-md border">
-        <Table className='p-5 bg-background'>
+        <Table className="p-5">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -142,7 +142,7 @@ export function AttendanceDataTable<TData, TValue>({ columns, data }: DataTableP
         </Table>
       </div>
 
-      <div className="flex flex-col items-start justify-between gap-4 text-xs sm:flex-row sm:items-center md:text-sm mt-5">
+      <div className="mt-5 flex flex-col items-start justify-between gap-4 text-xs sm:flex-row sm:items-center md:text-sm">
         <p className="text-muted-foreground font-medium">
           Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
           {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)} of{' '}

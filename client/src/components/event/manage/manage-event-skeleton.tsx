@@ -4,10 +4,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ManageEventSkeleton() {
   return (
-    <div className="bg-neutral-100 min-h-screen">
-      
+    <div className="bg-background min-h-screen">
       <section className="border-border bg-muted/30 border-b">
-        <div className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+        <div className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
           <div className="mx-auto max-w-7xl px-3">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
               <div className="flex-1 space-y-4">
@@ -47,7 +46,7 @@ export default function ManageEventSkeleton() {
       </section>
 
       {/* Main Content Skeleton */}
-      <main className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 space-y-6">
           <Skeleton className="h-11 w-96 rounded-lg" />
           {/* Stats Grid Skeleton */}

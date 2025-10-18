@@ -102,7 +102,7 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
         <form onSubmit={handleSubmit} className="space-y-6 px-6 py-6">
           {/* Header Title and Description */}
           <div className="space-y-2">
-            <SheetTitle className="text-3xl font-bold leading-tight tracking-tight">Update Event</SheetTitle>
+            <SheetTitle className="text-3xl leading-tight font-bold tracking-tight">Update Event</SheetTitle>
             <SheetDescription className="text-base">Make changes to your event details. Click save when you&apos;re done.</SheetDescription>
           </div>
 
@@ -148,7 +148,7 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                   <Label className="text-muted-foreground text-xs font-medium">Start Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-11 w-full justify-start bg-background text-left font-medium shadow-sm">
+                      <Button variant="outline" className="bg-background h-11 w-full justify-start text-left font-medium shadow-sm">
                         {formatDate(formData.startDate)}
                       </Button>
                     </PopoverTrigger>
@@ -185,7 +185,7 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                   <Label className="text-muted-foreground text-xs font-medium">End Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-11 w-full justify-start bg-background text-left font-medium shadow-sm">
+                      <Button variant="outline" className="bg-background h-11 w-full justify-start text-left font-medium shadow-sm">
                         {formatDate(formData.endDate)}
                       </Button>
                     </PopoverTrigger>
@@ -261,7 +261,11 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                 <Users className="text-primary/70 h-5 w-5" />
                 Capacity
               </Label>
-              <button type="button" onClick={() => setIsUnlimitedCapacity(!isUnlimitedCapacity)} className="text-primary text-sm font-medium transition-colors hover:underline hover:text-primary/80">
+              <button
+                type="button"
+                onClick={() => setIsUnlimitedCapacity(!isUnlimitedCapacity)}
+                className="text-primary hover:text-primary/80 text-sm font-medium transition-colors hover:underline"
+              >
                 {isUnlimitedCapacity ? 'Set Limit' : 'Make Unlimited'}
               </button>
             </div>

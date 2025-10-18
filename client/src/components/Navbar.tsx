@@ -90,7 +90,7 @@ const Navbar = () => {
           <Popover>
             <PopoverTrigger className="cursor-pointer">
               {!user ? (
-                <Skeleton className="h-8 w-8 bg-neutral-200 rounded-full" />
+                <Skeleton className="h-8 w-8 rounded-full bg-neutral-200" />
               ) : (
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.profile_picture || undefined} />

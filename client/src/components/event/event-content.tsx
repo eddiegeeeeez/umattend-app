@@ -1,9 +1,9 @@
 import React from 'react';
 import { MapPin, TriangleAlert, UsersRound } from 'lucide-react';
+import { getStatusColor } from '@/utils/events-utils';
+import type { EventCardData, EventStatus } from '@/types/events';
 import { Badge } from '../ui/badge';
 import { Card, CardContent } from '../ui/card';
-import type { EventCardData, EventStatus } from '@/types/events';
-import { getStatusColor } from '@/utils/events-utils';
 
 interface EventContentProps {
   event: EventCardData & { eventStatus?: EventStatus };

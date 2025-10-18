@@ -1,10 +1,10 @@
 import React from 'react';
 import { MapPin, UsersRound, AlertTriangle, ArrowUpRight, ChevronsLeft, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import type { EventCardData, EventStatus } from '@/types/events';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
-import type { EventCardData, EventStatus } from '@/types/events';
 import { useAuthStore } from '@/store/authStore';
 
 interface EventDetailsProps {

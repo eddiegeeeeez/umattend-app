@@ -8,8 +8,8 @@ import EventContentEmpty from '@/components/event/event-content-empty';
 import EventDetails from '@/components/event/event-details';
 import EventsSkeleton from '@/components/skeletons/events-skeleton';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { getEventOptions } from '@/api/client/@tanstack/react-query.gen';
 import { transformEventData } from '@/utils/events-utils';
+import { getEventOptions } from '@/api/client/@tanstack/react-query.gen';
 
 export default function DashboardPage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);

@@ -212,7 +212,7 @@ const ProfilePage = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="bg-neutral-200 text-muted-foreground mb-6 inline-flex h-11 items-center justify-center rounded-lg p-1 gap-x-2">
+          <TabsList className="text-muted-foreground mb-6 inline-flex h-11 items-center justify-center gap-x-2 rounded-lg bg-neutral-200 p-1">
             <TabsTrigger value="attended" className="rounded-md px-4 py-2 text-sm font-medium">
               <Calendar className="mr-2 h-4 w-4" />
               Attended Events

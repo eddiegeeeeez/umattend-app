@@ -1,7 +1,6 @@
 /**
  * Utility functions for event-related operations
  */
-
 import type { ApiEventData, ExtendedEventCardData, EventStatus, AttendanceStatus } from '@/types/events';
 
 /**
@@ -30,12 +29,12 @@ const formatEventTime = (date: Date): string => {
   let hours = date.getHours();
   const minutes = date.getMinutes();
   const ampm = hours >= 12 ? 'PM' : 'AM';
-  
+
   hours = hours % 12;
   hours = hours ? hours : 12; // 0 should be 12
-  
+
   const minutesStr = minutes < 10 ? `0${minutes}` : minutes.toString();
-  
+
   return `${hours}:${minutesStr} ${ampm}`;
 };
 
@@ -48,9 +47,7 @@ export const transformEventData = (apiEvent: ApiEventData): ExtendedEventCardDat
   const startDate = apiEvent.start_time ? new Date(apiEvent.start_time) : new Date();
   const endDate = apiEvent.end_time ? new Date(apiEvent.end_time) : new Date();
 
-  const attendees = apiEvent.check_out_required 
-    ? (apiEvent.checkout_count || 0) 
-    : (apiEvent.checkin_count || 0);
+  const attendees = apiEvent.check_out_required ? apiEvent.checkout_count || 0 : apiEvent.checkin_count || 0;
 
   return {
     id: apiEvent.id ? parseInt(apiEvent.id) : undefined,
