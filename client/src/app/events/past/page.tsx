@@ -7,6 +7,7 @@ import EventDetails from '@/components/event/event-details';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { pastEvents } from '@/constants';
 import EventsSkeleton from '@/components/event/events-skeleton';
+import EventContentEmpty from '@/components/event/event-content-empty';
 
 export default function PastEventsPage() {
   const [selectedEvent, setSelectedEvent] = useState<(typeof pastEvents)[0] | null>(null);
@@ -67,31 +68,7 @@ export default function PastEventsPage() {
             ))}
           </div>
         ) : (
-          <div className="flex min-h-[65vh] items-center justify-center px-4">
-            <div className="flex max-w-md flex-col items-center gap-6 text-center">
-              <div className="bg-muted/50 ring-border flex h-28 w-28 items-center justify-center rounded-3xl shadow-sm ring-1">
-                <svg
-                  className="text-muted-foreground/70 h-14 w-14"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-foreground text-2xl font-bold tracking-tight">No Past Events</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  You haven't attended any events yet. Explore upcoming events and start building your event history!
-                </p>
-              </div>
-            </div>
-          </div>
+          <EventContentEmpty />
         )}
       </main>
 
