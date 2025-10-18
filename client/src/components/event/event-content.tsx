@@ -3,7 +3,7 @@ import { MapPin, TriangleAlert, UsersRound } from 'lucide-react';
 import { type StaticImageData } from 'next/image';
 import { Card, CardContent } from '../ui/card';
 
-interface EventContentProps {
+export interface EventCardData {
   id?: number;
   title: string;
   date: string;
@@ -14,24 +14,20 @@ interface EventContentProps {
   hasLocation?: boolean;
   attendees?: number;
   image?: string | StaticImageData;
+  description?: string;
+  category?: string;
+}
+
+interface EventContentProps {
+  event: EventCardData;
   index: number;
   isLast?: boolean;
   onCardClick?: () => void;
   onManageClick?: (e: React.MouseEvent) => void;
 }
 
-const EventContent = ({
-  title,
-  date,
-  dayOfWeek,
-  startTime,
-  endTime,
-  location,
-  hasLocation = false,
-  attendees = 0,
-  isLast = false,
-  onCardClick
-}: EventContentProps) => {
+const EventContent = ({ event, isLast = false, onCardClick }: EventContentProps) => {
+  const { title, date, dayOfWeek, startTime, endTime, location, hasLocation = false, attendees = 0 } = event;
   return (
     <div className="flex gap-3 sm:gap-6">
       <div className="w-16 flex-shrink-0 pt-1 sm:w-24">

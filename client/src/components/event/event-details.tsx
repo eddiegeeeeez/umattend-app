@@ -1,40 +1,33 @@
 import React from 'react';
-import { MapPin, UsersRound, AlertTriangle, ArrowUpRight, ChevronsLeft } from 'lucide-react';
-import { type StaticImageData } from 'next/image';
+import { Calendar, MapPin, UsersRound, AlertTriangle, Share2, ArrowUpRight, ChevronsLeft, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
+import { useAuthStore } from '@/store/authStore';
+import type { EventCardData } from './event-content';
 
 interface EventDetailsProps {
-  title: string;
-  description?: string;
-  image?: string | StaticImageData;
-  dayOfWeek?: string;
-  date?: string;
-  startTime?: string;
-  endTime?: string;
-  hasLocation?: boolean;
-  location?: string | null;
-  attendees?: number;
-  category?: string;
-  onRSVP?: () => void;
-  onShare?: () => void;
+  event: EventCardData;
   onClose?: () => void;
 }
 
-const EventDetails = ({
-  title,
-  description,
-  dayOfWeek,
-  date,
-  startTime,
-  endTime,
-  hasLocation = false,
-  location,
-  attendees = 0,
-  onClose
-}: EventDetailsProps) => {
+const EventDetails = ({ event, onClose }: EventDetailsProps) => {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role && ['admin', 'organizer', 'csg'].includes(user.role);
+  
+  const {
+    id,
+    title,
+    description,
+    dayOfWeek,
+    date,
+    startTime,
+    endTime,
+    hasLocation = false,
+    location,
+    attendees = 0,
+  } = event;
   return (
     <div className="space-y-8">
       <SheetHeader className="border-border border-b">
@@ -42,10 +35,21 @@ const EventDetails = ({
           <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={onClose}>
             <ChevronsLeft />
           </Button>
-          <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push('events/2')}>
-            Event Page
-            <ArrowUpRight />
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button 
+                className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" 
+                onClick={() => router.push(`/events/${id}/manage`)}
+              >
+                <Settings className="h-4 w-4" />
+                Manage
+              </Button>
+            )}
+            <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push('events/2')}>
+              Event Page
+              <ArrowUpRight />
+            </Button>
+          </div>
         </div>
       </SheetHeader>
 

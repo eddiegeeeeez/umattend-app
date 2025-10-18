@@ -65,41 +65,42 @@ export default function ManageSingleEventPage() {
   }
 
   return (
-    <div className="bg-background min-h-screen">
-      {/* Hero Section */}
-      <HeroSection event={event} setIsSheetOpen={setIsSheetOpen} />
-
+    <div className="min-h-screen bg-neutral-100">
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+        {/* Hero Section */}
+        <HeroSection event={event} setIsSheetOpen={setIsSheetOpen} />
         {/* Tabs Section */}
-        <Tabs defaultValue="details" className="space-y-6">
-          <TabsList className="bg-muted text-muted-foreground inline-flex h-11 items-center justify-center rounded-lg p-1">
-            <TabsTrigger value="details" className="rounded-md px-4 py-2 text-sm font-medium">
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Details
-            </TabsTrigger>
-            {/* <TabsTrigger value="overview" className="rounded-md px-4 py-2 text-sm font-medium">
+        <div className="my-4">
+          <Tabs defaultValue="details" className="space-y-6">
+            <TabsList className="bg-muted text-muted-foreground inline-flex h-11 items-center justify-center rounded-lg p-1">
+              <TabsTrigger value="details" className="rounded-md px-4 py-2 text-sm font-medium cursor-pointer">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Details
+              </TabsTrigger>
+              {/* <TabsTrigger value="overview" className="rounded-md px-4 py-2 text-sm font-medium">
               <BarChart3 className="mr-2 h-4 w-4" />
               Overview
             </TabsTrigger> */}
-            <TabsTrigger value="attendees" className="rounded-md px-4 py-2 text-sm font-medium">
-              <UserCheck className="mr-2 h-4 w-4" />
-              Attendees
-            </TabsTrigger>
-          </TabsList>
+              <TabsTrigger value="attendees" className="rounded-md px-4 py-2 text-sm font-medium cursor-pointer">
+                <UserCheck className="mr-2 h-4 w-4" />
+                Attendees
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="details">
-            <EventDetails event={event} />
-          </TabsContent>
+            <TabsContent value="details">
+              <EventDetails event={event} />
+            </TabsContent>
 
-          {/* <TabsContent value="overview" className="space-y-6">
+            {/* <TabsContent value="overview" className="space-y-6">
             <EventOverview event={event} />
           </TabsContent> */}
 
-          <TabsContent value="attendees">
-            <EventAttendees />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="attendees">
+              <EventAttendees />
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
 
       {/* Update Event Sheet */}
