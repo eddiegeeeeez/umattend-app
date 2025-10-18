@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteEventByEventIdData, DeleteEventByEventIdErrors, DeleteEventByEventIdResponses, GetAuthLoginHistoryData, GetAuthLoginHistoryErrors, GetAuthLoginHistoryResponses, GetEventByEventIdAttendeesData, GetEventByEventIdAttendeesErrors, GetEventByEventIdAttendeesResponses, GetEventByEventIdData, GetEventByEventIdErrors, GetEventByEventIdResponses, GetEventData, GetEventErrors, GetEventExportEventIdData, GetEventExportEventIdErrors, GetEventExportEventIdResponses, GetEventPastData, GetEventPastErrors, GetEventPastResponses, GetEventResponses, GetUserData, GetUserErrors, GetUserEventsData, GetUserEventsErrors, GetUserEventsResponses, GetUserResponses, PostAuthExchangeData, PostAuthExchangeErrors, PostAuthExchangeResponses, PostAuthLogoutData, PostAuthLogoutErrors, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshErrors, PostAuthRefreshResponses, PostEventAddOrganizerByEventIdData, PostEventAddOrganizerByEventIdErrors, PostEventAddOrganizerByEventIdResponses, PostEventCheckInByEventIdByUserIdData, PostEventCheckInByEventIdByUserIdErrors, PostEventCheckInByEventIdByUserIdResponses, PostEventCheckOutByEventIdByUserIdData, PostEventCheckOutByEventIdByUserIdErrors, PostEventCheckOutByEventIdByUserIdResponses, PostEventData, PostEventErrors, PostEventResponses, PostUserOnboardingData, PostUserOnboardingErrors, PostUserOnboardingResponses, PutEventByEventIdData, PutEventByEventIdErrors, PutEventByEventIdResponses } from './types.gen';
-import { zDeleteEventByEventIdData, zDeleteEventByEventIdResponse, zGetAuthLoginHistoryData, zGetAuthLoginHistoryResponse, zGetEventByEventIdAttendeesData, zGetEventByEventIdAttendeesResponse, zGetEventByEventIdData, zGetEventByEventIdResponse, zGetEventData, zGetEventExportEventIdData, zGetEventExportEventIdResponse, zGetEventPastData, zGetEventPastResponse, zGetEventResponse, zGetUserData, zGetUserEventsData, zGetUserEventsResponse, zGetUserResponse, zPostAuthExchangeData, zPostAuthExchangeResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostEventAddOrganizerByEventIdData, zPostEventAddOrganizerByEventIdResponse, zPostEventCheckInByEventIdByUserIdData, zPostEventCheckInByEventIdByUserIdResponse, zPostEventCheckOutByEventIdByUserIdData, zPostEventCheckOutByEventIdByUserIdResponse, zPostEventData, zPostEventResponse, zPostUserOnboardingData, zPostUserOnboardingResponse, zPutEventByEventIdData, zPutEventByEventIdResponse } from './zod.gen';
+import type { DeleteEventByEventIdData, DeleteEventByEventIdErrors, DeleteEventByEventIdResponses, DeleteEventRemoveOrganizerByEventIdData, DeleteEventRemoveOrganizerByEventIdErrors, DeleteEventRemoveOrganizerByEventIdResponses, GetAuthLoginHistoryData, GetAuthLoginHistoryErrors, GetAuthLoginHistoryResponses, GetEventByEventIdAttendeesData, GetEventByEventIdAttendeesErrors, GetEventByEventIdAttendeesResponses, GetEventByEventIdData, GetEventByEventIdErrors, GetEventByEventIdOrganizersData, GetEventByEventIdOrganizersErrors, GetEventByEventIdOrganizersResponses, GetEventByEventIdResponses, GetEventData, GetEventErrors, GetEventExportEventIdData, GetEventExportEventIdErrors, GetEventExportEventIdResponses, GetEventPastData, GetEventPastErrors, GetEventPastResponses, GetEventResponses, GetUserData, GetUserErrors, GetUserEventsData, GetUserEventsErrors, GetUserEventsResponses, GetUserResponses, PostAuthExchangeData, PostAuthExchangeErrors, PostAuthExchangeResponses, PostAuthLogoutData, PostAuthLogoutErrors, PostAuthLogoutResponses, PostAuthRefreshData, PostAuthRefreshErrors, PostAuthRefreshResponses, PostEventAddOrganizerByEventIdData, PostEventAddOrganizerByEventIdErrors, PostEventAddOrganizerByEventIdResponses, PostEventCheckInByEventIdByUserIdData, PostEventCheckInByEventIdByUserIdErrors, PostEventCheckInByEventIdByUserIdResponses, PostEventCheckOutByEventIdByUserIdData, PostEventCheckOutByEventIdByUserIdErrors, PostEventCheckOutByEventIdByUserIdResponses, PostEventData, PostEventErrors, PostEventResponses, PostUserOnboardingData, PostUserOnboardingErrors, PostUserOnboardingResponses, PutEventByEventIdData, PutEventByEventIdErrors, PutEventByEventIdResponses } from './types.gen';
+import { zDeleteEventByEventIdData, zDeleteEventByEventIdResponse, zDeleteEventRemoveOrganizerByEventIdData, zDeleteEventRemoveOrganizerByEventIdResponse, zGetAuthLoginHistoryData, zGetAuthLoginHistoryResponse, zGetEventByEventIdAttendeesData, zGetEventByEventIdAttendeesResponse, zGetEventByEventIdData, zGetEventByEventIdOrganizersData, zGetEventByEventIdOrganizersResponse, zGetEventByEventIdResponse, zGetEventData, zGetEventExportEventIdData, zGetEventExportEventIdResponse, zGetEventPastData, zGetEventPastResponse, zGetEventResponse, zGetUserData, zGetUserEventsData, zGetUserEventsResponse, zGetUserResponse, zPostAuthExchangeData, zPostAuthExchangeResponse, zPostAuthLogoutData, zPostAuthLogoutResponse, zPostAuthRefreshData, zPostAuthRefreshResponse, zPostEventAddOrganizerByEventIdData, zPostEventAddOrganizerByEventIdResponse, zPostEventCheckInByEventIdByUserIdData, zPostEventCheckInByEventIdByUserIdResponse, zPostEventCheckOutByEventIdByUserIdData, zPostEventCheckOutByEventIdByUserIdResponse, zPostEventData, zPostEventResponse, zPostUserOnboardingData, zPostUserOnboardingResponse, zPutEventByEventIdData, zPutEventByEventIdResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -424,6 +424,35 @@ export class Event {
     }
     
     /**
+     * Remove organizer
+     *
+     * Remove an organizer from an event (Admin/CSG/Organizer only). The event creator cannot be removed.
+     */
+    public static deleteEventRemoveOrganizerByEventId<ThrowOnError extends boolean = false>(options: Options<DeleteEventRemoveOrganizerByEventIdData, ThrowOnError>) {
+        return (options.client ?? client).delete<DeleteEventRemoveOrganizerByEventIdResponses, DeleteEventRemoveOrganizerByEventIdErrors, ThrowOnError>({
+            requestValidator: async (data) => {
+                return await zDeleteEventRemoveOrganizerByEventIdData.parseAsync(data);
+            },
+            responseType: 'json',
+            responseValidator: async (data) => {
+                return await zDeleteEventRemoveOrganizerByEventIdResponse.parseAsync(data);
+            },
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/event/remove_organizer/{event_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
      * Get all past events
      *
      * Retrieve all past (completed) events ordered by start time
@@ -451,7 +480,7 @@ export class Event {
     /**
      * Get paginated attendees by event ID
      *
-     * Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata.
+     * Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata. Supports search by name, student ID, or email.
      */
     public static getEventByEventIdAttendees<ThrowOnError extends boolean = false>(options: Options<GetEventByEventIdAttendeesData, ThrowOnError>) {
         return (options.client ?? client).get<GetEventByEventIdAttendeesResponses, GetEventByEventIdAttendeesErrors, ThrowOnError>({
@@ -469,6 +498,31 @@ export class Event {
                 }
             ],
             url: '/event/{event_id}/attendees',
+            ...options
+        });
+    }
+    
+    /**
+     * Get event organizers
+     *
+     * Retrieve the list of organizers for a specific event (Admin/CSG/Organizer only).
+     */
+    public static getEventByEventIdOrganizers<ThrowOnError extends boolean = false>(options: Options<GetEventByEventIdOrganizersData, ThrowOnError>) {
+        return (options.client ?? client).get<GetEventByEventIdOrganizersResponses, GetEventByEventIdOrganizersErrors, ThrowOnError>({
+            requestValidator: async (data) => {
+                return await zGetEventByEventIdOrganizersData.parseAsync(data);
+            },
+            responseType: 'json',
+            responseValidator: async (data) => {
+                return await zGetEventByEventIdOrganizersResponse.parseAsync(data);
+            },
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/event/{event_id}/organizers',
             ...options
         });
     }

@@ -1122,6 +1122,76 @@ export type PostEventAddOrganizerByEventIdResponses = {
 
 export type PostEventAddOrganizerByEventIdResponse = PostEventAddOrganizerByEventIdResponses[keyof PostEventAddOrganizerByEventIdResponses];
 
+export type DeleteEventRemoveOrganizerByEventIdData = {
+    body: {
+        /**
+         * umindanao email of the organizer to remove
+         */
+        umindanao_email: string;
+    };
+    path: {
+        /**
+         * Event ID
+         */
+        event_id: string;
+    };
+    query?: never;
+    url: '/event/remove_organizer/{event_id}';
+};
+
+export type DeleteEventRemoveOrganizerByEventIdErrors = {
+    /**
+     * Bad request - Missing required fields or validation errors
+     */
+    400: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Unauthorized
+     */
+    401: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Forbidden - Cannot remove event creator or insufficient permissions
+     */
+    403: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Event, user, or organizer record not found
+     */
+    404: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Internal server error
+     */
+    500: {
+        success?: boolean;
+        message?: string;
+    };
+};
+
+export type DeleteEventRemoveOrganizerByEventIdError = DeleteEventRemoveOrganizerByEventIdErrors[keyof DeleteEventRemoveOrganizerByEventIdErrors];
+
+export type DeleteEventRemoveOrganizerByEventIdResponses = {
+    /**
+     * Organizer removed successfully
+     */
+    200: {
+        success?: boolean;
+        message?: string;
+        data?: null;
+    };
+};
+
+export type DeleteEventRemoveOrganizerByEventIdResponse = DeleteEventRemoveOrganizerByEventIdResponses[keyof DeleteEventRemoveOrganizerByEventIdResponses];
+
 export type GetEventPastData = {
     body?: never;
     path?: never;
@@ -1198,6 +1268,10 @@ export type GetEventByEventIdAttendeesData = {
          * Number of attendees per page (default: 10)
          */
         limit?: number;
+        /**
+         * Search term to filter attendees by name, student ID, or email (case-insensitive)
+         */
+        search?: string;
     };
     url: '/event/{event_id}/attendees';
 };
@@ -1279,6 +1353,100 @@ export type GetEventByEventIdAttendeesResponses = {
 };
 
 export type GetEventByEventIdAttendeesResponse = GetEventByEventIdAttendeesResponses[keyof GetEventByEventIdAttendeesResponses];
+
+export type GetEventByEventIdOrganizersData = {
+    body?: never;
+    path: {
+        /**
+         * The unique ID of the event
+         */
+        event_id: string;
+    };
+    query?: never;
+    url: '/event/{event_id}/organizers';
+};
+
+export type GetEventByEventIdOrganizersErrors = {
+    /**
+     * Bad request - Event ID is required
+     */
+    400: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Unauthorized
+     */
+    401: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Forbidden - Insufficient permissions
+     */
+    403: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Event not found or no organizers found
+     */
+    404: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Internal server error
+     */
+    500: {
+        success?: boolean;
+        message?: string;
+    };
+};
+
+export type GetEventByEventIdOrganizersError = GetEventByEventIdOrganizersErrors[keyof GetEventByEventIdOrganizersErrors];
+
+export type GetEventByEventIdOrganizersResponses = {
+    /**
+     * Organizers retrieved successfully
+     */
+    200: {
+        success?: boolean;
+        message?: string;
+        data?: Array<{
+            /**
+             * Student ID number
+             */
+            student_id?: number | null;
+            /**
+             * Organizer full name
+             */
+            name?: string;
+            /**
+             * Department/College
+             */
+            department?: string;
+            /**
+             * Program/Course
+             */
+            program?: string;
+            /**
+             * UMindanao email address
+             */
+            umindanao_email?: string;
+            /**
+             * Name of the user who added this organizer
+             */
+            added_by?: string;
+            /**
+             * Date and time when organizer was added
+             */
+            added_at?: string;
+        }>;
+    };
+};
+
+export type GetEventByEventIdOrganizersResponse = GetEventByEventIdOrganizersResponses[keyof GetEventByEventIdOrganizersResponses];
 
 export type GetEventExportEventIdData = {
     body?: never;

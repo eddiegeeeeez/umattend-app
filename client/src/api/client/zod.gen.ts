@@ -335,7 +335,7 @@ export const zPutEventByEventIdData = z.object({
         })).min(1)).default([
             {
                 field_name: 'Dietary Restrictions',
-                fieldType: 'short-text'
+                fieldType: 'short_text'
             },
             {
                 field_name: 'T-Shirt Size',
@@ -444,6 +444,25 @@ export const zPostEventAddOrganizerByEventIdResponse = z.object({
     }))
 });
 
+export const zDeleteEventRemoveOrganizerByEventIdData = z.object({
+    body: z.object({
+        umindanao_email: z.string()
+    }),
+    path: z.object({
+        event_id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Organizer removed successfully
+ */
+export const zDeleteEventRemoveOrganizerByEventIdResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.string()),
+    data: z.optional(z.null())
+});
+
 export const zGetEventPastData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -482,7 +501,8 @@ export const zGetEventByEventIdAttendeesData = z.object({
     }),
     query: z.optional(z.object({
         page: z.optional(z.int().gte(1)),
-        limit: z.optional(z.int().gte(1))
+        limit: z.optional(z.int().gte(1)),
+        search: z.optional(z.string())
     }))
 });
 
@@ -524,6 +544,34 @@ export const zGetEventByEventIdAttendeesResponse = z.object({
             totalPages: z.optional(z.int())
         }))
     }))
+});
+
+export const zGetEventByEventIdOrganizersData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        event_id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * Organizers retrieved successfully
+ */
+export const zGetEventByEventIdOrganizersResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.string()),
+    data: z.optional(z.array(z.object({
+        student_id: z.optional(z.union([
+            z.number(),
+            z.null()
+        ])),
+        name: z.optional(z.string()),
+        department: z.optional(z.string()),
+        program: z.optional(z.string()),
+        umindanao_email: z.optional(z.string()),
+        added_by: z.optional(z.string()),
+        added_at: z.optional(z.iso.datetime())
+    })))
 });
 
 export const zGetEventExportEventIdData = z.object({

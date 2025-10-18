@@ -5,7 +5,7 @@ import type { AxiosError } from 'axios';
 
 import { client } from '../client.gen';
 import { Authentication, Event, type Options, User } from '../sdk.gen';
-import type { DeleteEventByEventIdData, DeleteEventByEventIdError, DeleteEventByEventIdResponse, GetAuthLoginHistoryData, GetEventByEventIdAttendeesData, GetEventByEventIdAttendeesError, GetEventByEventIdAttendeesResponse, GetEventByEventIdData, GetEventData, GetEventExportEventIdData, GetEventPastData, GetUserData, GetUserEventsData, PostAuthExchangeData, PostAuthExchangeError, PostAuthExchangeResponse, PostAuthLogoutData, PostAuthLogoutError, PostAuthLogoutResponse, PostAuthRefreshData, PostAuthRefreshError, PostAuthRefreshResponse, PostEventAddOrganizerByEventIdData, PostEventAddOrganizerByEventIdError, PostEventAddOrganizerByEventIdResponse, PostEventCheckInByEventIdByUserIdData, PostEventCheckInByEventIdByUserIdError, PostEventCheckInByEventIdByUserIdResponse, PostEventCheckOutByEventIdByUserIdData, PostEventCheckOutByEventIdByUserIdError, PostEventCheckOutByEventIdByUserIdResponse, PostEventData, PostEventError, PostEventResponse, PostUserOnboardingData, PostUserOnboardingError, PostUserOnboardingResponse, PutEventByEventIdData, PutEventByEventIdError, PutEventByEventIdResponse } from '../types.gen';
+import type { DeleteEventByEventIdData, DeleteEventByEventIdError, DeleteEventByEventIdResponse, DeleteEventRemoveOrganizerByEventIdData, DeleteEventRemoveOrganizerByEventIdError, DeleteEventRemoveOrganizerByEventIdResponse, GetAuthLoginHistoryData, GetEventByEventIdAttendeesData, GetEventByEventIdAttendeesError, GetEventByEventIdAttendeesResponse, GetEventByEventIdData, GetEventByEventIdOrganizersData, GetEventData, GetEventExportEventIdData, GetEventPastData, GetUserData, GetUserEventsData, PostAuthExchangeData, PostAuthExchangeError, PostAuthExchangeResponse, PostAuthLogoutData, PostAuthLogoutError, PostAuthLogoutResponse, PostAuthRefreshData, PostAuthRefreshError, PostAuthRefreshResponse, PostEventAddOrganizerByEventIdData, PostEventAddOrganizerByEventIdError, PostEventAddOrganizerByEventIdResponse, PostEventCheckInByEventIdByUserIdData, PostEventCheckInByEventIdByUserIdError, PostEventCheckInByEventIdByUserIdResponse, PostEventCheckOutByEventIdByUserIdData, PostEventCheckOutByEventIdByUserIdError, PostEventCheckOutByEventIdByUserIdResponse, PostEventData, PostEventError, PostEventResponse, PostUserOnboardingData, PostUserOnboardingError, PostUserOnboardingResponse, PutEventByEventIdData, PutEventByEventIdError, PutEventByEventIdResponse } from '../types.gen';
 
 /**
  * Refresh access token
@@ -342,6 +342,25 @@ export const postEventAddOrganizerByEventIdMutation = (options?: Partial<Options
     return mutationOptions;
 };
 
+/**
+ * Remove organizer
+ *
+ * Remove an organizer from an event (Admin/CSG/Organizer only). The event creator cannot be removed.
+ */
+export const deleteEventRemoveOrganizerByEventIdMutation = (options?: Partial<Options<DeleteEventRemoveOrganizerByEventIdData>>): UseMutationOptions<DeleteEventRemoveOrganizerByEventIdResponse, AxiosError<DeleteEventRemoveOrganizerByEventIdError>, Options<DeleteEventRemoveOrganizerByEventIdData>> => {
+    const mutationOptions: UseMutationOptions<DeleteEventRemoveOrganizerByEventIdResponse, AxiosError<DeleteEventRemoveOrganizerByEventIdError>, Options<DeleteEventRemoveOrganizerByEventIdData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await Event.deleteEventRemoveOrganizerByEventId({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const getEventPastQueryKey = (options?: Options<GetEventPastData>) => createQueryKey('getEventPast', options);
 
 /**
@@ -369,7 +388,7 @@ export const getEventByEventIdAttendeesQueryKey = (options: Options<GetEventByEv
 /**
  * Get paginated attendees by event ID
  *
- * Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata.
+ * Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata. Supports search by name, student ID, or email.
  */
 export const getEventByEventIdAttendeesOptions = (options: Options<GetEventByEventIdAttendeesData>) => {
     return queryOptions({
@@ -422,7 +441,7 @@ export const getEventByEventIdAttendeesInfiniteQueryKey = (options: Options<GetE
 /**
  * Get paginated attendees by event ID
  *
- * Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata.
+ * Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata. Supports search by name, student ID, or email.
  */
 export const getEventByEventIdAttendeesInfiniteOptions = (options: Options<GetEventByEventIdAttendeesData>) => {
     return infiniteQueryOptions<GetEventByEventIdAttendeesResponse, AxiosError<GetEventByEventIdAttendeesError>, InfiniteData<GetEventByEventIdAttendeesResponse>, QueryKey<Options<GetEventByEventIdAttendeesData>>, number | Pick<QueryKey<Options<GetEventByEventIdAttendeesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
@@ -445,6 +464,28 @@ export const getEventByEventIdAttendeesInfiniteOptions = (options: Options<GetEv
             return data;
         },
         queryKey: getEventByEventIdAttendeesInfiniteQueryKey(options)
+    });
+};
+
+export const getEventByEventIdOrganizersQueryKey = (options: Options<GetEventByEventIdOrganizersData>) => createQueryKey('getEventByEventIdOrganizers', options);
+
+/**
+ * Get event organizers
+ *
+ * Retrieve the list of organizers for a specific event (Admin/CSG/Organizer only).
+ */
+export const getEventByEventIdOrganizersOptions = (options: Options<GetEventByEventIdOrganizersData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await Event.getEventByEventIdOrganizers({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getEventByEventIdOrganizersQueryKey(options)
     });
 };
 

@@ -196,7 +196,7 @@ const updateAndDeleteEvent = {
                   default: [
                     {
                       field_name: 'Dietary Restrictions',
-                      fieldType: 'short-text',
+                      fieldType: 'short_text',
                     },
                     {
                       field_name: 'T-Shirt Size',
