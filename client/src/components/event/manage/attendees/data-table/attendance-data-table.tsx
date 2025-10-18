@@ -72,7 +72,7 @@ export function AttendanceDataTable<TData, TValue>({ columns, data }: DataTableP
             placeholder="Search by Student ID, Name, or Email..."
             value={globalFilter}
             onChange={(event) => setGlobalFilter(event.target.value)}
-            className="pl-10"
+            className="pl-10 bg-background"
           />
         </div>
         <DropdownMenu>
@@ -112,7 +112,7 @@ export function AttendanceDataTable<TData, TValue>({ columns, data }: DataTableP
       </div>
 
       <div className="rounded-md border">
-        <Table className='p-5'>
+        <Table className='p-5 bg-background'>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
