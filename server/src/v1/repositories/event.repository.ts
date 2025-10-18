@@ -249,16 +249,60 @@ const addOrganizer = async (user_id: string, added_by:string, event_id: string) 
   });
 };
 
+const removeOrganizer = async (user_id: string, event_id: string) => {
+  return await prisma.organizers.delete({
+    where: {
+      user_id_event_id: {
+        user_id,
+        event_id,
+      },
+    },
+  });
+};
+
 const getPaginatedAttendeesByEventId = async (
   event_id: string,
   page: number,
-  limit: number
+  limit: number,
+  search?: string
 ) => {
   const skip = (page - 1) * limit;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const whereClause: any = { event_id };
+
+  // Add search functionality
+  if (search) {
+    whereClause.OR = [
+      {
+        student: {
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+      },
+      {
+        student: {
+          student_id: {
+            contains: search,
+          },
+        },
+      },
+      {
+        user: {
+          umindanao_email: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+      },
+    ];
+  }
+
   const [attendees, total] = await Promise.all([
     prisma.attendance.findMany({
-      where: { event_id },
+      where: whereClause,
       include: {
         user: {
           select: { umindanao_email: true },
@@ -289,7 +333,7 @@ const getPaginatedAttendeesByEventId = async (
       skip,
       take: limit,
     }),
-    prisma.attendance.count({ where: { event_id } }),
+    prisma.attendance.count({ where: whereClause }),
   ]);
 
   return { attendees, total };
@@ -376,6 +420,7 @@ const eventRepository = {
   createCheckInEvent,
   createCheckOutEvent,
   addOrganizer,
+  removeOrganizer,
   checkOrganizer,
   getAllEvents,
   getAllPastEvents,

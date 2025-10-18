@@ -967,6 +967,134 @@ const addOrganizer = {
   },
 };
 
+const removeOrganizer = {
+  '/event/remove_organizer/{event_id}': {
+    delete: {
+      tags: ['Event'],
+      summary: 'Remove organizer',
+      description: 'Remove an organizer from an event (Admin/CSG/Organizer only). The event creator cannot be removed.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'event_id',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Event ID',
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                umindanao_email: {
+                  type: 'string',
+                  description: 'umindanao email of the organizer to remove',
+                },
+              },
+              required: ['umindanao_email'],
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Organizer removed successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Organizer removed successfully',
+                  },
+                  data: { type: 'null' },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description:
+            'Bad request - Missing required fields or validation errors',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event ID is required' },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
+        },
+        403: {
+          description: 'Forbidden - Cannot remove event creator or insufficient permissions',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Cannot remove the event creator as an organizer' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: 'Event, user, or organizer record not found',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'User not found' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 const createAndGetEvent = {
   '/event': {
     post: {
@@ -1454,7 +1582,7 @@ const getPaginatedAttendeesByEventId = {
       tags: ['Event'],
       summary: 'Get paginated attendees by event ID',
       description:
-        'Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata.',
+        'Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata. Supports search by name, student ID, or email.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -1477,6 +1605,13 @@ const getPaginatedAttendeesByEventId = {
           required: false,
           schema: { type: 'integer', example: 10, minimum: 1 },
           description: 'Number of attendees per page (default: 10)',
+        },
+        {
+          in: 'query',
+          name: 'search',
+          required: false,
+          schema: { type: 'string', example: 'John' },
+          description: 'Search term to filter attendees by name, student ID, or email (case-insensitive)',
         },
       ],
       responses: {
@@ -1775,6 +1910,7 @@ export const event = {
   ...checkIn,
   ...checkOut,
   ...addOrganizer,
+  ...removeOrganizer,
   ...getAllPastEvents,
   ...getPaginatedAttendeesByEventId,
   ...exportEventAttendeesToExcel,
