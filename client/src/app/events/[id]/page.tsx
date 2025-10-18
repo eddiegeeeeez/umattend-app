@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Calendar, MapPin, Clock, Users, Settings } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -10,43 +12,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/store/authStore';
+import { getEventByEventIdOptions } from '@/api/client/@tanstack/react-query.gen';
+import { formatDate, formatTime } from '@/lib/utils';
 
-// Mock single event data
-type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-
-interface Event {
-  id: string;
-  name: string;
-  description: string;
-  location: string;
-  department: string;
-  startDate: Date;
-  endDate: Date;
-  startTime: string;
-  endTime: string;
-  capacity: number | 'unlimited';
-  attendees: number;
-  status: EventStatus;
-  checkOutRequired: boolean;
-}
-
-// Mock single event data
-const mockEvent: Event = {
-  id: '1',
-  name: 'Annual Tech Conference 2025',
-  description:
-    'Join us for the biggest tech conference of the year featuring industry leaders and innovators. This comprehensive event will cover the latest trends in technology, artificial intelligence, cloud computing, and digital transformation.',
-  location: 'Main Auditorium, Building A',
-  department: 'College of Engineering',
-  startDate: new Date('2025-03-15'),
-  endDate: new Date('2025-03-15'),
-  startTime: '09:00 AM',
-  endTime: '05:00 PM',
-  capacity: 500,
-  attendees: 342,
-  status: 'upcoming',
-  checkOutRequired: true
-};
+// Using real API data now - types come from API client
 
 const EventDetailsSkeleton = () => {
   return (
@@ -129,32 +98,44 @@ export default function EventDetailsPage() {
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role && ['admin', 'organizer', 'csg'].includes(user.role);
   
-  const [event, setEvent] = useState<Event | null>(null);
-  const [attendanceStatus, setAttendanceStatus] = useState<'joined' | 'not_joined'>('joined');
-  const [isLoading, setIsLoading] = useState(true);
+  const [attendanceStatus] = useState<'joined' | 'not_joined'>('joined');
+  const params = useParams();
+  const eventId = params?.id as string;
 
-  useEffect(() => {
-    // Simulate loading - Replace with actual API call
-    const timer = setTimeout(() => {
-      setEvent(mockEvent);
-      setAttendanceStatus('joined');
-      setIsLoading(false);
-    }, 1000);
+  // Fetch event data using the API
+  const {
+    data: eventData,
+    isLoading,
+    isError,
+  } = useQuery({
+    ...getEventByEventIdOptions({
+      path: {
+        event_id: eventId
+      }
+    }),
+    enabled: !!eventId
+  });
 
-    return () => clearTimeout(timer);
-  }, []);
+  console.log(eventData);
+  console.log(isError);
+  
+  
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
+  const event = eventData?.data;
 
   if (isLoading || !event) {
     return <EventDetailsSkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-neutral-100">
+        <div className="text-center">
+          <h2 className="text-foreground mb-2 text-2xl font-bold">Event Not Found</h2>
+          <p className="text-muted-foreground">The event you&apos;re looking for doesn&apos;t exist or has been removed.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -168,26 +149,23 @@ export default function EventDetailsPage() {
               {/* Event Info */}
               <div className="flex-1 space-y-4">
                 <div>
-                  <h1 className="text-foreground text-3xl font-bold tracking-tight text-balance md:text-4xl lg:text-5xl">{event.name}</h1>
+                  <h1 className="text-foreground text-3xl font-bold tracking-tight text-balance md:text-4xl lg:text-5xl">{event.title}</h1>
                 </div>
 
                 <div className="flex flex-wrap gap-4 text-sm">
                   <div className="text-muted-foreground flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    <span>{formatDate(event.startDate)}</span>
+                    <span>{event.start_time && formatDate(event.start_time)}</span>
                   </div>
                   <div className="text-muted-foreground flex items-center gap-2">
                     <Clock className="h-4 w-4" />
                     <span>
-                      {' '}
-                      {event.startTime} - {event.endTime}
+                      {event.start_time && formatTime(event.start_time)} - {event.end_time && formatTime(event.end_time)}
                     </span>
                   </div>
                   <div className="text-muted-foreground flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    <span>
-                      {event.attendees}/{event.capacity} attending
-                    </span>
+                    <span>{event.checkin_count ?? 0} Attended</span>
                   </div>
                 </div>
 
@@ -231,7 +209,7 @@ export default function EventDetailsPage() {
           {/* Status Card - Only show if joined */}
           {attendanceStatus === 'joined' && (
             <Card className="border-primary/20 bg-primary/5 border-2">
-              <CardContent className="flex items-start gap-4 p-6">
+              <CardContent className="flex items-start gap-4">
                 <Avatar className="h-12 w-12">
                   <AvatarFallback>HN</AvatarFallback>
                 </Avatar>

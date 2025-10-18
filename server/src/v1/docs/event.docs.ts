@@ -264,7 +264,12 @@ const updateAndDeleteEvent = {
                       description: { type: 'string' },
                       department: { type: 'string' },
                       location: { type: 'string' },
-                      capacity: { type: 'number' },
+                      capacity: { 
+                        oneOf: [
+                          { type: 'number' },
+                          { type: 'null' }
+                        ]
+                      },
                       all_day: { type: 'boolean' },
                       start_time: {
                         type: 'string',
@@ -411,7 +416,10 @@ const updateAndDeleteEvent = {
                         example: 'Main Auditorium, Building A',
                       },
                       capacity: {
-                        type: 'number',
+                        oneOf: [
+                          { type: 'number' },
+                          { type: 'null' }
+                        ],
                         example: 100,
                         description: 'Maximum event capacity',
                       },
@@ -464,6 +472,27 @@ const updateAndDeleteEvent = {
                         example: true,
                         description:
                           'Whether the current user has permission to edit this event',
+                      },
+                      user_attendance: {
+                        type: 'object',
+                        description:
+                          "The current user's attendance information for this event",
+                        properties: {
+                          check_in_at: {
+                            type: ['string', 'null'],
+                            format: 'date-time',
+                            example: '2025-10-15T09:15:00.000Z',
+                            description:
+                              'When the user checked in to the event, or null if not checked in',
+                          },
+                          check_out_at: {
+                            type: ['string', 'null'],
+                            format: 'date-time',
+                            example: '2025-10-15T16:45:00.000Z',
+                            description:
+                              'When the user checked out from the event, or null if not checked out',
+                          },
+                        },
                       },
                     },
                   },
@@ -820,12 +849,12 @@ const addOrganizer = {
             schema: {
               type: 'object',
               properties: {
-                userId: {
+                umindanao_email: {
                   type: 'string',
-                  description: 'User ID of the organizer to add',
+                  description: 'umindanao email of the organizer to add',
                 },
               },
-              required: ['userId'],
+              required: ['umindanao_email'],
             },
           },
         },
@@ -849,6 +878,7 @@ const addOrganizer = {
                       id: { type: 'string' },
                       user_id: { type: 'string' },
                       event_id: { type: 'string' },
+                      added_by: { type: 'string' },
                       created_at: {
                         type: 'string',
                         format: 'date-time',
@@ -913,6 +943,134 @@ const addOrganizer = {
                 properties: {
                   success: { type: 'boolean', example: false },
                   message: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+const removeOrganizer = {
+  '/event/remove_organizer/{event_id}': {
+    delete: {
+      tags: ['Event'],
+      summary: 'Remove organizer',
+      description: 'Remove an organizer from an event (Admin/CSG/Organizer only). The event creator cannot be removed.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'event_id',
+          required: true,
+          schema: { type: 'string' },
+          description: 'Event ID',
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                umindanao_email: {
+                  type: 'string',
+                  description: 'umindanao email of the organizer to remove',
+                },
+              },
+              required: ['umindanao_email'],
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Organizer removed successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Organizer removed successfully',
+                  },
+                  data: { type: 'null' },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description:
+            'Bad request - Missing required fields or validation errors',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Event ID is required' },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
+        },
+        403: {
+          description: 'Forbidden - Cannot remove event creator or insufficient permissions',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Cannot remove the event creator as an organizer' },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: 'Event, user, or organizer record not found',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'User not found' },
                 },
               },
             },
@@ -1085,7 +1243,12 @@ const createAndGetEvent = {
                       description: { type: 'string' },
                       department: { type: 'string' },
                       location: { type: 'string' },
-                      capacity: { type: 'number' },
+                      capacity: { 
+                        oneOf: [
+                          { type: 'number' },
+                          { type: 'null' }
+                        ]
+                      },
                       all_day: { type: 'boolean' },
                       start_time: {
                         type: 'string',
@@ -1209,7 +1372,13 @@ const createAndGetEvent = {
                           type: 'string',
                           example: 'Main Auditorium, Building A',
                         },
-                        capacity: { type: 'number', example: 100 },
+                        capacity: { 
+                          oneOf: [
+                            { type: 'number' },
+                            { type: 'null' }
+                          ],
+                          example: 100
+                        },
                         all_day: { type: 'boolean', example: false },
                         start_time: {
                           type: 'string',
@@ -1328,7 +1497,13 @@ const getAllPastEvents = {
                           type: 'string',
                           example: 'Main Auditorium, Building A',
                         },
-                        capacity: { type: 'number', example: 100 },
+                        capacity: { 
+                          oneOf: [
+                            { type: 'number' },
+                            { type: 'null' }
+                          ],
+                          example: 100
+                        },
                         all_day: { type: 'boolean', example: false },
                         start_time: {
                           type: 'string',
@@ -1407,7 +1582,7 @@ const getPaginatedAttendeesByEventId = {
       tags: ['Event'],
       summary: 'Get paginated attendees by event ID',
       description:
-        'Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata.',
+        'Retrieve a paginated list of attendees for a specific event, including check-in/check-out details and pagination metadata. Supports search by name, student ID, or email.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -1430,6 +1605,13 @@ const getPaginatedAttendeesByEventId = {
           required: false,
           schema: { type: 'integer', example: 10, minimum: 1 },
           description: 'Number of attendees per page (default: 10)',
+        },
+        {
+          in: 'query',
+          name: 'search',
+          required: false,
+          schema: { type: 'string', example: 'John' },
+          description: 'Search term to filter attendees by name, student ID, or email (case-insensitive)',
         },
       ],
       responses: {
@@ -1728,6 +1910,7 @@ export const event = {
   ...checkIn,
   ...checkOut,
   ...addOrganizer,
+  ...removeOrganizer,
   ...getAllPastEvents,
   ...getPaginatedAttendeesByEventId,
   ...exportEventAttendeesToExcel,

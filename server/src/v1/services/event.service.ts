@@ -211,16 +211,44 @@ const scheduleStartEventStatusJob = async (event: events) => {
   );
 };
 
-const addOrganizer = async (umindanao_email: string, event_id: string) => {
+const addOrganizer = async (
+  umindanao_email: string,
+  event_id: string,
+  added_by: string
+) => {
   const user = await authRepository.findUserByEmail(umindanao_email);
   if (!user) {
     throw new NotFoundError('User not found');
   }
+
   const user_id = user.id;
+
   if (!user_id) {
     throw new NotFoundError('User ID not found');
   }
-  return await eventRepository.addOrganizer(user_id, event_id);
+
+  return await eventRepository.addOrganizer(user_id, added_by, event_id);
+};
+
+const removeOrganizer = async (umindanao_email: string, event_id: string) => {
+  const user = await authRepository.findUserByEmail(umindanao_email);
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  const user_id = user.id;
+
+  if (!user_id) {
+    throw new NotFoundError('User ID not found');
+  }
+
+  // Check if user is the event creator
+  const event = await eventRepository.getEventDetails(event_id);
+  if (event?.created_by === user_id) {
+    throw new ForbiddenError('Cannot remove the event creator as an organizer');
+  }
+
+  return await eventRepository.removeOrganizer(user_id, event_id);
 };
 
 const getEventDetailsById = async (
@@ -240,6 +268,16 @@ const getEventDetailsById = async (
     throw new NotFoundError('Event not found');
   }
 
+  const attendanceData = await eventRepository.checkIfUserAttended(
+    event_id,
+    event.created_by
+  );
+  const check_in_at = attendanceData?.check_in_at ?? null;
+  const check_out_at =
+    attendanceData?.check_out_at instanceof Date
+      ? attendanceData.check_out_at
+      : null;
+
   const is_organizer = await eventRepository.checkOrganizer(
     event.created_by,
     event_id
@@ -257,6 +295,10 @@ const getEventDetailsById = async (
     can_edit,
     checkin_count: checkin_count ?? 0,
     checkout_count,
+    user_attendance: {
+      check_in_at: check_in_at ?? null,
+      check_out_at: check_out_at ?? null,
+    },
   };
 };
 
@@ -313,7 +355,8 @@ const getAllPastEvents = async (): Promise<GetAllEventsInterface> => {
 const getPaginatedAttendeesByEventId = async (
   event_id: string,
   page: number,
-  limit: number
+  limit: number,
+  search?: string
 ): Promise<{
   data: GetStudentsByEventIdInterface[];
   pagination: {
@@ -324,7 +367,7 @@ const getPaginatedAttendeesByEventId = async (
   };
 }> => {
   const { attendees, total } =
-    await eventRepository.getPaginatedAttendeesByEventId(event_id, page, limit);
+    await eventRepository.getPaginatedAttendeesByEventId(event_id, page, limit, search);
 
   if (attendees.length === 0) {
     throw new NotFoundError('No attendees found for this event');
@@ -435,6 +478,7 @@ const eventServices = {
   createCheckInEvent,
   createCheckOutEvent,
   addOrganizer,
+  removeOrganizer,
   getEventDetailsById,
   getAllPastEvents,
   getAttendeesByEventId,

@@ -18,6 +18,7 @@ const createEvent = async (event_data: AddEventInterface) => {
       data: {
         user_id: event.created_by,
         event_id: event.id,
+        added_by: event.created_by,
       },
     });
 
@@ -238,11 +239,23 @@ const checkOrganizer = async (user_id: string, event_id: string) => {
   });
 };
 
-const addOrganizer = async (user_id: string, event_id: string) => {
+const addOrganizer = async (user_id: string, added_by:string, event_id: string) => {
   return await prisma.organizers.create({
     data: {
       user_id,
       event_id,
+      added_by: added_by,
+    },
+  });
+};
+
+const removeOrganizer = async (user_id: string, event_id: string) => {
+  return await prisma.organizers.delete({
+    where: {
+      user_id_event_id: {
+        user_id,
+        event_id,
+      },
     },
   });
 };
@@ -250,13 +263,46 @@ const addOrganizer = async (user_id: string, event_id: string) => {
 const getPaginatedAttendeesByEventId = async (
   event_id: string,
   page: number,
-  limit: number
+  limit: number,
+  search?: string
 ) => {
   const skip = (page - 1) * limit;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const whereClause: any = { event_id };
+
+  // Add search functionality
+  if (search) {
+    whereClause.OR = [
+      {
+        student: {
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+      },
+      {
+        student: {
+          student_id: {
+            contains: search,
+          },
+        },
+      },
+      {
+        user: {
+          umindanao_email: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        },
+      },
+    ];
+  }
+
   const [attendees, total] = await Promise.all([
     prisma.attendance.findMany({
-      where: { event_id },
+      where: whereClause,
       include: {
         user: {
           select: { umindanao_email: true },
@@ -287,7 +333,7 @@ const getPaginatedAttendeesByEventId = async (
       skip,
       take: limit,
     }),
-    prisma.attendance.count({ where: { event_id } }),
+    prisma.attendance.count({ where: whereClause }),
   ]);
 
   return { attendees, total };
@@ -335,6 +381,37 @@ const getEventCheckinCount = async (event_id: string) => {
   });
 };
 
+const checkIfUserAttended = async (event_id: string, student_id: string) => {
+  const [event, attendance] = await Promise.all([
+    prisma.events.findUnique({
+      where: { id: event_id },
+      select: { check_out_required: true },
+    }),
+    prisma.attendance.findFirst({
+      where: {
+        event_id,
+        student_id,
+      },
+      select: {
+        id: true,
+        check_in_at: true,
+        check_out_at: true,
+      },
+    }),
+  ]);
+
+  if (!attendance) {
+    return null;
+  }
+
+  return {
+    id: attendance.id,
+    check_in_at: attendance.check_in_at,
+    check_out_at: event?.check_out_required ? attendance.check_out_at : false,
+  };
+};
+
+
 const eventRepository = {
   createEvent,
   deleteEvent,
@@ -343,13 +420,15 @@ const eventRepository = {
   createCheckInEvent,
   createCheckOutEvent,
   addOrganizer,
+  removeOrganizer,
   checkOrganizer,
   getAllEvents,
   getAllPastEvents,
   getAttendeesByEventId,
   getEventCheckoutCount,
   getEventCheckinCount,
-  getPaginatedAttendeesByEventId
+  getPaginatedAttendeesByEventId,
+  checkIfUserAttended,
 };
 
 export default eventRepository;

@@ -34,6 +34,8 @@ model user {
   attendance          attendance[]
   attendance_check_in attendance[]    @relation("CheckInByUser")
   attendance_check_ou attendance[]    @relation("CheckOutByUser")
+  organizers_added    organizers[]     @relation("OrganizerAddedBy")
+  organizers          organizers[]     @relation("OrganizerUser")
 
   @@index([umindanao_email])
   @@index([role])
@@ -41,7 +43,6 @@ model user {
   @@index([last_login_at])
   @@index([deleted_at])
   @@map("users")
-  organizers organizers[]
 }
 
 model student {
@@ -118,6 +119,7 @@ model events {
 
   user       user         @relation(fields: [created_by], references: [id], onDelete: Cascade)
   attendance attendance[]
+  organizers organizers[]
 
   @@index([title])
   @@index([department])
@@ -126,7 +128,6 @@ model events {
   @@index([end_time])
   @@index([created_by])
   @@map("events")
-  organizers organizers[]
 }
 
 model attendance {
@@ -160,9 +161,11 @@ model organizers {
   id       String @id @default(cuid())
   user_id  String
   event_id String
+  added_by String
 
-  user  user   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  event events @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  user    user   @relation("OrganizerUser", fields: [user_id], references: [id], onDelete: Cascade)
+  event   events @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  addedBy user   @relation("OrganizerAddedBy", fields: [added_by], references: [id], onDelete: Cascade)
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
