@@ -455,8 +455,11 @@ export type GetEventResponses = {
             start_time?: string;
             end_time?: string;
             check_out_required?: boolean;
-            is_done?: boolean;
+            is_started?: boolean;
             created_by?: string;
+            checkin_count?: number;
+            checkout_count?: number;
+            can_edit?: boolean;
         }>;
     };
 };
@@ -1245,6 +1248,9 @@ export type GetEventPastResponses = {
             check_out_required?: boolean;
             is_done?: boolean;
             created_by?: string;
+            checkin_count?: number;
+            checkout_count?: number;
+            can_edit?: boolean;
         }>;
     };
 };

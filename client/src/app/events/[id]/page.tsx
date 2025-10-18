@@ -1,21 +1,20 @@
 'use client';
 
-import { useState } from 'react';
 import { Calendar, MapPin, Clock, Users, Settings } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuthStore } from '@/store/authStore';
 import { getEventByEventIdOptions } from '@/api/client/@tanstack/react-query.gen';
 import { formatDate, formatTime } from '@/lib/utils';
-
-// Using real API data now - types come from API client
+import { useAuthStore } from '@/store/authStore';
+import { getEventStatus, getAttendanceStatus } from '@/utils/events-utils';
+import type { ApiEventData } from '@/types/events';
 
 const EventDetailsSkeleton = () => {
   return (
@@ -96,9 +95,8 @@ const EventDetailsSkeleton = () => {
 export default function EventDetailsPage() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const isAdmin = user?.role && ['admin', 'organizer', 'csg'].includes(user.role);
-  
-  const [attendanceStatus] = useState<'joined' | 'not_joined'>('joined');
+  const isAdmin = user?.role && ['admin'].includes(user.role);
+
   const params = useParams();
   const eventId = params?.id as string;
 
@@ -106,7 +104,7 @@ export default function EventDetailsPage() {
   const {
     data: eventData,
     isLoading,
-    isError,
+    isError
   } = useQuery({
     ...getEventByEventIdOptions({
       path: {
@@ -116,12 +114,12 @@ export default function EventDetailsPage() {
     enabled: !!eventId
   });
 
-  console.log(eventData);
+  console.log(eventData?.data);
   console.log(isError);
-  
-  
 
-  const event = eventData?.data;
+  const event = eventData?.data as ApiEventData | undefined;
+
+  const attendanceStatus = event ? getAttendanceStatus(event) : 'did_not_attend';
 
   if (isLoading || !event) {
     return <EventDetailsSkeleton />;
@@ -138,8 +136,10 @@ export default function EventDetailsPage() {
     );
   }
 
+  const eventStatus = getEventStatus(event);
+
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <div className="min-h-screen">
       {/* Hero Section */}
       <section className="border-border bg-muted/30 border-b">
         <div className="pt-2" />
@@ -148,7 +148,20 @@ export default function EventDetailsPage() {
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
               {/* Event Info */}
               <div className="flex-1 space-y-4">
-                <div>
+                <div className="space-y-3">
+                  <Badge
+                    variant="outline"
+                    className={`w-fit border ${
+                      eventStatus === 'upcoming'
+                        ? 'border-blue-200 bg-blue-100 text-blue-700'
+                        : eventStatus === 'ongoing'
+                          ? 'border-green-200 bg-green-100 text-green-700'
+                          : 'border-gray-200 bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {eventStatus === 'ongoing' && <span className="mr-1.5 inline-block h-2 w-2 animate-pulse rounded-full bg-green-600" />}
+                    {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1)}
+                  </Badge>
                   <h1 className="text-foreground text-3xl font-bold tracking-tight text-balance md:text-4xl lg:text-5xl">{event.title}</h1>
                 </div>
 
@@ -165,7 +178,7 @@ export default function EventDetailsPage() {
                   </div>
                   <div className="text-muted-foreground flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    <span>{event.checkin_count ?? 0} Attended</span>
+                    <span>{event.check_out_required ? event.checkout_count || 0 : event.checkin_count || 0} Attended</span>
                   </div>
                 </div>
 
@@ -178,17 +191,22 @@ export default function EventDetailsPage() {
 
                 {/* Primary CTA */}
                 <div className="flex flex-wrap gap-3 pt-2">
-                  {attendanceStatus === 'joined' ? (
-                    <Badge className="bg-neutral-200 px-4 py-2 text-sm">✓ You&apos;re attending</Badge>
-                  ) : (
-                    <Button size="lg" className="font-semibold">
-                      RSVP Now
-                    </Button>
-                  )}
-                  {isAdmin && (
-                    <Button 
-                      size="lg" 
-                      variant="outline" 
+                  {event.can_edit ||
+                    (isAdmin && eventStatus !== 'upcoming' && (
+                      <>
+                        {attendanceStatus === 'attended' ? (
+                          <Badge className="bg-green-100 px-4 py-2 text-sm text-green-800">✓ Attended</Badge>
+                        ) : attendanceStatus === 'partially_attended' ? (
+                          <Badge className="bg-yellow-100 px-4 py-2 text-sm text-yellow-800">⚠ Partially Attended</Badge>
+                        ) : (
+                          <Badge className="bg-neutral-200 px-4 py-2 text-sm">Did Not Attend</Badge>
+                        )}
+                      </>
+                    ))}
+                  {(event.can_edit || isAdmin) && (
+                    <Button
+                      size="lg"
+                      variant="outline"
                       className="gap-2 font-semibold shadow-sm transition-shadow hover:shadow"
                       onClick={() => router.push(`/events/${event.id}/manage`)}
                     >
@@ -206,16 +224,34 @@ export default function EventDetailsPage() {
       {/* Main Content */}
       <main className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mx-auto max-w-4xl space-y-8">
-          {/* Status Card - Only show if joined */}
-          {attendanceStatus === 'joined' && (
-            <Card className="border-primary/20 bg-primary/5 border-2">
+          {/* Status Card - Show based on attendance status */}
+          {attendanceStatus === 'attended' && (
+            <Card className="border-2 border-green-200 bg-green-50">
               <CardContent className="flex items-start gap-4">
                 <Avatar className="h-12 w-12">
-                  <AvatarFallback>HN</AvatarFallback>
+                  <AvatarFallback>✓</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-foreground font-semibold">Thank You for Joining</h3>
-                  <p className="text-muted-foreground text-sm">We hope you enjoyed the event!</p>
+                  <h3 className="text-foreground font-semibold">Attendance Confirmed</h3>
+                  <p className="text-muted-foreground text-sm">
+                    {event.check_out_required
+                      ? 'You have successfully checked in and checked out. Thank you for attending!'
+                      : 'You have successfully checked in. Thank you for attending!'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {attendanceStatus === 'partially_attended' && (
+            <Card className="border-2 border-yellow-200 bg-yellow-50">
+              <CardContent className="flex items-start gap-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback>⚠</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-foreground font-semibold">Checked In</h3>
+                  <p className="text-muted-foreground text-sm">Don&apos;t forget to check out when you leave to complete your attendance!</p>
                 </div>
               </CardContent>
             </Card>
@@ -224,8 +260,8 @@ export default function EventDetailsPage() {
           {/* About Event */}
           <section className="space-y-4">
             <h2 className="text-foreground text-2xl font-bold">About Event</h2>
-            <div className="prose prose-sm text-foreground/90 max-w-none leading-relaxed">
-              <p>{event.description}</p>
+            <div className="prose prose-sm text-foreground/90 max-w-none leading-relaxed break-words">
+              <p className="break-words whitespace-pre-wrap">{event.description}</p>
             </div>
           </section>
 

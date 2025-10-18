@@ -1,25 +1,12 @@
 import React from 'react';
 import { MapPin, TriangleAlert, UsersRound } from 'lucide-react';
-import { type StaticImageData } from 'next/image';
+import { Badge } from '../ui/badge';
 import { Card, CardContent } from '../ui/card';
-
-export interface EventCardData {
-  id?: number;
-  title: string;
-  date: string;
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-  location?: string | null;
-  hasLocation?: boolean;
-  attendees?: number;
-  image?: string | StaticImageData;
-  description?: string;
-  category?: string;
-}
+import type { EventCardData, EventStatus } from '@/types/events';
+import { getStatusColor } from '@/utils/events-utils';
 
 interface EventContentProps {
-  event: EventCardData;
+  event: EventCardData & { eventStatus?: EventStatus };
   index: number;
   isLast?: boolean;
   onCardClick?: () => void;
@@ -28,6 +15,8 @@ interface EventContentProps {
 
 const EventContent = ({ event, isLast = false, onCardClick }: EventContentProps) => {
   const { title, date, dayOfWeek, startTime, endTime, location, hasLocation = false, attendees = 0 } = event;
+  const eventStatus = event.eventStatus || 'upcoming';
+
   return (
     <div className="flex gap-3 sm:gap-6">
       <div className="w-16 flex-shrink-0 pt-1 sm:w-24">
@@ -46,10 +35,14 @@ const EventContent = ({ event, isLast = false, onCardClick }: EventContentProps)
       >
         <CardContent className="flex h-full flex-col justify-between px-8 py-3">
           <div className="flex flex-1 flex-col justify-center gap-2">
-            <div className="mb-1 flex items-center justify-between">
+            <div className="mb-1 flex items-center gap-x-3">
               <span className="text-muted-foreground text-xs sm:text-sm">
                 {startTime} - {endTime}
               </span>
+              <Badge variant="outline" className={`border text-xs ${getStatusColor(eventStatus)}`}>
+                {eventStatus === 'ongoing' && <span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-green-600" />}
+                {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1)}
+              </Badge>
             </div>
             <h3 className="text-foreground mb-2 text-lg leading-tight font-semibold">{title}</h3>
             <div className="mb-1 flex flex-row gap-4">

@@ -182,8 +182,11 @@ export const zGetEventResponse = z.object({
         start_time: z.optional(z.iso.datetime()),
         end_time: z.optional(z.iso.datetime()),
         check_out_required: z.optional(z.boolean()),
-        is_done: z.optional(z.boolean()),
-        created_by: z.optional(z.string())
+        is_started: z.optional(z.boolean()),
+        created_by: z.optional(z.string()),
+        checkin_count: z.optional(z.number()),
+        checkout_count: z.optional(z.number()),
+        can_edit: z.optional(z.boolean())
     })))
 });
 
@@ -490,7 +493,10 @@ export const zGetEventPastResponse = z.object({
         end_time: z.optional(z.iso.datetime()),
         check_out_required: z.optional(z.boolean()),
         is_done: z.optional(z.boolean()),
-        created_by: z.optional(z.string())
+        created_by: z.optional(z.string()),
+        checkin_count: z.optional(z.number()),
+        checkout_count: z.optional(z.number()),
+        can_edit: z.optional(z.boolean())
     })))
 });
 

@@ -65,11 +65,8 @@ const generateTimeOptions = () => {
 };
 
 const formatDate = (date: Date) => {
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 };
 
 export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: UpdateEventSheetProps) {

@@ -61,10 +61,12 @@ export interface GetEventDetailsByIdInterface {
   start_time?: Date;
   end_time?: Date;
   check_out_required: boolean;
-  is_done: boolean;
+  is_done?: boolean;
+  is_started?: boolean;
   checkin_count: number;
   checkout_count?: number;
   created_by: string;
+  can_edit: boolean;
   user_attendance?: {
     check_in_at: Date | null;
     check_out_at: Date | null;
@@ -72,9 +74,7 @@ export interface GetEventDetailsByIdInterface {
 }
 
 export interface GetEventDetailsWithEditByIdInterface
-  extends GetEventDetailsByIdInterface {
-  can_edit: boolean;
-}
+  extends GetEventDetailsByIdInterface {}
 
 export interface GetAllEventsInterface
   extends Array<GetEventDetailsByIdInterface> {}
