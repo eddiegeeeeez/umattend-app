@@ -2,7 +2,9 @@
 
 import type React from 'react';
 import { useState, useEffect } from 'react';
-import { MapPin, FileText, Users, Building2, CalendarIcon, ChevronsLeft } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { MapPin, FileText, Users, Building2, CalendarIcon, ChevronsLeft, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
@@ -12,57 +14,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-
-interface Event {
-  id: string;
-  name: string;
-  description: string;
-  location: string;
-  department: string;
-  startDate: Date;
-  endDate: Date;
-  startTime: string;
-  endTime: string;
-  capacity: number | 'unlimited';
-  attendees: number;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-  checkOutRequired: boolean;
-}
+import { putEventByEventIdMutation } from '@/api/client/@tanstack/react-query.gen';
+import type { Event } from '@/types/event';
+import { DepartmentAndPrograms } from '@/lib/department-and-program';
+import { generateTimeOptions, parseTimeToMinutes } from '@/lib/utils';
 
 interface UpdateEventSheetProps {
   event: Event;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdate: (event: Event) => void;
+  onUpdate: () => void;
 }
-
-const departments = [
-  'College of Engineering',
-  'College of Business Administration',
-  'College of Arts and Sciences',
-  'College of Education',
-  'College of Information Technology',
-  'College of Nursing',
-  'College of Medicine'
-];
-
-const generateTimeOptions = () => {
-  const times: string[] = [];
-  const periods = ['AM', 'PM'];
-
-  periods.forEach((period) => {
-    for (let hour = 12; hour <= 12; hour++) {
-      times.push(`${hour.toString().padStart(2, '0')}:00 ${period}`);
-      times.push(`${hour.toString().padStart(2, '0')}:30 ${period}`);
-    }
-    for (let hour = 1; hour < 12; hour++) {
-      times.push(`${hour.toString().padStart(2, '0')}:00 ${period}`);
-      times.push(`${hour.toString().padStart(2, '0')}:30 ${period}`);
-    }
-  });
-
-  return times;
-};
 
 const formatDate = (date: Date) => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -70,21 +32,110 @@ const formatDate = (date: Date) => {
 };
 
 export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: UpdateEventSheetProps) {
-  const [formData, setFormData] = useState(event);
+  const [formData, setFormData] = useState(() => ({
+    ...event,
+    startTime: event.startTime || '12:00 PM', // Default to 12:00 PM if no start time
+    endTime: event.endTime || '11:59 PM' // Default to 11:59 PM if no end time
+  }));
   const [isUnlimitedCapacity, setIsUnlimitedCapacity] = useState(event.capacity === 'unlimited');
+  const [validationErrors, setValidationErrors] = useState<{ endDate?: string; endTime?: string }>({});
 
   const timeOptions = generateTimeOptions();
+  const departments = Object.keys(DepartmentAndPrograms);
 
   useEffect(() => {
-    setFormData(event);
+    setFormData({
+      ...event,
+      startTime: event.startTime || '12:00 PM', // Default to 12:00 PM if no start time
+      endTime: event.endTime || '11:59 PM' // Default to 11:59 PM if no end time
+    });
     setIsUnlimitedCapacity(event.capacity === 'unlimited');
   }, [event]);
 
+  // Validate dates and times
+  useEffect(() => {
+    const errors: { endDate?: string; endTime?: string } = {};
+    
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
+    
+    // Normalize to midnight for date comparison
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    
+    // Check if end date is before start date
+    if (end < start) {
+      errors.endDate = 'End date cannot be before start date';
+    }
+    
+    // Check time only if dates are the same
+    if (end.getTime() === start.getTime()) {
+      const startMinutes = parseTimeToMinutes(formData.startTime);
+      const endMinutes = parseTimeToMinutes(formData.endTime);
+      
+      if (endMinutes <= startMinutes) {
+        errors.endTime = 'End time must be after start time';
+      }
+    }
+    
+    setValidationErrors(errors);
+  }, [formData.startDate, formData.endDate, formData.startTime, formData.endTime]);
+
+  // Mutation for updating event
+  const updateEventMutation = useMutation({
+    mutationFn: putEventByEventIdMutation().mutationFn,
+    onSuccess: () => {
+      toast.success('Event updated successfully');
+      onUpdate();
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to update event');
+    }
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate({
-      ...formData,
-      capacity: isUnlimitedCapacity ? 'unlimited' : formData.capacity
+
+    // Check for validation errors
+    if (validationErrors.endDate || validationErrors.endTime) {
+      toast.error('Please fix the validation errors before submitting');
+      return;
+    }
+
+    // Convert time strings back to ISO format
+    const parseTime = (dateStr: Date, timeStr: string): string => {
+      const date = new Date(dateStr);
+      const [time, period] = timeStr.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      
+      let hour = hours;
+      if (period === 'PM' && hours !== 12) hour += 12;
+      if (period === 'AM' && hours === 12) hour = 0;
+      
+      date.setHours(hour, minutes, 0, 0);
+      return date.toISOString();
+    };
+
+    const startTime = parseTime(formData.startDate, formData.startTime);
+    const endTime = parseTime(formData.endDate, formData.endTime);
+
+    updateEventMutation.mutate({
+      path: {
+        event_id: event.id
+      },
+      body: {
+        title: formData.name,
+        description: formData.description,
+        department: formData.department,
+        location: formData.location,
+        capacity: isUnlimitedCapacity ? undefined : Number(formData.capacity),
+        all_day: false,
+        start_time: startTime,
+        end_time: endTime,
+        check_out_required: formData.checkOutRequired,
+        is_done: formData.status === 'completed'
+      }
     });
   };
 
@@ -167,7 +218,7 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                   <Label className="text-muted-foreground text-xs font-medium">Start Time</Label>
                   <Select value={formData.startTime} onValueChange={(value) => setFormData({ ...formData, startTime: value })}>
                     <SelectTrigger className="h-11 shadow-sm">
-                      <SelectValue />
+                      <SelectValue placeholder="Select time" />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
                       {timeOptions.map((time) => (
@@ -185,7 +236,12 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                   <Label className="text-muted-foreground text-xs font-medium">End Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="bg-background h-11 w-full justify-start text-left font-medium shadow-sm">
+                      <Button 
+                        variant="outline" 
+                        className={`bg-background h-11 w-full justify-start text-left font-medium shadow-sm ${
+                          validationErrors.endDate ? 'border-red-500' : ''
+                        }`}
+                      >
                         {formatDate(formData.endDate)}
                       </Button>
                     </PopoverTrigger>
@@ -198,13 +254,22 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                       />
                     </PopoverContent>
                   </Popover>
+                  {validationErrors.endDate && (
+                    <p className="text-xs text-red-500 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {validationErrors.endDate}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-muted-foreground text-xs font-medium">End Time</Label>
-                  <Select value={formData.endTime} onValueChange={(value) => setFormData({ ...formData, endTime: value })}>
-                    <SelectTrigger className="h-11 shadow-sm">
-                      <SelectValue />
+                  <Select 
+                    value={formData.endTime} 
+                    onValueChange={(value) => setFormData({ ...formData, endTime: value })}
+                  >
+                    <SelectTrigger className={`h-11 shadow-sm ${validationErrors.endTime ? 'border-red-500' : ''}`}>
+                      <SelectValue placeholder="Select time" />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
                       {timeOptions.map((time) => (
@@ -214,6 +279,12 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                       ))}
                     </SelectContent>
                   </Select>
+                  {validationErrors.endTime && (
+                    <p className="text-xs text-red-500 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {validationErrors.endTime}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -241,8 +312,8 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
               Department
             </Label>
             <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
-              <SelectTrigger className="h-11 shadow-sm">
-                <SelectValue />
+              <SelectTrigger className="h-11 w-full shadow-sm">
+                <SelectValue placeholder="Select department" />
               </SelectTrigger>
               <SelectContent>
                 {departments.map((dept) => (
