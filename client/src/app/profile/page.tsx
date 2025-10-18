@@ -1,22 +1,24 @@
 'use client';
 
+import { useState } from 'react';
 import { useRef, useEffect, useMemo } from 'react';
 import { Calendar, Mail, Users } from 'lucide-react';
 import QRCodeStyling, { Options } from 'qr-code-styling';
 import ProfileSkeleton from '@/components/skeletons/profile-skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useAuthStore } from '@/store/authStore';
 
 const ProfilePage = () => {
   const user = useAuthStore((state) => state.user);
 
   const ref = useRef<HTMLDivElement>(null);
-  
+
   // Generate QR code data on client side only to avoid hydration mismatch
   const QRCode = useMemo(() => {
     if (typeof window === 'undefined') return '';
-    
+
     const now = new Date();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const date = String(now.getDate()).padStart(2, '0');
@@ -78,11 +80,45 @@ const ProfilePage = () => {
     const names = name.split(' ');
     return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase() : name.substring(0, 2).toUpperCase();
   };
+  const [activeTab, setActiveTab] = useState('attended');
 
-  const pastEvents = [
-    { id: 1, title: 'a', author: 'Mario Jr Inguito', date: 'Sun, Oct 5, 6:30 AM' },
-    { id: 2, title: 'test', author: 'Mario Jr Inguito', date: 'Sat, Oct 4, 7:00 PM' }
-  ] as const;
+  const hostedEvents = [
+    {
+      id: 1,
+      title: 'Annual Tech Conference 2025',
+      image: '/dark-green-striped-pattern.jpg',
+      author: 'Mario Jr Inguito',
+      date: 'Sun, Mar 15, 9:30 AM',
+      attendees: 342,
+      capacity: 500
+    },
+    {
+      id: 2,
+      title: 'Web Development Workshop',
+      image: '/colorful-gradient-abstract.png',
+      author: 'Mario Jr Inguito',
+      date: 'Sat, Feb 20, 2:00 PM',
+      attendees: 89,
+      capacity: 150
+    }
+  ];
+
+  const attendedEvents = [
+    {
+      id: 1,
+      title: 'a',
+      image: '/dark-green-striped-pattern.jpg',
+      author: 'Mario Jr Inguito',
+      date: 'Sun, Oct 5, 6:30 AM'
+    },
+    {
+      id: 2,
+      title: 'test',
+      image: '/colorful-gradient-abstract.png',
+      author: 'Mario Jr Inguito',
+      date: 'Sat, Oct 4, 7:00 PM'
+    }
+  ];
 
   if (!user) {
     return <ProfileSkeleton />;
@@ -175,36 +211,109 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <div className="mt-14">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-foreground text-xl font-semibold">Past Events</h2>
-            <Button variant="ghost" className="text-primary hover:text-primary/80 cursor-pointer">
-              View All
-            </Button>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {pastEvents.map((event) => (
-              <div
-                key={event.id}
-                className="group border-border bg-card hover:border-primary/50 flex flex-col justify-center rounded-xl border px-6 py-5 shadow-md transition-all duration-300 hover:shadow-xl"
-              >
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-foreground group-hover:text-primary mb-1 flex items-center gap-2 truncate text-lg font-bold transition-colors">
-                    {event.title}
-                  </h3>
-                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                    <Users className="text-primary h-4 w-4" />
-                    <span className="truncate">By {event.author}</span>
-                  </div>
-                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                    <Calendar className="text-primary h-4 w-4" />
-                    <span>{event.date}</span>
-                  </div>
-                </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="bg-neutral-200 text-muted-foreground mb-6 inline-flex h-11 items-center justify-center rounded-lg p-1 gap-x-2">
+            <TabsTrigger value="attended" className="rounded-md px-4 py-2 text-sm font-medium">
+              <Calendar className="mr-2 h-4 w-4" />
+              Attended Events
+            </TabsTrigger>
+            <TabsTrigger value="hosted" className="rounded-md px-4 py-2 text-sm font-medium">
+              <Calendar className="mr-2 h-4 w-4" />
+              Hosted Events
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="attended" className="space-y-4">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-foreground text-2xl font-bold">Attended Events</h2>
+              <Button variant="ghost" className="text-primary hover:text-primary/80">
+                View All
+              </Button>
+            </div>
+
+            {attendedEvents.length === 0 ? (
+              <div className="border-border bg-card/50 flex flex-col items-center justify-center rounded-lg border p-8 py-12 text-center">
+                <Calendar className="text-muted-foreground mb-4 h-12 w-12" />
+                <h3 className="text-foreground mb-2 text-lg font-semibold">No attended events yet</h3>
+                <p className="text-muted-foreground text-sm">Events you attend will appear here</p>
               </div>
-            ))}
-          </div>
-        </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {attendedEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="group border-border bg-card hover:border-primary/50 relative overflow-hidden rounded-xl border shadow-md transition-all duration-300 hover:shadow-xl"
+                  >
+                    <div className="flex flex-col gap-4 p-4">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors">{event.title}</h3>
+                        <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
+                          <div className="from-primary/20 to-primary/5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br">
+                            <div className="bg-primary h-2 w-2 rounded-full" />
+                          </div>
+                          <span className="truncate">By {event.author}</span>
+                        </div>
+                        <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                          <Calendar className="text-primary h-4 w-4" />
+                          <span>{event.date}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="hosted" className="space-y-4">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-foreground text-2xl font-bold">Hosted Events</h2>
+              <Button variant="ghost" className="text-primary hover:text-primary/80">
+                View All
+              </Button>
+            </div>
+
+            {hostedEvents.length === 0 ? (
+              <div className="border-border bg-card/50 flex flex-col items-center justify-center rounded-lg border p-8 py-12 text-center">
+                <Calendar className="text-muted-foreground mb-4 h-12 w-12" />
+                <h3 className="text-foreground mb-2 text-lg font-semibold">No hosted events yet</h3>
+                <p className="text-muted-foreground mb-4 text-sm">Create your first event to get started</p>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Create Event</Button>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {hostedEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="group border-border bg-card hover:border-primary/50 relative overflow-hidden rounded-xl border shadow-md transition-all duration-300 hover:shadow-xl"
+                  >
+                    <div className="flex flex-col gap-4 p-4">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors">{event.title}</h3>
+                        <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
+                          <div className="from-primary/20 to-primary/5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br">
+                            <div className="bg-primary h-2 w-2 rounded-full" />
+                          </div>
+                          <span className="truncate">By {event.author}</span>
+                        </div>
+                        <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
+                          <Calendar className="text-primary h-4 w-4" />
+                          <span>{event.date}</span>
+                        </div>
+                        <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                          <Users className="text-primary h-3 w-3" />
+                          <span>
+                            {event.attendees} / {event.capacity} attendees
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
