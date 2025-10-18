@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function EvenAttendeesSkeleton({ isLoading }: { isLoading: boolean }) {
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-neutral-100 min-h-screen">
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mb-8 md:grid-cols-3 md:gap-6">
         {[1, 2, 3].map((i) => (
           <div key={i} className="bg-card border-border rounded-xl border p-5 shadow-sm md:p-6">
