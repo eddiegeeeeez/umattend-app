@@ -264,7 +264,12 @@ const updateAndDeleteEvent = {
                       description: { type: 'string' },
                       department: { type: 'string' },
                       location: { type: 'string' },
-                      capacity: { type: 'number' },
+                      capacity: { 
+                        oneOf: [
+                          { type: 'number' },
+                          { type: 'null' }
+                        ]
+                      },
                       all_day: { type: 'boolean' },
                       start_time: {
                         type: 'string',
@@ -411,7 +416,10 @@ const updateAndDeleteEvent = {
                         example: 'Main Auditorium, Building A',
                       },
                       capacity: {
-                        type: 'number',
+                        oneOf: [
+                          { type: 'number' },
+                          { type: 'null' }
+                        ],
                         example: 100,
                         description: 'Maximum event capacity',
                       },
@@ -1107,7 +1115,12 @@ const createAndGetEvent = {
                       description: { type: 'string' },
                       department: { type: 'string' },
                       location: { type: 'string' },
-                      capacity: { type: 'number' },
+                      capacity: { 
+                        oneOf: [
+                          { type: 'number' },
+                          { type: 'null' }
+                        ]
+                      },
                       all_day: { type: 'boolean' },
                       start_time: {
                         type: 'string',
@@ -1231,7 +1244,13 @@ const createAndGetEvent = {
                           type: 'string',
                           example: 'Main Auditorium, Building A',
                         },
-                        capacity: { type: 'number', example: 100 },
+                        capacity: { 
+                          oneOf: [
+                            { type: 'number' },
+                            { type: 'null' }
+                          ],
+                          example: 100
+                        },
                         all_day: { type: 'boolean', example: false },
                         start_time: {
                           type: 'string',
@@ -1350,7 +1369,13 @@ const getAllPastEvents = {
                           type: 'string',
                           example: 'Main Auditorium, Building A',
                         },
-                        capacity: { type: 'number', example: 100 },
+                        capacity: { 
+                          oneOf: [
+                            { type: 'number' },
+                            { type: 'null' }
+                          ],
+                          example: 100
+                        },
                         all_day: { type: 'boolean', example: false },
                         start_time: {
                           type: 'string',

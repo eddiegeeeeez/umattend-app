@@ -174,7 +174,10 @@ export const zGetEventResponse = z.object({
         description: z.optional(z.string()),
         department: z.optional(z.string()),
         location: z.optional(z.string()),
-        capacity: z.optional(z.number()),
+        capacity: z.optional(z.union([
+            z.number(),
+            z.null()
+        ])),
         all_day: z.optional(z.boolean()),
         start_time: z.optional(z.iso.datetime()),
         end_time: z.optional(z.iso.datetime()),
@@ -232,7 +235,10 @@ export const zPostEventResponse = z.object({
         description: z.optional(z.string()),
         department: z.optional(z.string()),
         location: z.optional(z.string()),
-        capacity: z.optional(z.number()),
+        capacity: z.optional(z.union([
+            z.number(),
+            z.null()
+        ])),
         all_day: z.optional(z.boolean()),
         start_time: z.optional(z.iso.datetime()),
         end_time: z.optional(z.iso.datetime()),
@@ -279,7 +285,10 @@ export const zGetEventByEventIdResponse = z.object({
         description: z.optional(z.string()),
         department: z.optional(z.string()),
         location: z.optional(z.string()),
-        capacity: z.optional(z.number()),
+        capacity: z.optional(z.union([
+            z.number(),
+            z.null()
+        ])),
         all_day: z.optional(z.boolean()),
         start_time: z.optional(z.iso.datetime()),
         end_time: z.optional(z.iso.datetime()),
@@ -352,7 +361,10 @@ export const zPutEventByEventIdResponse = z.object({
         description: z.optional(z.string()),
         department: z.optional(z.string()),
         location: z.optional(z.string()),
-        capacity: z.optional(z.number()),
+        capacity: z.optional(z.union([
+            z.number(),
+            z.null()
+        ])),
         all_day: z.optional(z.boolean()),
         start_time: z.optional(z.iso.datetime()),
         end_time: z.optional(z.iso.datetime()),
@@ -409,7 +421,7 @@ export const zPostEventCheckOutByEventIdByUserIdResponse = z.object({
 
 export const zPostEventAddOrganizerByEventIdData = z.object({
     body: z.object({
-        userId: z.string()
+        umindanao_email: z.string()
     }),
     path: z.object({
         event_id: z.string()
@@ -427,6 +439,7 @@ export const zPostEventAddOrganizerByEventIdResponse = z.object({
         id: z.optional(z.string()),
         user_id: z.optional(z.string()),
         event_id: z.optional(z.string()),
+        added_by: z.optional(z.string()),
         created_at: z.optional(z.iso.datetime())
     }))
 });
@@ -449,7 +462,10 @@ export const zGetEventPastResponse = z.object({
         description: z.optional(z.string()),
         department: z.optional(z.string()),
         location: z.optional(z.string()),
-        capacity: z.optional(z.number()),
+        capacity: z.optional(z.union([
+            z.number(),
+            z.null()
+        ])),
         all_day: z.optional(z.boolean()),
         start_time: z.optional(z.iso.datetime()),
         end_time: z.optional(z.iso.datetime()),

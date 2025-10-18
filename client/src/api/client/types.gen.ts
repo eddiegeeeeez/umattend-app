@@ -450,7 +450,7 @@ export type GetEventResponses = {
             description?: string;
             department?: string;
             location?: string;
-            capacity?: number;
+            capacity?: number | null;
             all_day?: boolean;
             start_time?: string;
             end_time?: string;
@@ -572,7 +572,7 @@ export type PostEventResponses = {
             description?: string;
             department?: string;
             location?: string;
-            capacity?: number;
+            capacity?: number | null;
             all_day?: boolean;
             start_time?: string;
             end_time?: string;
@@ -711,7 +711,7 @@ export type GetEventByEventIdResponses = {
             /**
              * Maximum event capacity
              */
-            capacity?: number;
+            capacity?: number | null;
             /**
              * Whether the event is an all-day event
              */
@@ -886,7 +886,7 @@ export type PutEventByEventIdResponses = {
             description?: string;
             department?: string;
             location?: string;
-            capacity?: number;
+            capacity?: number | null;
             all_day?: boolean;
             start_time?: string;
             end_time?: string;
@@ -1049,9 +1049,9 @@ export type PostEventCheckOutByEventIdByUserIdResponse = PostEventCheckOutByEven
 export type PostEventAddOrganizerByEventIdData = {
     body: {
         /**
-         * User ID of the organizer to add
+         * umindanao email of the organizer to add
          */
-        userId: string;
+        umindanao_email: string;
     };
     path: {
         /**
@@ -1114,6 +1114,7 @@ export type PostEventAddOrganizerByEventIdResponses = {
             id?: string;
             user_id?: string;
             event_id?: string;
+            added_by?: string;
             created_at?: string;
         };
     };
@@ -1167,7 +1168,7 @@ export type GetEventPastResponses = {
             description?: string;
             department?: string;
             location?: string;
-            capacity?: number;
+            capacity?: number | null;
             all_day?: boolean;
             start_time?: string;
             end_time?: string;
