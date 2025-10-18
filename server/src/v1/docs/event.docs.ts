@@ -465,6 +465,27 @@ const updateAndDeleteEvent = {
                         description:
                           'Whether the current user has permission to edit this event',
                       },
+                      user_attendance: {
+                        type: 'object',
+                        description:
+                          "The current user's attendance information for this event",
+                        properties: {
+                          check_in_at: {
+                            type: ['string', 'null'],
+                            format: 'date-time',
+                            example: '2025-10-15T09:15:00.000Z',
+                            description:
+                              'When the user checked in to the event, or null if not checked in',
+                          },
+                          check_out_at: {
+                            type: ['string', 'null'],
+                            format: 'date-time',
+                            example: '2025-10-15T16:45:00.000Z',
+                            description:
+                              'When the user checked out from the event, or null if not checked out',
+                          },
+                        },
+                      },
                     },
                   },
                 },
@@ -820,12 +841,12 @@ const addOrganizer = {
             schema: {
               type: 'object',
               properties: {
-                userId: {
+                umindanao_email: {
                   type: 'string',
-                  description: 'User ID of the organizer to add',
+                  description: 'umindanao email of the organizer to add',
                 },
               },
-              required: ['userId'],
+              required: ['umindanao_email'],
             },
           },
         },
@@ -849,6 +870,7 @@ const addOrganizer = {
                       id: { type: 'string' },
                       user_id: { type: 'string' },
                       event_id: { type: 'string' },
+                      added_by: { type: 'string' },
                       created_at: {
                         type: 'string',
                         format: 'date-time',

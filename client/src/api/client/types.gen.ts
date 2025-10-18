@@ -748,6 +748,19 @@ export type GetEventByEventIdResponses = {
              * Whether the current user has permission to edit this event
              */
             can_edit?: boolean;
+            /**
+             * The current user's attendance information for this event
+             */
+            user_attendance?: {
+                /**
+                 * When the user checked in to the event, or null if not checked in
+                 */
+                check_in_at?: string | null;
+                /**
+                 * When the user checked out from the event, or null if not checked out
+                 */
+                check_out_at?: string | null;
+            };
         };
     };
 };

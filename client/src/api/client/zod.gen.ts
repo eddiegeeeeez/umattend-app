@@ -288,7 +288,17 @@ export const zGetEventByEventIdResponse = z.object({
         checkin_count: z.optional(z.number()),
         checkout_count: z.optional(z.number()),
         created_by: z.optional(z.string()),
-        can_edit: z.optional(z.boolean())
+        can_edit: z.optional(z.boolean()),
+        user_attendance: z.optional(z.object({
+            check_in_at: z.optional(z.union([
+                z.iso.datetime(),
+                z.null()
+            ])),
+            check_out_at: z.optional(z.union([
+                z.iso.datetime(),
+                z.null()
+            ]))
+        }))
     }))
 });
 

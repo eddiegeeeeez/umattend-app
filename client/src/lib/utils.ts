@@ -73,8 +73,9 @@ export const addOneHour = (timeStr: string) => {
   return `${hours.toString().padStart(2, '0')}:${mins} ${newPeriod}`;
 };
 
-export const formatDate = (date: Date) => {
-  return date.toLocaleDateString('en-US', {
+export const formatDate = (date: Date | string) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -92,4 +93,13 @@ export const parseTimeToMinutes = (timeStr: string) => {
 
   console.log(`${timeStr} = ${hours * 60 + minutes} minutes`);
   return hours * 60 + minutes;
+};
+
+export const formatTime = (dateTime: Date | string) => {
+  const dateObj = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
+  return dateObj.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
 };

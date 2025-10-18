@@ -35,7 +35,7 @@ const createEventSchema = z
     endDate: z.date(),
     endTime: z.string(),
     isUnlimitedCapacity: z.boolean().default(true),
-    capacity: z.number().int().positive().nullable(),
+    capacity: z.number().int().positive().optional().nullable(),
     check_out_required: z.boolean().default(false),
     all_day: z.boolean().default(false)
   })
@@ -114,7 +114,7 @@ export default function CreateEventPage() {
       endDate: new Date(),
       endTime: defaultEndTime,
       isUnlimitedCapacity: true,
-      capacity: null, // optional/null matches schema
+      capacity: null,
       check_out_required: false,
       all_day: false
     }
