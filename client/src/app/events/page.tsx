@@ -57,16 +57,7 @@ export default function DashboardPage() {
             {events.map((event, index) => (
               <EventContent
                 key={event.id}
-                id={event.id}
-                title={event.title}
-                date={event.date}
-                dayOfWeek={event.dayOfWeek}
-                startTime={event.startTime}
-                endTime={event.endTime}
-                location={event.location}
-                hasLocation={event.hasLocation}
-                attendees={event.attendees}
-                image={event.image}
+                event={event}
                 index={index}
                 isLast={index === events.length - 1}
                 onCardClick={() => handleEventClick(event)}
@@ -82,28 +73,7 @@ export default function DashboardPage() {
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg" hideClose>
-          {selectedEvent && (
-            <EventDetails
-              title={selectedEvent.title}
-              description={selectedEvent.description}
-              image={selectedEvent.image}
-              dayOfWeek={selectedEvent.dayOfWeek}
-              date={selectedEvent.date}
-              startTime={selectedEvent.startTime}
-              endTime={selectedEvent.endTime}
-              hasLocation={selectedEvent.hasLocation}
-              location={selectedEvent.location}
-              attendees={selectedEvent.attendees}
-              category={selectedEvent.category}
-              onRSVP={() => {
-                /* placeholder - open RSVP modal */
-              }}
-              onShare={() => {
-                /* placeholder - share logic */
-              }}
-              onClose={() => setIsSheetOpen(false)}
-            />
-          )}
+          {selectedEvent && <EventDetails event={selectedEvent} onClose={() => setIsSheetOpen(false)} />}
         </SheetContent>
       </Sheet>
     </div>

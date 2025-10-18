@@ -1,40 +1,28 @@
 import React from 'react';
-import { MapPin, UsersRound, AlertTriangle, ArrowUpRight, ChevronsLeft } from 'lucide-react';
-import { type StaticImageData } from 'next/image';
+import { Calendar, MapPin, UsersRound, AlertTriangle, Share2, ArrowUpRight, ChevronsLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
+import type { EventCardData } from './event-content';
 
 interface EventDetailsProps {
-  title: string;
-  description?: string;
-  image?: string | StaticImageData;
-  dayOfWeek?: string;
-  date?: string;
-  startTime?: string;
-  endTime?: string;
-  hasLocation?: boolean;
-  location?: string | null;
-  attendees?: number;
-  category?: string;
-  onRSVP?: () => void;
-  onShare?: () => void;
+  event: EventCardData;
   onClose?: () => void;
 }
 
-const EventDetails = ({
-  title,
-  description,
-  dayOfWeek,
-  date,
-  startTime,
-  endTime,
-  hasLocation = false,
-  location,
-  attendees = 0,
-  onClose
-}: EventDetailsProps) => {
+const EventDetails = ({ event, onClose }: EventDetailsProps) => {
   const router = useRouter();
+  const {
+    title,
+    description,
+    dayOfWeek,
+    date,
+    startTime,
+    endTime,
+    hasLocation = false,
+    location,
+    attendees = 0,
+  } = event;
   return (
     <div className="space-y-8">
       <SheetHeader className="border-border border-b">
