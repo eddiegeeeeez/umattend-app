@@ -414,8 +414,8 @@ const addOrganizer = async (req: Request, res: Response) => {
     }
     const new_organizer = await eventServices.addOrganizer(
       umindanao_email,
-      added_by,
-      event_id
+      event_id,
+      added_by
     );
     return HTTPSuccessResponse(
       res,

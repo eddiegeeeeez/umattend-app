@@ -1,92 +1,83 @@
-import { useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { OrganizersSkeleton } from '@/components/event/manage/organizers/organizers-skeleton';
 import { Card } from '@/components/ui/card';
 import { organizersColumns, type OrganizerRecord } from './data-table/organizers-columns';
 import { OrganizersDataTable } from './data-table/organizers-data-table';
+import { 
+  getEventByEventIdOrganizersOptions, 
+  postEventAddOrganizerByEventIdMutation,
+  deleteEventRemoveOrganizerByEventIdMutation 
+} from '@/api/client/@tanstack/react-query.gen';
 
-const mockOrganizers: OrganizerRecord[] = [
-  {
-    id: '2021-00123',
-    name: 'John Michael Santos',
-    department: 'College of Engineering',
-    program: 'BS Computer Science',
-    email: 'jmsantos@umindanao.edu.ph',
-    addedBy: 'Admin User',
-    addedAt: '2025-01-15 10:30 AM'
-  },
-  {
-    id: '2021-00456',
-    name: 'Maria Clara Reyes',
-    department: 'College of Engineering',
-    program: 'BS Information Technology',
-    email: 'mcreyes@umindanao.edu.ph',
-    addedBy: 'Admin User',
-    addedAt: '2025-01-15 11:45 AM'
-  },
-  {
-    id: '2021-00789',
-    name: 'Jose Rizal Cruz',
-    department: 'College of Engineering',
-    program: 'BS Computer Engineering',
-    email: 'jrcruz@umindanao.edu.ph',
-    addedBy: 'John Michael Santos',
-    addedAt: '2025-01-16 09:15 AM'
-  },
-  {
-    id: '2021-01012',
-    name: 'Ana Marie Garcia',
-    department: 'College of Business',
-    program: 'BS Business Administration',
-    email: 'amgarcia@umindanao.edu.ph',
-    addedBy: 'Admin User',
-    addedAt: '2025-01-16 02:20 PM'
-  },
-  {
-    id: '2021-01345',
-    name: 'Carlos Miguel Torres',
-    department: 'College of Engineering',
-    program: 'BS Computer Science',
-    email: 'cmtorres@umindanao.edu.ph',
-    addedBy: 'Maria Clara Reyes',
-    addedAt: '2025-01-17 08:00 AM'
-  }
-];
+interface EventOrganizersProps {
+  eventId: string;
+}
 
-export default function EventOrganizers() {
-  const [organizers, setOrganizers] = useState<OrganizerRecord[]>(mockOrganizers);
-  const [isLoading, setIsLoading] = useState(true);
+export default function EventOrganizers({ eventId }: EventOrganizersProps) {
+  // Fetch organizers data from API
+  const {
+    data: organizersData,
+    isLoading,
+    refetch
+  } = useQuery({
+    ...getEventByEventIdOrganizersOptions({
+      path: {
+        event_id: eventId
+      }
+    }),
+    enabled: !!eventId
+  });
+
+  // Mutation for adding organizer
+  const addOrganizerMutation = useMutation({
+    mutationFn: postEventAddOrganizerByEventIdMutation().mutationFn,
+    onSuccess: () => {
+      toast.success('Organizer added successfully');
+      refetch();
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to add organizer');
+    }
+  });
+
+  // Mutation for removing organizer
+  const removeOrganizerMutation = useMutation({
+    mutationFn: deleteEventRemoveOrganizerByEventIdMutation().mutationFn,
+    onSuccess: () => {
+      toast.success('Organizer removed successfully');
+      refetch();
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to remove organizer');
+    }
+  });
+
   const handleAddOrganizer = (newOrganizer: { studentId: string; name: string; department: string; program: string; email: string }) => {
-    const now = new Date();
-    const formattedDate = now.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
+    addOrganizerMutation.mutate({
+      path: {
+        event_id: eventId
+      },
+      body: {
+        umindanao_email: newOrganizer.email
+      }
     });
-    const formattedTime = now.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
+  };
+
+  const handleRemoveOrganizer = (email: string) => {
+    removeOrganizerMutation.mutate({
+      path: {
+        event_id: eventId
+      },
+      body: {
+        umindanao_email: email
+      }
     });
-
-    const organizerRecord: OrganizerRecord = {
-      id: newOrganizer.studentId,
-      name: newOrganizer.name,
-      department: newOrganizer.department,
-      program: newOrganizer.program,
-      email: newOrganizer.email,
-      addedBy: 'Current User', // This would come from auth context in a real app
-      addedAt: `${formattedDate} ${formattedTime}`
-    };
-
-    setOrganizers((prev: OrganizerRecord[]) => [...prev, organizerRecord]);
-    console.log('[v0] Added new organizer:', organizerRecord);
   };
 
   if (isLoading) {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
     return (
       <Card className="border-border bg-card p-6">
         <OrganizersSkeleton />
@@ -94,13 +85,50 @@ export default function EventOrganizers() {
     );
   }
 
+  // Transform API data to OrganizerRecord format
+  const organizers: OrganizerRecord[] =
+    organizersData?.data?.map((org) => {
+      const formatDateTime = (dateStr: string | undefined) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return date.toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+      };
+
+      // Check if this organizer is the event creator
+      // The creator is someone who added themselves (name === added_by) or was added by System
+      const isCreator = org.name === org.added_by || org.added_by === 'System';
+
+      return {
+        id: org.student_id?.toString() || '',
+        name: org.name || '',
+        department: org.department || '',
+        program: org.program || '',
+        email: org.umindanao_email || '',
+        addedBy: org.added_by || '',
+        addedAt: formatDateTime(org.added_at),
+        isCreator: isCreator
+      };
+    }) || [];
+
   return (
     <Card className="border-border bg-card p-6">
       <div className="mb-4">
         <h3 className="text-foreground mb-1 text-lg font-semibold">Event Organizers</h3>
         <p className="text-muted-foreground text-sm">Manage organizers who can help coordinate and run this event.</p>
       </div>
-      <OrganizersDataTable columns={organizersColumns} data={organizers} onAddOrganizer={handleAddOrganizer} />
+      <OrganizersDataTable 
+        columns={organizersColumns} 
+        data={organizers} 
+        onAddOrganizer={handleAddOrganizer}
+        onRemoveOrganizer={handleRemoveOrganizer}
+      />
     </Card>
   );
 }

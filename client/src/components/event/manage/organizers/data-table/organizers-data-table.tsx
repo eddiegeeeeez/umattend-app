@@ -26,9 +26,10 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   isLoading?: boolean;
   onAddOrganizer: (organizer: { studentId: string; name: string; department: string; program: string; email: string }) => void;
+  onRemoveOrganizer: (email: string) => void;
 }
 
-export function OrganizersDataTable<TData, TValue>({ columns, data, isLoading = false, onAddOrganizer }: DataTableProps<TData, TValue>) {
+export function OrganizersDataTable<TData, TValue>({ columns, data, isLoading = false, onAddOrganizer, onRemoveOrganizer }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
@@ -50,6 +51,9 @@ export function OrganizersDataTable<TData, TValue>({ columns, data, isLoading = 
     onPaginationChange: setPagination,
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
+    meta: {
+      onRemoveOrganizer
+    },
     globalFilterFn: (row, columnId, filterValue) => {
       const searchValue = filterValue.toLowerCase();
       const id = String(row.getValue('id')).toLowerCase();

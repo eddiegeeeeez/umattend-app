@@ -78,6 +78,24 @@ export default function EventDetails({ event }: { event: Event }) {
       <Card className="border-border bg-card p-5">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
+            <span className="text-muted-foreground text-sm">Status:</span>
+            <Badge
+              variant="outline"
+              className={`rounded-md text-xs font-medium ${
+                event.status === 'upcoming'
+                  ? 'border-blue-200 bg-blue-100 text-blue-700'
+                  : event.status === 'ongoing'
+                    ? 'border-green-200 bg-green-100 text-green-700'
+                    : event.status === 'completed'
+                      ? 'border-gray-200 bg-gray-100 text-gray-700'
+                      : 'border-red-200 bg-red-100 text-red-700'
+              }`}
+            >
+              {event.status === 'ongoing' && <span className="mr-1.5 inline-block h-2 w-2 animate-pulse rounded-full bg-green-600" />}
+              {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-sm">Department:</span>
             <Badge variant="outline" className="rounded-md text-xs font-medium">
               {event?.department}
@@ -105,12 +123,15 @@ export default function EventDetails({ event }: { event: Event }) {
         </div>
       </Card>
 
-      <div className="space-y-4">
-        <h2 className="text-foreground text-2xl font-bold">About Event</h2>
-        <div className="prose prose-sm text-foreground/90 max-w-none leading-relaxed">
-          <p>{event?.description}</p>
+      {/* About Event Section */}
+      <Card className="border-border bg-card p-6">
+        <div className="space-y-4">
+          <h2 className="text-foreground text-2xl font-bold">About Event</h2>
+          <div className="prose prose-sm text-foreground/90 max-w-none leading-relaxed break-words whitespace-pre-wrap">
+            <p>{event?.description}</p>
+          </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

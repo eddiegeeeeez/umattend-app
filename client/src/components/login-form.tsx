@@ -110,31 +110,6 @@ export default function LoginForm({
             </div>
           </AnimatedContent>
 
-          {/* 
-          Display Access Token for Debugging Purposes Only (Remove in Production)
-          */}
-          <div className="mt-6 text-center">
-            <div className="mx-auto max-w-2xl text-left">
-              <label className="text-muted-foreground mb-2 block text-sm">Access Token:</label>
-              <div className="relative bg-neutral-100 p-3">
-                <pre className="bg-muted text-muted-foreground overflow-x-auto rounded-md p-5 text-xs whitespace-pre-wrap">{accessToken}</pre>
-                <button
-                  type="button"
-                  className="text-muted-foreground hover:bg-muted-foreground/10 absolute top-2 right-2 flex items-center rounded p-1"
-                  onClick={() => {
-                    navigator.clipboard.writeText(accessToken || '');
-                  }}
-                  aria-label="Copy access token"
-                  title="Copy to clipboard"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
-                    <rect x="3" y="3" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

@@ -29,43 +29,34 @@ interface AddOrganizerDialogProps {
 
 export function AddOrganizerDialog({ onAddOrganizer }: AddOrganizerDialogProps) {
   const [open, setOpen] = useState(false)
-  const [formData, setFormData] = useState({
-    studentId: "",
-    name: "",
-    department: "",
-    program: "",
-    email: "",
-  })
+  const [email, setEmail] = useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validate form
-    if (!formData.studentId || !formData.name || !formData.department || !formData.program || !formData.email) {
+    // Validate email
+    if (!email) {
       return
     }
 
     // Validate email format
-    if (!formData.email.endsWith("@umindanao.edu.ph")) {
+    if (!email.endsWith("@umindanao.edu.ph")) {
       alert("Email must be a valid UMindanao email address (@umindanao.edu.ph)")
       return
     }
 
-    onAddOrganizer(formData)
-
-    // Reset form and close dialog
-    setFormData({
+    // Pass minimal data - API only needs email
+    onAddOrganizer({
       studentId: "",
       name: "",
       department: "",
       program: "",
-      email: "",
+      email: email
     })
-    setOpen(false)
-  }
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    // Reset form and close dialog
+    setEmail("")
+    setOpen(false)
   }
 
   return (
@@ -76,65 +67,28 @@ export function AddOrganizerDialog({ onAddOrganizer }: AddOrganizerDialogProps) 
           Add Organizer
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Add New Organizer</DialogTitle>
             <DialogDescription>
-              Add a new organizer to help manage this event. All fields are required.
+              Enter the UMindanao email address of the person you want to add as an organizer.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="studentId">Student ID</Label>
-              <Input
-                id="studentId"
-                placeholder="e.g., 2021-00123"
-                value={formData.studentId}
-                onChange={(e) => handleChange("studentId", e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                placeholder="e.g., Juan Dela Cruz"
-                value={formData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="department">Department</Label>
-              <Input
-                id="department"
-                placeholder="e.g., College of Engineering"
-                value={formData.department}
-                onChange={(e) => handleChange("department", e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="program">Program</Label>
-              <Input
-                id="program"
-                placeholder="e.g., BS Computer Science"
-                value={formData.program}
-                onChange={(e) => handleChange("program", e.target.value)}
-                required
-              />
-            </div>
             <div className="grid gap-2">
               <Label htmlFor="email">UMindanao Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="e.g., jdelacruz@umindanao.edu.ph"
-                value={formData.email}
-                onChange={(e) => handleChange("email", e.target.value)}
+                placeholder="e.g., j.delacruz.123456@umindanao.edu.ph"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
+              <p className="text-xs text-muted-foreground">
+                The organizer will be looked up automatically from the system.
+              </p>
             </div>
           </div>
           <DialogFooter>
