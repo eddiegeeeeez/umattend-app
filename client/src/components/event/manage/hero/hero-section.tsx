@@ -12,7 +12,7 @@ const statusConfig: Record<EventStatus, { label: string; variant: 'default' | 's
   cancelled: { label: 'Cancelled', variant: 'destructive' }
 };
 
-export default function HeroSeciont({ event, setIsSheetOpen }: { event: Event; setIsSheetOpen: (open: boolean) => void }) {
+export default function HeroSection({ event, setIsSheetOpen }: { event: Event; setIsSheetOpen: (open: boolean) => void }) {
   const [attendanceStatus, setAttendanceStatus] = useState<'joined' | 'not_joined'>('joined');
 
   useEffect(() => {
