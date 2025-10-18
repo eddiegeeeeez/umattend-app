@@ -60,11 +60,19 @@ const addEvent = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
     }
 
-    if (event_data.start_time > event_data.end_time) {
+    console.log('start time', event_data.start_time);
+
+    console.log('end time ', event_data.end_time);
+
+    // Validate that end time is not before start time
+    if (event_data.end_time < event_data.start_time) {
+
+      console.log("End time cannot be before start time");
+      
       return HTTPErrorResponse(
         res,
         400,
-        'Start time cannot be later than end time'
+        'End time cannot be before start time'
       );
     }
 
@@ -88,7 +96,7 @@ const addEvent = async (req: Request, res: Response) => {
     }
 
     console.log(error);
-    
+
     if (NODE_ENV === 'development') {
       console.error('Error: ', error);
     }
@@ -109,7 +117,6 @@ const deleteEvent = async (req: Request, res: Response): Promise<Response> => {
 
     return HTTPSuccessResponse(res, 200, 'Event successfully deleted');
   } catch (error) {
-
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, error.message);
     }
