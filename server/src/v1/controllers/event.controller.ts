@@ -435,6 +435,51 @@ const addOrganizer = async (req: Request, res: Response) => {
   }
 };
 
+const removeOrganizer = async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return HTTPErrorResponse(res, 400, errors.array());
+    }
+
+    const data = matchedData(req);
+
+    const { umindanao_email, event_id } = data as {
+      umindanao_email: string;
+      event_id: string;
+    };
+
+    if (!event_id) {
+      return HTTPErrorResponse(res, 400, 'Event ID is required');
+    }
+    if (!umindanao_email) {
+      return HTTPErrorResponse(res, 400, 'Umindanao email is required');
+    }
+
+    await eventServices.removeOrganizer(umindanao_email, event_id);
+    
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Organizer removed successfully',
+      null
+    );
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof ForbiddenError) {
+      return HTTPErrorResponse(res, 403, error.message);
+    }
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    console.error('Unexpected error removing organizer:', error);
+    return HTTPErrorResponse(res, 500, 'Internal server error');
+  }
+};
+
 const getEventDetailsById = async (req: Request, res: Response) => {
   try {
     const { event_id } = req.params;
@@ -502,13 +547,14 @@ const getPaginatedAttendeesByEventId = async (req: Request, res: Response) => {
     const { event_id } = req.params;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.query.search as string | undefined;
 
     if (!event_id) {
       return HTTPErrorResponse(res, 400, 'Event ID is required');
     }
 
     const { data, pagination } =
-      await eventServices.getPaginatedAttendeesByEventId(event_id, page, limit);
+      await eventServices.getPaginatedAttendeesByEventId(event_id, page, limit, search);
 
     return HTTPSuccessResponse(res, 200, 'Attendees retrieved successfully', {
       data,
@@ -612,6 +658,7 @@ const eventController = {
   createCheckInEvent,
   createCheckOutEvent,
   addOrganizer,
+  removeOrganizer,
   getEventDetailsById,
   getAllEvents,
   getAllPastEvents,

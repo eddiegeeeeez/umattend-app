@@ -6,6 +6,7 @@ import { checkSchema } from 'express-validator';
 import {
   EventValidSchema,
   AddOrganizerValidSchema,
+  RemoveOrganizerValidSchema,
 } from '../validators/addEventValidSchema';
 import { checkOrganizer } from '../middlewares/checkOrganizer.middleware';
 const router = express.Router();
@@ -52,6 +53,15 @@ router.post(
   checkOrganizer,
   checkSchema(AddOrganizerValidSchema),
   eventController.addOrganizer
+);
+
+router.delete(
+  `/remove_organizer/:event_id`,
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  checkOrganizer,
+  checkSchema(RemoveOrganizerValidSchema),
+  eventController.removeOrganizer
 );
 
 router.get('/', authMiddleware, eventController.getAllEvents);
