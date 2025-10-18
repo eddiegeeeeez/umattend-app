@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Calendar, MapPin, Clock, Users } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Settings } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuthStore } from '@/store/authStore';
 
 // Mock single event data
 type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
@@ -123,6 +125,10 @@ const EventDetailsSkeleton = () => {
 };
 
 export default function EventDetailsPage() {
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role && ['admin', 'organizer', 'csg'].includes(user.role);
+  
   const [event, setEvent] = useState<Event | null>(null);
   const [attendanceStatus, setAttendanceStatus] = useState<'joined' | 'not_joined'>('joined');
   const [isLoading, setIsLoading] = useState(true);
@@ -199,6 +205,17 @@ export default function EventDetailsPage() {
                   ) : (
                     <Button size="lg" className="font-semibold">
                       RSVP Now
+                    </Button>
+                  )}
+                  {isAdmin && (
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="gap-2 font-semibold shadow-sm transition-shadow hover:shadow"
+                      onClick={() => router.push(`/events/${event.id}/manage`)}
+                    >
+                      <Settings className="h-4 w-4" />
+                      Manage Event
                     </Button>
                   )}
                 </div>

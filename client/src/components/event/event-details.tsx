@@ -1,8 +1,9 @@
 import React from 'react';
-import { Calendar, MapPin, UsersRound, AlertTriangle, Share2, ArrowUpRight, ChevronsLeft } from 'lucide-react';
+import { Calendar, MapPin, UsersRound, AlertTriangle, Share2, ArrowUpRight, ChevronsLeft, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
+import { useAuthStore } from '@/store/authStore';
 import type { EventCardData } from './event-content';
 
 interface EventDetailsProps {
@@ -12,7 +13,11 @@ interface EventDetailsProps {
 
 const EventDetails = ({ event, onClose }: EventDetailsProps) => {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role && ['admin', 'organizer', 'csg'].includes(user.role);
+  
   const {
+    id,
     title,
     description,
     dayOfWeek,
@@ -30,10 +35,21 @@ const EventDetails = ({ event, onClose }: EventDetailsProps) => {
           <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={onClose}>
             <ChevronsLeft />
           </Button>
-          <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push('events/2')}>
-            Event Page
-            <ArrowUpRight />
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button 
+                className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" 
+                onClick={() => router.push(`/events/${id}/manage`)}
+              >
+                <Settings className="h-4 w-4" />
+                Manage
+              </Button>
+            )}
+            <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push('events/2')}>
+              Event Page
+              <ArrowUpRight />
+            </Button>
+          </div>
         </div>
       </SheetHeader>
 
