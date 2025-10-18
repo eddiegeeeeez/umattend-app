@@ -6,6 +6,7 @@ import EventAttendees from '@/components/event/manage/attendees/event-attendees'
 import EventDetails from '@/components/event/manage/details/event-details';
 import HeroSection from '@/components/event/manage/hero/hero-section';
 import ManageEventSkeleton from '@/components/event/manage/manage-event-skeleton';
+import EventOrganizers from '@/components/event/manage/organizers/event-organizers';
 import { UpdateEventSheet } from '@/components/event/manage/update-event-sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -77,13 +78,15 @@ export default function ManageSingleEventPage() {
               <BarChart3 className="mr-2 h-4 w-4" />
               Details
             </TabsTrigger>
-            {/* <TabsTrigger value="overview" className="rounded-md px-4 py-2 text-sm font-medium">
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Overview
-            </TabsTrigger> */}
+
             <TabsTrigger value="attendees" className="rounded-md px-4 py-2 text-sm font-medium">
               <UserCheck className="mr-2 h-4 w-4" />
               Attendees
+            </TabsTrigger>
+
+            <TabsTrigger value="organizers" className="rounded-md px-4 py-2 text-sm font-medium">
+              <UserCheck className="mr-2 h-4 w-4" />
+              Organizers
             </TabsTrigger>
           </TabsList>
 
@@ -91,9 +94,9 @@ export default function ManageSingleEventPage() {
             <EventDetails event={event} />
           </TabsContent>
 
-          {/* <TabsContent value="overview" className="space-y-6">
-            <EventOverview event={event} />
-          </TabsContent> */}
+          <TabsContent value="organizers">
+            <EventOrganizers />
+          </TabsContent>
 
           <TabsContent value="attendees">
             <EventAttendees />
