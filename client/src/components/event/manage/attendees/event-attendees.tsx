@@ -72,10 +72,10 @@ export default function EventAttendees() {
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:mb-8">
         <div>
-          <h1 className="text-foreground text-2xl font-bold tracking-tight md:text-4xl">Attendance Records</h1>
-          <p className="text-muted-foreground mt-1 text-sm md:mt-2 md:text-lg">Manage student check-in and check-out records</p>
+          <h1 className="text-foreground text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl">Attendance Records</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">Manage student check-in and check-out records</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Button onClick={handleRefresh} variant="outline" className="w-full gap-2 bg-transparent font-semibold shadow-sm sm:w-auto">
             Refresh
           </Button>
