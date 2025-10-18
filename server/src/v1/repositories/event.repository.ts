@@ -260,6 +260,51 @@ const removeOrganizer = async (user_id: string, event_id: string) => {
   });
 };
 
+const getOrganizersByEventId = async (event_id: string) => {
+  const organizers = await prisma.organizers.findMany({
+    where: {
+      event_id,
+    },
+    include: {
+      user: {
+        select: {
+          umindanao_email: true,
+          student: {
+            select: {
+              student_id: true,
+              name: true,
+              department: true,
+              program: true,
+            },
+          },
+        },
+      },
+      addedBy: {
+        select: {
+          student: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      created_at: 'asc',
+    },
+  });
+
+  return organizers.map((organizer) => ({
+    student_id: organizer.user.student?.student_id ?? null,
+    name: organizer.user.student?.name ?? 'N/A',
+    department: organizer.user.student?.department ?? 'N/A',
+    program: organizer.user.student?.program ?? 'N/A',
+    umindanao_email: organizer.user.umindanao_email,
+    added_by: organizer.addedBy?.student?.name ?? 'System',
+    added_at: organizer.created_at,
+  }));
+};
+
 const getPaginatedAttendeesByEventId = async (
   event_id: string,
   page: number,
@@ -421,6 +466,7 @@ const eventRepository = {
   createCheckOutEvent,
   addOrganizer,
   removeOrganizer,
+  getOrganizersByEventId,
   checkOrganizer,
   getAllEvents,
   getAllPastEvents,

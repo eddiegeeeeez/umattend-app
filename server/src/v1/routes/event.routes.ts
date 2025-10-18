@@ -79,6 +79,14 @@ router.get(
 );
 
 router.get(
+  '/:event_id/organizers',
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  checkOrganizer,
+  eventController.getOrganizersByEventId
+);
+
+router.get(
   '/export/:event_id',
   authMiddleware,
   checkRole('admin', 'csg'),
