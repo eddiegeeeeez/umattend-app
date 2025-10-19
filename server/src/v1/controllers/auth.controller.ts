@@ -16,6 +16,9 @@ import {
 const googleAuth = async (req: Request, res: Response) => {
   try {
     const url = GoogleAuth.generateGoogleAuthUrl();
+
+    console.log(url);
+    
     return res.redirect(url);
   } catch (error: unknown) {
     if (NODE_ENV === 'DEVELOPMENT') {
