@@ -69,7 +69,16 @@ jobs:
                 echo "Creating directory: $APP_PATH"
                 mkdir -p "$APP_PATH"
                 echo "Cloning repository..."
-                git clone https://github.com/${{ github.repository }}.git "$APP_PATH"
+                # DEBUG: show who we are and parent dir permissions (helpful if clone fails)
+                echo "Remote user: $(whoami)"
+                echo "Home: $HOME"
+                echo "Parent dir permissions:"
+                ls -ld "$(dirname "$APP_PATH")" || true
+                echo "Git version:"
+                git --version || true
+
+                # Recommended: use the workflow token so remote can clone private repo non-interactively
+                git clone https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git "$APP_PATH"
               fi
               
               cd "$APP_PATH"
