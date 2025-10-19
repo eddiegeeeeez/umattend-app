@@ -60,7 +60,6 @@ export default function LoginContent() {
     const handleAuthCode = async () => {
       if (!auth_code) return;
       const result = await exchangeCode('auth_code', auth_code);
-      console.log(result);
 
       if (result.accessToken && result.refreshToken) {
         setAuth(result.accessToken, result.refreshToken);

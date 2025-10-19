@@ -47,7 +47,6 @@ const googleAuthWithCode = async (
       `<h1>Hello ${googleUser.name},</h1><p>Welcome to UMAttend! We're excited to have you on board.</p><p>Best regards,<br>The UMAttend Team</p>`
     );
 
-    console.log(user);
   }
 
   await authRepository.updateLoginAndProfile(
@@ -74,8 +73,6 @@ const googleAuthWithCode = async (
     program: user.student?.program ?? '',
     profile_picture: user.student?.profile_picture ?? '',
   });
-
-  console.log(user);
 
   const refresh_token = await generateRefreshToken(
     user.id,

@@ -9,10 +9,10 @@ on:
 
 jobs:
   deploy:
+    name: Deploy to Production Server
     runs-on: ubuntu-latest
-
+    
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -74,56 +74,82 @@ jobs:
           fi
 
           rm -f "$ASKPASS_SCRIPT"
-          
-      - name: Pull latest code
+
+      - name: Create deployment directory
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
-            cd ${{ secrets.PRODUCTION_APP_PATH }}
-            git fetch --all
-            git reset --hard origin/main
-          "
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.PRODUCTION_APP_PATH }}"
+
+      - name: Copy project files to server
+        run: |
+          rsync -avz -e "ssh -p ${{ secrets.DEPLOY_PORT }}" \
+            --exclude 'node_modules' \
+            --exclude '.git' \
+            --exclude '.next' \
+            --exclude 'dist' \
+            --exclude '.env' \
+            ./ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.PRODUCTION_APP_PATH }}/
 
       - name: Create environment files
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            echo "${{ secrets.CLIENT_PRODUCTION_ENV_FILE }}" > ${{ secrets.PRODUCTION_APP_PATH }}/client/.env.production
+            echo "${{ secrets.SERVER_PRODUCTION_ENV_FILE }}" > ${{ secrets.PRODUCTION_APP_PATH }}/server/.env
+          EOF
+
+      - name: Deploy with Docker Compose
+        run: |
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
             cd ${{ secrets.PRODUCTION_APP_PATH }}
-            echo '${{ secrets.CLIENT_PRODUCTION_ENV_FILE }}' > client/.env.production
-            echo '${{ secrets.SERVER_PRODUCTION_ENV_FILE }}' > server/.env
-          "
+            
+            # Stop existing containers
+            docker compose -f docker-compose.production.yml down
+            
+            # Build and start new containers
+            docker compose -f docker-compose.production.yml up -d --build
+            
+            # Run database migrations
+            docker compose -f docker-compose.production.yml exec -T server npm run prisma:migrate:deploy
+            
+            # Prune unused images
+            docker image prune -f
+          EOF
 
-      - name: Install and build server
+      - name: Setup SSL with Let's Encrypt
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
-            cd ${{ secrets.PRODUCTION_APP_PATH }}/server
-            npm install
-            npm run build || true
-          "
-
-      - name: Install and build client
-        run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
-            cd ${{ secrets.PRODUCTION_APP_PATH }}/client
-            npm install
-            npm run build
-          "
-
-      - name: Restart PM2 apps
-        run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
             cd ${{ secrets.PRODUCTION_APP_PATH }}
-
-            # Server
-            pm2 describe umattend-server-prod >/dev/null 2>&1 && pm2 restart umattend-server-prod || pm2 start server --name umattend-server-prod -- start
-
-            # Client
-            pm2 describe umattend-client-prod >/dev/null 2>&1 && pm2 restart umattend-client-prod || pm2 start client --name umattend-client-prod -- start
-
-            pm2 save
-          "
+            
+            # Create certbot directory if not exists
+            mkdir -p certbot/conf certbot/www
+            
+            # Check if certificate exists
+            if [ ! -d "certbot/conf/live/${{ secrets.PRODUCTION_DOMAIN }}" ]; then
+              echo "Obtaining SSL certificate..."
+              docker compose -f docker-compose.production.yml run --rm certbot certonly \
+                --webroot \
+                --webroot-path=/var/www/certbot \
+                --email ${{ secrets.LETSENCRYPT_EMAIL }} \
+                --agree-tos \
+                --no-eff-email \
+                -d ${{ secrets.PRODUCTION_DOMAIN }}
+              
+              # Reload nginx to use new certificate
+              docker compose -f docker-compose.production.yml exec nginx nginx -s reload
+            fi
+          EOF
 
       - name: Verify deployment
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
             cd ${{ secrets.PRODUCTION_APP_PATH }}
-            pm2 ls
-          "
+            docker compose -f docker-compose.production.yml ps
+          EOF
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Kill ssh-agent if running
+          if [ -n "$SSH_AGENT_PID" ]; then
+            ssh-agent -k
+          fi
+          rm -rf ~/.ssh/id_rsa
