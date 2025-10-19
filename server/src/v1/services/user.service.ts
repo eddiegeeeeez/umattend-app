@@ -16,6 +16,10 @@ const getUserById = async (user_id: string): Promise<FetchUserInfoResult> => {
   return {
     id: user.id,
     umindanao_email: user.umindanao_email,
+    name: user.student?.name ?? undefined,
+    department: user.student?.department ?? undefined,
+    program: user.student?.program ?? undefined,
+    profile_picture: user.student?.profile_picture ?? undefined,
     done_onboarding: user.done_onboarding,
     role: user.role,
   };

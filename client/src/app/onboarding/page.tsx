@@ -32,7 +32,7 @@ export default function OnboardingPage() {
   const refreshToken = useAuthStore((state) => state.refreshToken);
 
   // Fetch user data to ensure we have the latest info (but not during onboarding submission)
-  const { data: userData } = useQuery({
+  const { data: userData, refetch: refetchUser } = useQuery({
     ...getUserOptions(),
     enabled: isAuthenticated() && !isDoneOnboarding(), // Disable after onboarding is done
     staleTime: 5 * 60 * 1000 // 5 minutes
@@ -87,7 +87,7 @@ export default function OnboardingPage() {
 
   const onboardingMutation = useMutation({
     ...postUserOnboardingMutation(),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.success && data.data?.access_token) {
         // Update the auth store with the new access token (keep existing refresh token)
         const currentRefreshToken = refreshToken;
@@ -95,6 +95,36 @@ export default function OnboardingPage() {
         // Use setAuth to update both tokens (or replaceAccessToken if only access token changed)
         if (currentRefreshToken) {
           setAuth(data.data.access_token, currentRefreshToken);
+        }
+
+        // Fetch updated user data to get profile picture and other info
+        const userDataResponse = await refetchUser();
+        
+        if (userDataResponse.data?.success && userDataResponse.data?.data?.user) {
+          const apiUser = userDataResponse.data.data.user as {
+            id?: string;
+            umindanao_email?: string;
+            name?: string;
+            department?: string;
+            program?: string;
+            profile_picture?: string;
+            done_onboarding?: boolean;
+            role?: string;
+          };
+          const currentUser = useAuthStore.getState().user;
+
+          // Update user with complete profile including profile picture
+          updateUser({
+            user_id: apiUser.id,
+            student_id: currentUser?.student_id,
+            umindanao_email: apiUser.umindanao_email || currentUser?.umindanao_email,
+            name: apiUser.name || currentUser?.name,
+            department: apiUser.department || currentUser?.department,
+            program: apiUser.program || currentUser?.program,
+            role: (apiUser.role as 'student' | 'admin' | 'csg' | 'instructor' | 'organizer') || currentUser?.role || 'student',
+            done_onboarding: apiUser.done_onboarding ?? currentUser?.done_onboarding ?? false,
+            profile_picture: apiUser.profile_picture || currentUser?.profile_picture || ''
+          });
         }
 
         toast.success('Profile completed successfully!', {
