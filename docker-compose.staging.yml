@@ -1,8 +1,6 @@
 # Staging Environment Configuration
 # Production-ready setup with proper health checks, dependencies, and error handling
 
-version: '3.8'
-
 networks:
   appnet:
     driver: bridge
@@ -87,8 +85,8 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf:ro
-      - letsencrypt:/etc/letsencrypt:ro
-      - certbot-www:/var/www/certbot:ro
+      - letsencrypt:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
     networks: [appnet]
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
@@ -113,7 +111,7 @@ services:
       - letsencrypt:/etc/letsencrypt
       - certbot-www:/var/www/certbot
     networks: [appnet]
-    entrypoint: /bin/sh -c "mkdir -p /var/www/certbot/.well-known/acme-challenge && chmod 755 /var/www/certbot"
+    command: tail -f /dev/null
     logging:
       driver: "json-file"
       options:

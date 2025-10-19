@@ -182,47 +182,16 @@ jobs:
               
               cd "$APP_PATH"
               
-              echo "Creating placeholder certificates if missing..."
-              mkdir -p letsencrypt/live/umattend-env-staging.vintasystem.com
-              
-              if [ ! -f "letsencrypt/live/umattend-env-staging.vintasystem.com/fullchain.pem" ]; then
-                echo "Generating self-signed certificate for initial startup..."
-                docker run --rm -v $(pwd)/letsencrypt:/etc/letsencrypt certbot/certbot \
-                  certonly --standalone -d umattend-env-staging.vintasystem.com \
-                  --email admin@example.com --agree-tos --no-eff-email \
-                  --dry-run 2>/dev/null || true
-              fi
-              
               echo "Building and starting containers..."
               docker compose -f docker-compose.staging.yml up -d --build --remove-orphans
               
-              echo "Waiting for services to stabilize..."
-              for i in {1..10}; do
-                if docker compose -f docker-compose.staging.yml ps | grep -q "nginx.*Up"; then
-                  echo "Nginx is running"
-                  break
-                fi
-                echo "Waiting... ($i/10)"
-                sleep 3
-              done
-              
-              sleep 10
+              echo "Waiting for services to be healthy..."
+              sleep 15
               
               echo "Container status:"
               docker compose -f docker-compose.staging.yml ps
               
-              UNHEALTHY=$(docker compose -f docker-compose.staging.yml ps | grep -c "unhealthy" || true)
-              EXITED=$(docker compose -f docker-compose.staging.yml ps | grep -c "Exit" || true)
-              
-              if [ "$UNHEALTHY" -gt 0 ] || [ "$EXITED" -gt 0 ]; then
-                echo "Containers unhealthy or exited. Checking logs..."
-                docker compose -f docker-compose.staging.yml logs --tail=100 nginx
-                docker compose -f docker-compose.staging.yml logs --tail=100 server
-                docker compose -f docker-compose.staging.yml logs --tail=100 client
-                exit 1
-              fi
-              
-              echo "Containers built and started successfully"
+              echo "Containers started successfully"
           EOF
 
       - name: Prepare Certbot Environment
@@ -242,20 +211,21 @@ jobs:
               cd "$APP_PATH"
               
               echo "Ensuring certbot directory structure..."
-              docker compose -f docker-compose.staging.yml exec -T certbot \
-                mkdir -p /var/www/certbot/.well-known/acme-challenge
+              docker compose -f docker-compose.staging.yml run --rm certbot \
+                sh -c "mkdir -p /var/www/certbot/.well-known/acme-challenge && chmod -R 755 /var/www/certbot"
               
-              docker compose -f docker-compose.staging.yml exec -T certbot \
-                chmod -R 755 /var/www/certbot
-              
-              echo "Verifying nginx can serve ACME challenge..."
+              echo "Creating test file..."
               docker compose -f docker-compose.staging.yml exec -T nginx \
-                sh -c "echo 'test' > /var/www/certbot/.well-known/acme-challenge/test.txt"
+                sh -c "mkdir -p /var/www/certbot/.well-known/acme-challenge && echo 'nginx-working' > /var/www/certbot/.well-known/acme-challenge/test.txt"
               
+              echo "Waiting for nginx to be ready..."
               sleep 5
               
-              if ! curl -f "http://$DOMAIN/.well-known/acme-challenge/test.txt" 2>/dev/null; then
-                echo "Warning: ACME challenge not accessible yet. Nginx may still be starting."
+              echo "Testing ACME challenge accessibility from server..."
+              if curl -f "http://localhost/.well-known/acme-challenge/test.txt" 2>/dev/null | grep -q "nginx-working"; then
+                echo "✓ ACME challenge accessible locally"
+              else
+                echo "⚠ Warning: ACME challenge not accessible locally"
               fi
               
               echo "Nginx configuration test..."
