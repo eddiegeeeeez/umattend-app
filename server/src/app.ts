@@ -12,7 +12,7 @@ import { cacheControl } from './v1/middlewares/cacheControl.middleware';
 import userRoutes from './v1/routes/user.routes';
 import authRoutes from './v1/routes/auth.routes';
 import eventRoutes from './v1/routes/event.routes';
-import { NODE_ENV } from './constants/app.constants';
+import { NODE_ENV, ALLOWED_ORIGINS } from './constants/app.constants';
 
 const app = express();
 
@@ -25,12 +25,10 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ---------- CORS CONFIGURATION ----------
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:4000',
-  'http://localhost',
-];
+const allowedOrigins = ALLOWED_ORIGINS.split(',').map((origin: string) =>
+  origin.trim()
+);
+
 app.use(
   cors({
     origin: (origin: string | undefined, callback) => {

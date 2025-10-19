@@ -12,7 +12,7 @@
     "type-check": "tsc --noEmit",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "build": "tsup src/server.ts --format esm --out-dir dist --dts"
+    "build": "tsup src/server.ts --format esm --out-dir dist --dts --minify terser"
   },
   "keywords": [],
   "author": "",
@@ -72,6 +72,7 @@
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "prisma": "^6.17.1",
+    "terser": "^5.44.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.5",
