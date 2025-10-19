@@ -48,6 +48,7 @@ services:
       dockerfile: Dockerfile
       args:
         NODE_VERSION: 20.11.1
+        API_URL: http://server:4000
     container_name: umattend_client_production
     restart: always
     env_file:

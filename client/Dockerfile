@@ -13,7 +13,12 @@ RUN npm ci
 
 # Copy all source and build
 COPY . .
+
+# Accept API_URL as build argument and set as environment variable
+ARG API_URL
+ENV API_URL=${API_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN npm run build
 
 # ---------- Runtime stage

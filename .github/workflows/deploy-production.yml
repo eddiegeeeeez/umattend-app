@@ -1,4 +1,4 @@
-name: UMAttend CI/CD Staging Pipeline
+name: UMAttend CI/CD Production Pipeline
 
 on:
   push:
@@ -27,6 +27,7 @@ jobs:
 
           eval $(ssh-agent -s)
 
+          # Use expect to enter SSH key passphrase automatically
           cat > /tmp/add-ssh-key.exp << 'EOF'
           #!/usr/bin/expect -f
           set timeout -1
@@ -40,7 +41,6 @@ jobs:
           /tmp/add-ssh-key.exp
 
           ssh-add -l
-
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
@@ -57,43 +57,47 @@ jobs:
               APP_PATH='${{ secrets.PRODUCTION_APP_PATH }}'
               REPO_SSH="git@github.com:${{ github.repository }}.git"
 
-              echo "SSH OK"
+              echo "🔐 SSH connection established successfully"
 
-              # Ensure GitHub host key is known
               mkdir -p ~/.ssh
               ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
 
-              # Clone or update repository via SSH
+              # If not a valid git repo, clean and reclone
               if [ ! -d "$APP_PATH/.git" ]; then
-                echo "Cloning repository via SSH..."
+                echo "⚠️  Repository missing or invalid at: $APP_PATH"
+                echo "Cleaning and recloning..."
+                rm -rf "$APP_PATH"
+                mkdir -p "$APP_PATH"
                 git clone "$REPO_SSH" "$APP_PATH"
               fi
 
               cd "$APP_PATH"
 
-              echo "Updating code..."
+              echo "📦 Updating code..."
               BRANCH="${{ github.ref_name }}"
-              git fetch origin "$BRANCH"
+              git fetch origin "$BRANCH" --depth=1
               git reset --hard "origin/$BRANCH"
 
-              echo "Setting up environment files..."
+              echo "⚙️ Setting up environment files..."
 
-              echo "Creating client/.env from CLIENT_ENV_FILE secret..."
+              echo "Creating client/.env..."
+              mkdir -p client
               cat > client/.env << 'CLIENTENVEOF'
           ${{ secrets.CLIENT_PRODUCTION_ENV_FILE }}
           CLIENTENVEOF
-              echo "✓ Created client/.env"
+              echo "✅ client/.env created"
 
-              echo "Creating server/.env from SERVER_ENV_FILE secret..."
+              echo "Creating server/.env..."
+              mkdir -p server
               cat > server/.env << 'SERVERENVEOF'
           ${{ secrets.SERVER_PRODUCTION_ENV_FILE }}
           SERVERENVEOF
-              echo "✓ Created server/.env"
+              echo "✅ server/.env created"
 
-              echo "Rebuilding with Docker Compose (Production)..."
+              echo "🐳 Rebuilding containers (Production)..."
               docker compose -f docker-compose.yml -f docker-compose.production.yml down || true
               docker compose -f docker-compose.yml -f docker-compose.production.yml up -d --build --remove-orphans
 
-              echo "✅ Production deployment complete!"
+              echo "✅ Production deployment completed successfully!"
               docker compose -f docker-compose.yml -f docker-compose.production.yml ps
           EOF

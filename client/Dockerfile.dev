@@ -13,6 +13,10 @@ COPY package*.json ./
 # Install ALL dependencies (including dev)
 RUN npm install
 
+# Accept API_URL as build argument (for consistency, though not used in dev)
+ARG API_URL
+ENV API_URL=${API_URL}
+
 # Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV HOSTNAME=0.0.0.0
