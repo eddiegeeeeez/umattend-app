@@ -10,7 +10,7 @@ jobs:
   deploy:
     name: Deploy to Staging Server
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -161,3 +161,4 @@ jobs:
             ssh-agent -k
           fi
           rm -rf ~/.ssh/id_rsa
+
