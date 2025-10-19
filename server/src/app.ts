@@ -13,6 +13,7 @@ import userRoutes from './v1/routes/user.routes';
 import authRoutes from './v1/routes/auth.routes';
 import eventRoutes from './v1/routes/event.routes';
 import docsRoutes from './v1/routes/docs.routes';
+import healthRoutes from './v1/routes/health.routes';
 import { NODE_ENV, ALLOWED_ORIGINS } from './constants/app.constants';
 
 const app = express();
@@ -52,6 +53,7 @@ app.use(
 );
 
 // ---------- API ROUTES ----------
+app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/event', eventRoutes);
@@ -99,8 +101,34 @@ UU:::::U     U:::::UUM:::::::::M         M:::::::::M            A:::::::A      T
 }
 
 if (NODE_ENV !== 'PRODUCTION') {
-  app.get('/api', (req: Request, res: Response) => {
-    res.send('API is running...');
+  app.use((req: Request, res: Response) => {
+    const now = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+    const asciiArt = `
+                                                                                                                                                                                                
+                                                                                                                                                                                                
+UUUUUUUU     UUUUUUUUMMMMMMMM               MMMMMMMM               AAA         TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTEEEEEEEEEEEEEEEEEEEEEENNNNNNNN        NNNNNNNNDDDDDDDDDDDDD        
+U::::::U     U::::::UM:::::::M             M:::::::M              A:::A        T:::::::::::::::::::::TT:::::::::::::::::::::TE::::::::::::::::::::EN:::::::N       N::::::ND::::::::::::DDD     
+U::::::U     U::::::UM::::::::M           M::::::::M             A:::::A       T:::::::::::::::::::::TT:::::::::::::::::::::TE::::::::::::::::::::EN::::::::N      N::::::ND:::::::::::::::DD   
+UU:::::U     U:::::UUM:::::::::M         M:::::::::M            A:::::::A      T:::::TT:::::::TT:::::TT:::::TT:::::::TT:::::TEE::::::EEEEEEEEE::::EN:::::::::N     N::::::NDDD:::::DDDDD:::::D  
+ U:::::U     U:::::U M::::::::::M       M::::::::::M           A:::::::::A     TTTTTT  T:::::T  TTTTTTTTTTTT  T:::::T  TTTTTT  E:::::E       EEEEEEN::::::::::N    N::::::N  D:::::D    D:::::D 
+ U:::::D     D:::::U M:::::::::::M     M:::::::::::M          A:::::A:::::A            T:::::T                T:::::T          E:::::E             N:::::::::::N   N::::::N  D:::::D     D:::::D
+ U:::::D     D:::::U M:::::::M::::M   M::::M:::::::M         A:::::A A:::::A           T:::::T                T:::::T          E::::::EEEEEEEEEE   N:::::::N::::N  N::::::N  D:::::D     D:::::D
+ U:::::D     D:::::U M::::::M M::::M M::::M M::::::M        A:::::A   A:::::A          T:::::T                T:::::T          E:::::::::::::::E   N::::::N N::::N N::::::N  D:::::D     D:::::D
+ U:::::D     D:::::U M::::::M  M::::M::::M  M::::::M       A:::::A     A:::::A         T:::::T                T:::::T          E:::::::::::::::E   N::::::N  N::::N:::::::N  D:::::D     D:::::D
+ U:::::D     D:::::U M::::::M   M:::::::M   M::::::M      A:::::AAAAAAAAA:::::A        T:::::T                T:::::T          E::::::EEEEEEEEEE   N::::::N   N:::::::::::N  D:::::D     D:::::D
+ U:::::D     D:::::U M::::::M    M:::::M    M::::::M     A:::::::::::::::::::::A       T:::::T                T:::::T          E:::::E             N::::::N    N::::::::::N  D:::::D     D:::::D
+ U::::::U   U::::::U M::::::M     MMMMM     M::::::M    A:::::AAAAAAAAAAAAA:::::A      T:::::T                T:::::T          E:::::E       EEEEEEN::::::N     N:::::::::N  D:::::D    D:::::D 
+ U:::::::UUU:::::::U M::::::M               M::::::M   A:::::A             A:::::A   TT:::::::TT            TT:::::::TT      EE::::::EEEEEEEE:::::EN::::::N      N::::::::NDDD:::::DDDDD:::::D  
+  UU:::::::::::::UU  M::::::M               M::::::M  A:::::A               A:::::A  T:::::::::T            T:::::::::T      E::::::::::::::::::::EN::::::N       N:::::::ND:::::::::::::::DD   
+    UU:::::::::UU    M::::::M               M::::::M A:::::A                 A:::::A T:::::::::T            T:::::::::T      E::::::::::::::::::::EN::::::N        N::::::ND::::::::::::DDD     
+      UUUUUUUUU      MMMMMMMM               MMMMMMMMAAAAAAA                   AAAAAAATTTTTTTTTTT            TTTTTTTTTTT      EEEEEEEEEEEEEEEEEEEEEENNNNNNNN         NNNNNNNDDDDDDDDDDDDD  
+  
+───────────────────────────────────────────────────────────────────────────────
+   Server running in DEVELOPMENT mode
+   Date/Time: ${now}
+───────────────────────────────────────────────────────────────────────────────
+      `;
+    res.type('text/plain').send(asciiArt);
   });
 }
 

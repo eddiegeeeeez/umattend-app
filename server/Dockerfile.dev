@@ -1,0 +1,30 @@
+ARG NODE_VERSION=20.11.1
+
+FROM node:${NODE_VERSION}-slim
+
+WORKDIR /app
+
+# Install dependencies including dev tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package files
+COPY package*.json ./
+
+# Install ALL dependencies (including dev)
+RUN npm install
+
+# Copy prisma schema
+COPY prisma ./prisma
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Expose port
+EXPOSE 4000
+
+# Development command with hot-reload
+CMD ["npm", "run", "dev"]
