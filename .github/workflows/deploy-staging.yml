@@ -185,8 +185,26 @@ jobs:
               echo "Building and starting containers..."
               docker compose -f docker-compose.staging.yml up -d --build --remove-orphans
               
-              echo "Waiting for services to be healthy..."
-              sleep 15
+              echo "Waiting for server to start..."
+              sleep 20
+              
+              echo "Checking server logs..."
+              docker compose -f docker-compose.staging.yml logs --tail=50 server
+              
+              echo "Checking server health..."
+              for i in {1..12}; do
+                if docker compose -f docker-compose.staging.yml ps server | grep -q "healthy"; then
+                  echo "✓ Server is healthy"
+                  break
+                elif docker compose -f docker-compose.staging.yml ps server | grep -q "unhealthy"; then
+                  echo "✗ Server is unhealthy"
+                  echo "Server logs:"
+                  docker compose -f docker-compose.staging.yml logs server
+                  exit 1
+                fi
+                echo "Waiting for server health check... ($i/12)"
+                sleep 5
+              done
               
               echo "Container status:"
               docker compose -f docker-compose.staging.yml ps
