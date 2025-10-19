@@ -187,7 +187,39 @@ jobs:
               echo "Containers built and started"
           EOF
 
-      - name: Issue/Ensure Let's Encrypt Certificate (Staging)
+      - name: Prepare for Let's Encrypt Certificate
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+              
+              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
+              DOMAIN='${{ secrets.STAGING_DOMAIN }}'
+              
+              cd "$APP_PATH"
+              
+              echo "Preparing webroot directory..."
+              docker compose -f docker-compose.staging.yml exec -T nginx mkdir -p /var/www/certbot/.well-known/acme-challenge
+              docker compose -f docker-compose.staging.yml exec -T nginx chmod -R 755 /var/www/certbot
+              
+              echo "Creating test file for ACME challenge..."
+              docker compose -f docker-compose.staging.yml exec -T nginx sh -c "echo 'test' > /var/www/certbot/.well-known/acme-challenge/test.txt"
+              
+              echo "Testing ACME challenge access..."
+              curl -v "http://$DOMAIN/.well-known/acme-challenge/test.txt"
+              
+              echo "Checking nginx configuration..."
+              docker compose -f docker-compose.staging.yml exec -T nginx nginx -t
+              
+              echo "ACME challenge preparation completed"
+          EOF
+
+      - name: Issue/Ensure Let's Encrypt Certificate
         env:
           DOMAIN: ${{ secrets.STAGING_DOMAIN }}
           EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
@@ -212,36 +244,60 @@ jobs:
 
               cd "$APP_PATH"
 
-              echo "Starting nginx..."
-              docker compose -f docker-compose.staging.yml up -d nginx
+              echo "Checking webroot directory permissions..."
+              docker compose -f docker-compose.staging.yml exec -T nginx ls -la /var/www/certbot/.well-known/acme-challenge/
 
-              echo "Waiting for nginx healthcheck..."
-              # Wait until nginx is reachable
-              for i in {1..15}; do
-                if docker compose -f docker-compose.staging.yml exec -T nginx wget -qO- http://localhost/health >/dev/null 2>&1; then
-                  echo "Nginx is ready."
-                  break
-                fi
-                echo "Waiting for nginx to become ready... ($i/15)"
-                sleep 5
-              done
-
-              echo "Requesting certificate for $DOMAIN..."
+              echo "Starting certbot with verbose output..."
               docker compose -f docker-compose.staging.yml run --rm certbot \
                 certonly --webroot -w /var/www/certbot \
                 -d "$DOMAIN" \
                 --email "$EMAIL" \
-                --agree-tos --no-eff-email --keep-until-expiring --expand
+                --agree-tos --no-eff-email \
+                --keep-until-expiring \
+                --expand \
+                -v
 
-              echo "Reloading nginx to pick up new certificates..."
+              echo "Checking certificate status..."
+              docker compose -f docker-compose.staging.yml run --rm certbot certificates
+
+              echo "Reloading nginx configuration..."
               if ! docker compose -f docker-compose.staging.yml exec -T nginx nginx -s reload; then
-                echo "Nginx reload failed, restarting container instead..."
+                echo "Nginx reload failed, checking logs..."
+                docker compose -f docker-compose.staging.yml logs nginx
+                echo "Attempting to restart nginx..."
                 docker compose -f docker-compose.staging.yml restart nginx
               fi
 
-              echo "✅ Certificate process completed successfully."
+              echo "✅ Certificate process completed."
           EOF
 
+      - name: Verify Certificate Setup
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+              
+              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
+              DOMAIN='${{ secrets.STAGING_DOMAIN }}'
+              
+              cd "$APP_PATH"
+              
+              echo "Testing HTTPS connection..."
+              curl -vI "https://$DOMAIN" 2>&1 | grep "SSL connection"
+              
+              echo "Checking nginx logs..."
+              docker compose -f docker-compose.staging.yml logs --tail=50 nginx
+              
+              echo "Checking certbot logs..."
+              docker compose -f docker-compose.staging.yml logs --tail=50 certbot
+              
+              echo "Certificate verification completed"
+          EOF
 
       - name: Verify Deployment
         run: |
@@ -261,13 +317,9 @@ jobs:
               echo "Checking container status..."
               docker compose -f docker-compose.staging.yml ps
               
-              echo "Checking certificate files..."
-              DOMAIN='${{ secrets.STAGING_DOMAIN }}'
-              if [ -n "$DOMAIN" ]; then
-                docker compose -f docker-compose.staging.yml run --rm certbot \
-                  certificates || true
-              fi
+              echo "Checking container logs..."
+              docker compose -f docker-compose.staging.yml logs --tail=20
               
               echo ""
-              echo "Staging deployment completed successfully!"
+              echo "✅ Staging deployment completed successfully!"
           EOF
