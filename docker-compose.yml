@@ -1,0 +1,43 @@
+version: "3.9"
+
+# Base Docker Compose Configuration
+# Use with environment-specific overrides:
+# - Staging:    docker compose -f docker-compose.yml -f docker-compose.staging.yml up
+# - Production: docker compose -f docker-compose.yml -f docker-compose.production.yml up
+
+networks:
+  appnet:
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      args:
+        NODE_VERSION: 20.11.1
+    env_file:
+      - ./server/.env
+    networks: [appnet]
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        NODE_VERSION: 20.11.1
+    env_file:
+      - ./client/.env
+    environment:
+      HOSTNAME: 0.0.0.0
+    depends_on:
+      - server
+    networks: [appnet]
+
+  nginx:
+    image: nginx:1.25.5-alpine
+    depends_on:
+      - client
+      - server
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks: [appnet]

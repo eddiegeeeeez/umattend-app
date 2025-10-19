@@ -1,7 +1,10 @@
-import GoogleAuth from '../../utils/googleAuth.js';
+import GoogleAuth from '../services/google.service.js';
 import authRepository from '../repositories/auth.repository.js';
 import jwt from 'jsonwebtoken';
-import { generateAccessToken, generateRefreshToken } from '@/utils/jwt.utils';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from '@/v1/services/jwt.service.js';
 import {
   EmptyTokenError,
   AuthenticationError,
@@ -14,6 +17,7 @@ import { JWT_REFRESH_TOKEN_SECRET } from '@/constants/jwt.constants.js';
 
 import { sanitizeKey, extractStudentID } from '@/utils/string.utils.js';
 import { sendEmail } from './email.service.js';
+
 const googleAuthWithCode = async (
   code: string,
   state: string,
@@ -63,11 +67,15 @@ const googleAuthWithCode = async (
     user_id: user.id,
     umindanao_email: user.umindanao_email,
     role: user.role,
+    done_onboarding: user.done_onboarding,
     student_id: Number(user.student?.student_id),
     name: user.student?.name,
     department: user.student?.department ?? '',
     program: user.student?.program ?? '',
+    profile_picture: user.student?.profile_picture ?? '',
   });
+
+  console.log(user);
 
   const refresh_token = await generateRefreshToken(
     user.id,
@@ -225,8 +233,6 @@ const getDataFromErrorCode = async (error_code: string) => {
 
   const error = await authRepository.getErrorCode(sanitizedErrorCode);
 
-  console.log(error);
-
   if (!error) {
     throw new NotFoundError('Error code not found');
   }
@@ -246,6 +252,10 @@ const getDataFromAuthCode = async (auth_code: string) => {
   return { access_token, refresh_token };
 };
 
+const getLoginHistory = async (user_id: string) => {
+  return await authRepository.getLoginHistory(user_id);
+};
+
 const authServices = {
   googleAuthWithCode,
   refreshAccessToken,
@@ -254,6 +264,7 @@ const authServices = {
   getDataFromErrorCode,
   generateAuthCode,
   getDataFromAuthCode,
+  getLoginHistory,
 };
 
 export default authServices;

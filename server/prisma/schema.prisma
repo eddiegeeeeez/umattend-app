@@ -34,6 +34,8 @@ model user {
   attendance          attendance[]
   attendance_check_in attendance[]    @relation("CheckInByUser")
   attendance_check_ou attendance[]    @relation("CheckOutByUser")
+  organizers_added    organizers[]     @relation("OrganizerAddedBy")
+  organizers          organizers[]     @relation("OrganizerUser")
 
   @@index([umindanao_email])
   @@index([role])
@@ -105,6 +107,7 @@ model events {
   start_time         DateTime?
   end_time           DateTime?
   check_out_required Boolean   @default(false)
+  is_started         Boolean   @default(false)
   is_done            Boolean   @default(false)
 
   form_fields Json?
@@ -116,6 +119,7 @@ model events {
 
   user       user         @relation(fields: [created_by], references: [id], onDelete: Cascade)
   attendance attendance[]
+  organizers organizers[]
 
   @@index([title])
   @@index([department])
@@ -151,4 +155,23 @@ model attendance {
   @@index([check_in_at])
   @@index([check_out_at])
   @@map("attendances")
+}
+
+model organizers {
+  id       String @id @default(cuid())
+  user_id  String
+  event_id String
+  added_by String
+
+  user    user   @relation("OrganizerUser", fields: [user_id], references: [id], onDelete: Cascade)
+  event   events @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  addedBy user   @relation("OrganizerAddedBy", fields: [added_by], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([user_id, event_id])
+  @@index([user_id])
+  @@index([event_id])
+  @@map("organizers")
 }

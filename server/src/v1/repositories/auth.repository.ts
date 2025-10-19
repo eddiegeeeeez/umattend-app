@@ -49,16 +49,17 @@ const updateLoginAndProfile = async (
   user_id: string,
   profile_picture: string
 ) => {
-  await prisma.user.update({
-    where: { id: user_id },
-    data: {
-      last_login_at: new Date(),
-      student: {
-        update: {
-          profile_picture,
-        },
-      },
-    },
+  return prisma.$transaction(async (tx) => {
+    await Promise.all([
+      tx.user.update({
+        where: { id: user_id },
+        data: { last_login_at: new Date() },
+      }),
+      tx.student.updateMany({
+        where: { user_id },
+        data: { profile_picture },
+      }),
+    ]);
   });
 };
 
@@ -97,9 +98,17 @@ const findRefreshToken = async (token_id: string) => {
 };
 
 const revokeRefreshToken = async (token_id: string) => {
-  return await prisma.refresh_token.update({
-    where: { id: token_id, is_active: true },
-    data: { is_active: false, revoked_at: new Date() },
+  return prisma.$transaction(async (tx) => {
+    const token = await tx.refresh_token.findUnique({
+      where: { id: token_id },
+    });
+    if (!token?.is_active) {
+      return null;
+    }
+    return tx.refresh_token.update({
+      where: { id: token_id },
+      data: { is_active: false, revoked_at: new Date() },
+    });
   });
 };
 
@@ -144,6 +153,21 @@ const deleteAuthCode = async (auth_code: string) => {
   return await redis.del(`auth_code:${auth_code}`);
 };
 
+const getLoginHistory = async (user_id: string) => {
+  return await prisma.refresh_token.findMany({
+    where: { user_id },
+    select: {
+      browser: true,
+      os: true,
+      city: true,
+      region: true,
+      country: true,
+    },
+    orderBy: { created_at: 'desc' },
+    take: 10,
+  });
+};
+
 const authRepository = {
   createUser,
   updateUser,
@@ -160,6 +184,7 @@ const authRepository = {
   createAuthCode,
   getAuthCode,
   deleteAuthCode,
+  getLoginHistory,
 };
 
 export default authRepository;

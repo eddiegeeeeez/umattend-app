@@ -1,6 +1,6 @@
 import authService from '../services/auth.service';
 import { Request, Response } from 'express';
-import GoogleAuth from '../../utils/googleAuth';
+import GoogleAuth from '../services/google.service';
 import {
   HTTPErrorResponse,
   HTTPSuccessResponse,
@@ -8,13 +8,24 @@ import {
 import jwt from 'jsonwebtoken';
 import { AuthenticationError, NotFoundError } from '../../utils/customErrors';
 import { FRONTEND_URL, NODE_ENV } from '../../constants/app.constants';
+import {
+  JWT_ACCESS_TOKEN_TTL,
+  JWT_REFRESH_TOKEN_TTL,
+} from '@/constants/jwt.constants';
 
 const googleAuth = async (req: Request, res: Response) => {
   try {
     const url = GoogleAuth.generateGoogleAuthUrl();
     return res.redirect(url);
   } catch (error: unknown) {
-    console.log(error);
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
+    }
+
     return HTTPErrorResponse(
       res,
       500,
@@ -27,9 +38,8 @@ const googleCallback = async (req: Request, res: Response) => {
   try {
     const { code, state } = req.query;
 
-    const currentUri = `${req.protocol}://${req.get('host')}${
-      req.originalUrl.split('?')[0]
-    }`;
+    const currentUri = `${req.protocol}://${req.get('host')}${req.originalUrl.split('?')[0]
+      }`;
 
     const frontendUrl = FRONTEND_URL;
 
@@ -70,14 +80,14 @@ const googleCallback = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: NODE_ENV === 'PRODUCTION',
       sameSite: 'strict',
-      maxAge: 1 * 60 * 60 * 1000,
+      maxAge: Number(JWT_ACCESS_TOKEN_TTL) * 60 * 60 * 1000,
     });
 
     res.cookie('refresh_token', result.refresh_token, {
       httpOnly: true,
       secure: NODE_ENV === 'PRODUCTION',
       sameSite: 'strict',
-      maxAge: 3 * 24 * 60 * 60 * 1000,
+      maxAge: Number(JWT_REFRESH_TOKEN_TTL) * 60 * 60 * 1000,
     });
 
     return res.redirect(`${frontendUrl}/?auth_code=${auth_code}`);
@@ -95,13 +105,21 @@ const googleCallback = async (req: Request, res: Response) => {
       return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
     }
 
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
+    }
+
     return res.redirect(`${frontendUrl}/?error_code=${error_code}`);
   }
 };
 
 const logoutUser = async (req: Request, res: Response) => {
   try {
-    const { refresh_token } = req.body;
+    const refresh_token = req.body?.refresh_token;
     const cookieRefreshToken = req.cookies?.refresh_token;
 
     const finalRefreshToken = refresh_token ?? cookieRefreshToken;
@@ -137,6 +155,14 @@ const logoutUser = async (req: Request, res: Response) => {
 
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, 'Not Found') as Response;
+    }
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
     }
 
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
@@ -185,6 +211,13 @@ const refreshAccessToken = async (req: Request, res: Response) => {
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, 'Not Found') as Response;
     }
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
+    }
 
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
@@ -218,6 +251,10 @@ const exhangeCode = async (req: Request, res: Response) => {
       const error_message = await authService.getDataFromErrorCode(error_code);
       response_message = 'Error during authentication';
       response = { error_message };
+
+      if (error_message) {
+        return HTTPErrorResponse(res, 400, error_message) as Response;
+      }
     }
 
     return HTTPSuccessResponse(
@@ -227,9 +264,37 @@ const exhangeCode = async (req: Request, res: Response) => {
       response
     ) as Response;
   } catch (error: unknown) {
-    console.log(error);
     if (error instanceof NotFoundError) {
-      return HTTPErrorResponse(res, 404, 'Not Found') as Response;
+      return HTTPErrorResponse(res, 404, error.message) as Response;
+    }
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
+    }
+
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
+  }
+};
+
+const getLoginHistory = async (req: Request, res: Response) => {
+  try {
+    const user_id = req.user.id;
+    const login_history = await authService.getLoginHistory(user_id);
+    return HTTPSuccessResponse(res, 200, 'Login history retrieved', {
+      login_history,
+    }) as Response;
+  } catch (error: unknown) {
+    console.log(error);
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(
+        res,
+        500,
+        `Internal server error:${error}`
+      ) as Response;
     }
 
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
@@ -242,6 +307,7 @@ const authController = {
   logoutUser,
   refreshAccessToken,
   exhangeCode,
+  getLoginHistory,
 };
 
 export default authController;
