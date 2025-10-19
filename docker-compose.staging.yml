@@ -36,7 +36,6 @@ services:
       dockerfile: Dockerfile
       args:
         NODE_VERSION: 20.11.1
-        API_URL: http://server:4000
     container_name: umattend_client_staging
     restart: unless-stopped
     env_file:
@@ -45,7 +44,6 @@ services:
       NODE_ENV: staging
       HOSTNAME: 0.0.0.0
       PORT: ${CLIENT_PORT:-3000}
-      # Override API_URL to use Docker service name
       API_URL: http://server:4000
     depends_on:
       server:
