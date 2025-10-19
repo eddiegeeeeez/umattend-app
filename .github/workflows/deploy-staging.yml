@@ -1,4 +1,4 @@
-name: UMAttend CI/CD Pipeline
+name: UMAttend CI/CD Staging Pipeline
 
 on:
   push:
@@ -23,12 +23,41 @@ jobs:
           issue-title: "Deploying to Staging Environment"
           issue-body: "Please approve or deny the staging deployment of branch `${{ github.ref_name }}`."
 
-      - name: Add SSH key to agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup SSH Key with Passphrase
         env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_PASSPHRASE: ${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}
+        run: |
+          # Install expect
+          sudo apt-get update && sudo apt-get install -y expect
+          
+          # Create SSH directory and key file
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          
+          # Start ssh-agent
+          eval $(ssh-agent -s)
+          
+          # Create expect script to add key with passphrase
+          cat > /tmp/add-ssh-key.exp << 'EOF'
+          #!/usr/bin/expect -f
+          set timeout -1
+          spawn ssh-add /home/runner/.ssh/deploy_key
+          expect "Enter passphrase"
+          send -- "$env(SSH_PASSPHRASE)\r"
+          expect eof
+          EOF
+          
+          chmod +x /tmp/add-ssh-key.exp
+          /tmp/add-ssh-key.exp
+          
+          # Verify key is loaded
+          ssh-add -l
+          
+          # Save agent info for later steps
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
       - name: Deploy via SSH
         run: |
