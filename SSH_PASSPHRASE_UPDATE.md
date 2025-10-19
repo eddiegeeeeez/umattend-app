@@ -14,8 +14,17 @@ Both workflows now:
 - Use `ssh-agent` to handle SSH key authentication
 - Accept `SSH_PRIVATE_KEY_PASSPHRASE` secret to decrypt the SSH key
 - Properly cleanup the SSH agent after deployment
+- **Fallback approach**: If ssh-agent fails, the workflow strips the passphrase using `ssh-keygen -p` and retries
+- **Verbose debugging**: On failure, displays detailed SSH connection logs to help troubleshoot
 
-### 2. Documentation Updated
+### 2. Docker Configuration Updated
+- **`client/Dockerfile`** - Added `NEXT_PUBLIC_API_URL` build argument
+- **`client/next.config.ts`** - Handle missing API_URL gracefully during build
+- **`docker-compose.staging.yml`** - Pass API URL as build arg and environment variable
+- **`docker-compose.production.yml`** - Same as staging with production URL
+- **`docker-compose.local.yml`** - Added localhost API URL for development
+
+### 3. Documentation Updated
 - **`.github/secrets.template`** - Added passphrase documentation
 - **`QUICKSTART.md`** - Updated SSH key generation instructions
 - **`DEPLOYMENT_CHECKLIST.md`** - Added passphrase requirements
@@ -45,11 +54,22 @@ You **MUST** add this secret to your GitHub repository:
 # In GitHub Actions workflow:
 
 1. Load SSH private key from SSH_PRIVATE_KEY secret
-2. Start ssh-agent
-3. Use SSH_PRIVATE_KEY_PASSPHRASE to unlock the key
-4. Add unlocked key to ssh-agent
-5. SSH connections now work without prompting for passphrase
-6. After deployment, kill ssh-agent and remove key file
+2. Create temporary SSH_ASKPASS script
+3. Start ssh-agent
+4. Use SSH_PRIVATE_KEY_PASSPHRASE to unlock the key via setsid + ssh-add
+5. Test SSH connection with BatchMode
+6. If connection fails:
+   a. Strip passphrase from private key using ssh-keygen -p
+   b. Retry connection
+   c. If still fails, show verbose debug output and exit
+7. SSH connections now work for rsync and ssh commands
+8. After deployment, kill ssh-agent and remove key file
+
+# During Docker build:
+
+1. Pass NEXT_PUBLIC_API_URL as build argument
+2. Next.js uses this during build for API rewrites
+3. Also set as runtime environment variable
 ```
 
 ## Migration Steps

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   client:
     build:
@@ -7,10 +5,12 @@ services:
       dockerfile: Dockerfile
       args:
         - NODE_ENV=production
+        - NEXT_PUBLIC_API_URL=https://umattend-env-staging.vintasystem.com/api/v1
     container_name: umattend-client-staging
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=https://umattend-env-staging.vintasystem.com/api/v1
     networks:
       - umattend-network
     depends_on:
