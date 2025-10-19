@@ -15,9 +15,9 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { putEventByEventIdMutation } from '@/api/client/@tanstack/react-query.gen';
-import type { Event } from '@/types/event';
+import type { Event } from '@/types/events';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
-import { generateTimeOptions, parseTimeToMinutes } from '@/lib/utils';
+import { generateTimeOptions, parseTimeToMinutes, formatDateShort } from '@/lib/utils';
 
 interface UpdateEventSheetProps {
   event: Event;
@@ -25,11 +25,6 @@ interface UpdateEventSheetProps {
   onOpenChange: (open: boolean) => void;
   onUpdate: () => void;
 }
-
-const formatDate = (date: Date) => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-};
 
 export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: UpdateEventSheetProps) {
   const [formData, setFormData] = useState(() => ({
@@ -200,7 +195,7 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="bg-background h-11 w-full justify-start text-left font-medium shadow-sm">
-                        {formatDate(formData.startDate)}
+                        {formatDateShort(formData.startDate)}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -242,7 +237,7 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                           validationErrors.endDate ? 'border-red-500' : ''
                         }`}
                       >
-                        {formatDate(formData.endDate)}
+                        {formatDateShort(formData.endDate)}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">

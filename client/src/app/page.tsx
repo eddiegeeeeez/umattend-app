@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import ClickSpark from '@/components/ClickSpark';
-import LoginForm from '@/components/login-form';
+import LoginForm from '@/components/auth/login-form';
 import useExchangeCode from '@/hooks/useExchangeCode';
 import { getUserOptions } from '@/api/client/@tanstack/react-query.gen';
 import { useAuthStore } from '@/store/authStore';

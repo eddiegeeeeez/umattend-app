@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 import { Skeleton } from './ui/skeleton';
 import { useAuthStore } from '@/store/authStore';
 import { postAuthLogoutMutation } from '@/api/client/@tanstack/react-query.gen';
+import { getInitials, formatTimeWithTimezone } from '@/lib/utils';
 
 const Navbar = () => {
   const router = useRouter();
@@ -44,28 +45,6 @@ const Navbar = () => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
-
-  const formatGmtOffset = (date: Date) => {
-    const offsetMinutes = -date.getTimezoneOffset();
-    const sign = offsetMinutes >= 0 ? '+' : '-';
-    const abs = Math.abs(offsetMinutes);
-    const hours = Math.floor(abs / 60);
-    const minutes = abs % 60;
-    return `GMT${sign}${hours}${minutes ? `:${minutes.toString().padStart(2, '0')}` : ''}`;
-  };
-
-  const getInitials = (name: string) => {
-    const names = name.split(' ');
-    if (names.length >= 2) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
-
-  const formatTime = (date: Date) => {
-    const timeStr = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', hour12: true }).format(date);
-    return `${timeStr} ${formatGmtOffset(date)}`;
-  };
 
   // Fetch user data after authentication
 
@@ -107,7 +86,7 @@ const Navbar = () => {
             )}
           </nav>
 
-          <span className="text-muted-foreground hidden text-xs lg:inline">{formatTime(now)}</span>
+          <span className="text-muted-foreground hidden text-xs lg:inline">{formatTimeWithTimezone(now)}</span>
 
           <Popover>
             <PopoverTrigger className="cursor-pointer">
@@ -163,7 +142,7 @@ const Navbar = () => {
           </SheetHeader>
           <nav className="mx-3 flex flex-col gap-4">
             <div className="flex items-center justify-between px-2">
-              <span className="text-muted-foreground text-sm">{formatTime(now)}</span>
+              <span className="text-muted-foreground text-sm">{formatTimeWithTimezone(now)}</span>
             </div>
 
             {user?.role && ['admin', 'organizer', 'csg'].includes(user.role) && (

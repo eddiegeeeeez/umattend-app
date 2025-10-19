@@ -4,7 +4,7 @@ import { ArrowUpDown, MoreVertical, Eye, Edit, Trash2 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import type { AttendanceRecord } from '@/types/manage';
+import type { AttendanceRecord } from '@/types/events';
 
 export const columns: ColumnDef<AttendanceRecord>[] = [
   {

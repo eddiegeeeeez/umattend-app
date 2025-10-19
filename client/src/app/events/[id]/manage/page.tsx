@@ -1,18 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { BarChart3, UserCheck } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, UserCheck } from 'lucide-react';
 import EventAttendees from '@/components/event/manage/attendees/event-attendees';
 import EventDetails from '@/components/event/manage/details/event-details';
-import HeroSection from '@/components/event/manage/hero/hero-section';
+import EventNotFound from '@/components/event/manage/event-not-found';
+import HeroSection from '@/components/event/manage/hero-section';
 import ManageEventSkeleton from '@/components/event/manage/manage-event-skeleton';
 import EventOrganizers from '@/components/event/manage/organizers/event-organizers';
 import { UpdateEventSheet } from '@/components/event/manage/update-event-sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { Event } from '@/types/events';
 import { getEventByEventIdOptions } from '@/api/client/@tanstack/react-query.gen';
-import type { Event } from '@/types/event';
+import { formatTimePadded } from '@/lib/utils';
+import { getEventStatus } from '@/lib/events-utils';
 
 export default function ManageSingleEventPage() {
   const params = useParams();
@@ -53,14 +56,7 @@ export default function ManageSingleEventPage() {
   }
 
   if (isError || !eventData?.data) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-100">
-        <div className="text-center">
-          <h2 className="text-foreground mb-2 text-2xl font-bold">Event Not Found</h2>
-          <p className="text-muted-foreground">The event you&apos;re looking for doesn&apos;t exist or has been removed.</p>
-        </div>
-      </div>
-    );
+    return <EventNotFound />;
   }
 
   // Don't render if user doesn't have permission (will redirect)
@@ -73,25 +69,6 @@ export default function ManageSingleEventPage() {
   const startDate = apiEvent.start_time ? new Date(apiEvent.start_time) : new Date();
   const endDate = apiEvent.end_time ? new Date(apiEvent.end_time) : new Date();
 
-  const formatTime = (date: Date): string => {
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    const hoursStr = hours.toString().padStart(2, '0');
-    const minutesStr = minutes.toString().padStart(2, '0');
-    return `${hoursStr}:${minutesStr} ${ampm}`;
-  };
-
-  const getEventStatus = (): 'upcoming' | 'ongoing' | 'completed' | 'cancelled' => {
-    if (apiEvent.is_done) return 'completed';
-    const now = new Date();
-    if (now < startDate) return 'upcoming';
-    if (now >= startDate && now <= endDate) return 'ongoing';
-    return 'completed';
-  };
-
   const event: Event = {
     id: apiEvent.id || '',
     name: apiEvent.title || 'Untitled Event',
@@ -100,11 +77,11 @@ export default function ManageSingleEventPage() {
     department: apiEvent.department || '',
     startDate: startDate,
     endDate: endDate,
-    startTime: apiEvent.all_day ? 'All Day' : formatTime(startDate),
-    endTime: apiEvent.all_day ? '' : formatTime(endDate),
+    startTime: apiEvent.all_day ? 'All Day' : formatTimePadded(startDate),
+    endTime: apiEvent.all_day ? '' : formatTimePadded(endDate),
     capacity: apiEvent.capacity || 'unlimited',
-    attendees: apiEvent.check_out_required ? (apiEvent.checkout_count || 0) : (apiEvent.checkin_count || 0),
-    status: getEventStatus(),
+    attendees: apiEvent.check_out_required ? apiEvent.checkout_count || 0 : apiEvent.checkin_count || 0,
+    status: getEventStatus(apiEvent),
     checkOutRequired: apiEvent.check_out_required || false
   };
 
@@ -121,7 +98,7 @@ export default function ManageSingleEventPage() {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Tabs Section */}
         <Tabs defaultValue="details" className="space-y-6">
-          <TabsList className="bg-muted text-muted-foreground inline-flex h-11 items-center justify-center rounded-lg p-1 gap-x-2">
+          <TabsList className="bg-muted text-muted-foreground inline-flex h-11 items-center justify-center gap-x-2 rounded-lg p-1">
             <TabsTrigger value="details" className="rounded-md px-4 py-2 text-sm font-medium">
               <BarChart3 className="mr-2 h-4 w-4" />
               Details
@@ -153,12 +130,7 @@ export default function ManageSingleEventPage() {
       </main>
 
       {/* Update Event Sheet */}
-      <UpdateEventSheet 
-        event={event} 
-        open={isSheetOpen} 
-        onOpenChange={setIsSheetOpen} 
-        onUpdate={handleUpdateEvent} 
-      />
+      <UpdateEventSheet event={event} open={isSheetOpen} onOpenChange={setIsSheetOpen} onUpdate={handleUpdateEvent} />
     </div>
   );
 }

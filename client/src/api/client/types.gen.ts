@@ -404,6 +404,104 @@ export type GetUserEventsResponses = {
 
 export type GetUserEventsResponse = GetUserEventsResponses[keyof GetUserEventsResponses];
 
+export type GetUserAttendedEventsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/user/attended-events';
+};
+
+export type GetUserAttendedEventsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Internal server error
+     */
+    500: {
+        success?: boolean;
+        message?: string;
+    };
+};
+
+export type GetUserAttendedEventsError = GetUserAttendedEventsErrors[keyof GetUserAttendedEventsErrors];
+
+export type GetUserAttendedEventsResponses = {
+    /**
+     * List of attended events retrieved successfully
+     */
+    200: {
+        success?: boolean;
+        message?: string;
+        data?: {
+            events?: Array<{
+                id?: string;
+                title?: string;
+                created_by?: string;
+                start_time?: string;
+                end_time?: string;
+            }>;
+        };
+    };
+};
+
+export type GetUserAttendedEventsResponse = GetUserAttendedEventsResponses[keyof GetUserAttendedEventsResponses];
+
+export type GetUserHostedEventsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/user/hosted-events';
+};
+
+export type GetUserHostedEventsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: {
+        success?: boolean;
+        message?: string;
+    };
+    /**
+     * Internal server error
+     */
+    500: {
+        success?: boolean;
+        message?: string;
+    };
+};
+
+export type GetUserHostedEventsError = GetUserHostedEventsErrors[keyof GetUserHostedEventsErrors];
+
+export type GetUserHostedEventsResponses = {
+    /**
+     * List of hosted events retrieved successfully
+     */
+    200: {
+        success?: boolean;
+        message?: string;
+        data?: {
+            events?: Array<{
+                id?: string;
+                title?: string;
+                created_by?: string;
+                start_time?: string;
+                end_time?: string;
+                /**
+                 * Number of attendees (check-in count or check-out count if check-out is required)
+                 */
+                attendees?: number;
+            }>;
+        };
+    };
+};
+
+export type GetUserHostedEventsResponse = GetUserHostedEventsResponses[keyof GetUserHostedEventsResponses];
+
 export type GetEventData = {
     body?: never;
     path?: never;

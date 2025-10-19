@@ -2,6 +2,8 @@ import userRepository from '../repositories/user.repository';
 import { NotFoundError } from '../../utils/customErrors';
 import {
   FetchUserAttendedEvents,
+  FetchUserAttendedEventsDetailed,
+  FetchUserHostedEvents,
   FetchUserInfoResult,
   OnboardedUserInfoResult,
 } from '../interface/auth';
@@ -62,10 +64,27 @@ const getUserAttendedEvents = async (
 
   return events;
 };
+
+const getUserAttendedEventsDetailed = async (
+  user_id: string
+): Promise<FetchUserAttendedEventsDetailed[]> => {
+  const events = await userRepository.getUserAttendedEventsDetailed(user_id);
+  return events;
+};
+
+const getUserHostedEvents = async (
+  user_id: string
+): Promise<FetchUserHostedEvents[]> => {
+  const events = await userRepository.getUserHostedEvents(user_id);
+  return events;
+};
+
 const userService = {
   getUserById,
   onboardUser,
   getUserAttendedEvents,
+  getUserAttendedEventsDetailed,
+  getUserHostedEvents,
 };
 
 export default userService;

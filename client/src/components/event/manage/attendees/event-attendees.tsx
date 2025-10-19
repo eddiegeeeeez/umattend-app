@@ -8,7 +8,8 @@ import { AttendanceDataTable } from './data-table/attendance-data-table';
 import EvenAttendeesSkeleton from './event-attendees-skeleton';
 import { getEventByEventIdAttendeesOptions } from '@/api/client/@tanstack/react-query.gen';
 import { Event } from '@/api/client/sdk.gen';
-import type { AttendanceRecord } from '@/types/manage';
+import type { AttendanceRecord } from '@/types/events';
+import { formatDateTime } from '@/lib/utils';
 
 interface EventAttendeesProps {
   eventId: string;
@@ -94,18 +95,6 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
     attendeesData?.data?.data?.map((item) => {
       const student = item.student;
       if (!student) return null;
-
-      const formatDateTime = (dateStr: string | undefined) => {
-        if (!dateStr) return '-';
-        const date = new Date(dateStr);
-        return date.toLocaleString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-      };
 
       return {
         id: student.student_id?.toString() || '',

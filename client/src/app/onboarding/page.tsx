@@ -16,6 +16,7 @@ import { postUserOnboardingMutation, getUserOptions } from '@/api/client/@tansta
 import type { PostUserOnboardingError } from '@/api/client/types.gen';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
 import { useAuthStore } from '@/store/authStore';
+import { getInitials } from '@/lib/utils';
 
 interface OnboardingFormData {
   department: string;
@@ -168,14 +169,6 @@ export default function OnboardingPage() {
         program: data.program
       }
     });
-  };
-
-  const getInitials = (name: string) => {
-    const names = name.split(' ');
-    if (names.length >= 2) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
   };
 
   // Student data from auth store
