@@ -217,7 +217,7 @@ jobs:
 
               echo "Requesting certificate for $DOMAIN if missing..."
               docker compose -f docker-compose.staging.yml run --rm certbot \
-                certbot certonly --webroot -w /var/www/certbot -d "$DOMAIN" \
+                certonly --webroot -w /var/www/certbot -d "$DOMAIN" \
                 --email "$EMAIL" --agree-tos --no-eff-email --keep-until-expiring --expand
 
               echo "Reloading nginx to pick up certificates..."
@@ -247,7 +247,7 @@ jobs:
               DOMAIN='${{ secrets.STAGING_DOMAIN }}'
               if [ -n "$DOMAIN" ]; then
                 docker compose -f docker-compose.staging.yml run --rm certbot \
-                  certbot certificates || true
+                  certificates || true
               fi
               
               echo ""
