@@ -38,17 +38,37 @@ jobs:
 
           ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts || true
 
-          if ssh -o BatchMode=yes -o ConnectTimeout=5 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
+          if ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
             echo "SSH agent authentication succeeded"
           else
             echo "SSH agent auth failed — attempting to remove key passphrase and retry"
             if [ -n "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" ]; then
               ssh-keygen -p -P "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" -N "" -f ~/.ssh/id_rsa || true
             fi
-            if ssh -o BatchMode=yes -o ConnectTimeout=5 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
+            
+            echo "Testing SSH connection with verbose output..."
+            if ssh -vvv -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>&1 | tee /tmp/ssh_debug.log; then
               echo "SSH auth succeeded after removing passphrase"
             else
-              echo "SSH authentication still failing. Exiting with failure."
+              echo ""
+              echo "=========================================="
+              echo "SSH AUTHENTICATION FAILED"
+              echo "=========================================="
+              echo ""
+              echo "Common causes:"
+              echo "1. Public key not in ~/.ssh/authorized_keys on server"
+              echo "2. Wrong DEPLOY_USER (current: ${{ secrets.DEPLOY_USER }})"
+              echo "3. SSH server config doesn't allow key authentication"
+              echo "4. Home directory or .ssh permissions wrong on server"
+              echo ""
+              echo "To fix:"
+              echo "1. SSH to your server manually"
+              echo "2. Run: mkdir -p ~/.ssh && chmod 700 ~/.ssh"
+              echo "3. Add your public key to ~/.ssh/authorized_keys"
+              echo "4. Run: chmod 600 ~/.ssh/authorized_keys"
+              echo ""
+              echo "Debug output (last 30 lines):"
+              tail -n 30 /tmp/ssh_debug.log || true
               exit 1
             fi
           fi
