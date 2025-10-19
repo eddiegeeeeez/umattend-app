@@ -45,60 +45,166 @@ jobs:
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
-      - name: Deploy via SSH
+      - name: Test SSH Connection
         run: |
           ssh -T \
             -p ${{ secrets.DEPLOY_PORT }} \
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            'echo "SSH connection successful"'
+
+      - name: Setup Repository
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
               set -euo pipefail
-
+              
               APP_PATH='${{ secrets.STAGING_APP_PATH }}'
               REPO_SSH="git@github.com:${{ github.repository }}.git"
-
-              echo "🔐 SSH connection established successfully"
-
+              
+              echo "Setting up repository..."
+              
+              # Add GitHub to known hosts
               mkdir -p ~/.ssh
               ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
-
+              
               # Check if valid repo exists
               if [ ! -d "$APP_PATH/.git" ]; then
-                echo "⚠️  Repository missing or invalid at: $APP_PATH"
+                echo "Repository missing or invalid at: $APP_PATH"
                 echo "Cleaning and recloning..."
                 rm -rf "$APP_PATH"
                 mkdir -p "$APP_PATH"
                 git clone "$REPO_SSH" "$APP_PATH"
               fi
+              
+              echo "Repository ready"
+          EOF
 
-              cd "$APP_PATH"
-
-              echo "📦 Updating code..."
+      - name: Pull Latest Code
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+              
+              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
               BRANCH="${{ github.ref_name }}"
+              
+              cd "$APP_PATH"
+              
+              echo "Fetching latest code from $BRANCH..."
               git fetch origin "$BRANCH" --depth=1
               git reset --hard "origin/$BRANCH"
+              
+              echo "Code updated to latest commit"
+          EOF
 
-              echo "⚙️ Setting up environment files..."
-
+      - name: Create Environment Files
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+              
+              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
+              
+              cd "$APP_PATH"
+              
+              echo "Creating environment files..."
+              
+              # Create client .env
               echo "Creating client/.env..."
               mkdir -p client
               cat > client/.env << 'CLIENTENVEOF'
           ${{ secrets.CLIENT_STAGING_ENV_FILE }}
           CLIENTENVEOF
-              echo "✅ client/.env created"
-
+              echo "client/.env created"
+              
+              # Create server .env
               echo "Creating server/.env..."
               mkdir -p server
               cat > server/.env << 'SERVERENVEOF'
           ${{ secrets.SERVER_STAGING_ENV_FILE }}
           SERVERENVEOF
-              echo "✅ server/.env created"
+              echo "server/.env created"
+          EOF
 
-              echo "🐳 Rebuilding containers (Staging)..."
+      - name: Stop Existing Containers
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+              
+              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
+              
+              cd "$APP_PATH"
+              
+              echo "Stopping existing containers..."
               docker compose -f docker-compose.yml -f docker-compose.staging.yml down || true
-              docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d --build --remove-orphans
+              
+              echo "Containers stopped"
+          EOF
 
-              echo "✅ Deployment completed successfully!"
+      - name: Build and Start Containers
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+              
+              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
+              
+              cd "$APP_PATH"
+              
+              echo "Building and starting containers..."
+              docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d --build --remove-orphans
+              
+              echo "Containers built and started"
+          EOF
+
+      - name: Verify Deployment
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+              
+              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
+              
+              cd "$APP_PATH"
+              
+              echo "Checking container status..."
               docker compose -f docker-compose.yml -f docker-compose.staging.yml ps
+              
+              echo ""
+              echo "Staging deployment completed successfully!"
           EOF
