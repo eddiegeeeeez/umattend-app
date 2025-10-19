@@ -294,6 +294,7 @@ This project includes automated CI/CD pipelines using GitHub Actions with Docker
 **For a complete setup guide, see [QUICKSTART.md](./QUICKSTART.md) (30 minutes)**
 
 **Deployment documentation:**
+
 - 📘 [Deployment Guide](./DEPLOYMENT.md) - Comprehensive deployment documentation
 - ✅ [Deployment Checklist](./DEPLOYMENT_CHECKLIST.md) - Step-by-step checklist
 - 📊 [Pipeline Summary](./PIPELINE_SUMMARY.md) - Architecture and overview
@@ -328,6 +329,7 @@ docker compose -f docker-compose.local.yml up -d
 ### Required GitHub Secrets
 
 See `.github/secrets.template` for complete list of required secrets:
+
 - SSH credentials
 - Domain configuration
 - Environment variables
