@@ -58,8 +58,8 @@ services:
       - client
       - server
     ports:
-      - "8080:80"  # Staging on port 8080
-      # - "8443:443"  # Uncomment for HTTPS
+      - "80:80"    # HTTP
+      - "443:443"  # HTTPS
     volumes:
       - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro  # For SSL certificates
