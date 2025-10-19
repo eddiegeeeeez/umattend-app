@@ -32,6 +32,10 @@ export interface RegistrationResult {
 export interface FetchUserInfoResult {
   id: string;
   umindanao_email: string;
+  name?: string;
+  department?: string;
+  program?: string;
+  profile_picture?: string;
   done_onboarding: boolean;
   role: string;
 }

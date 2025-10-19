@@ -120,7 +120,7 @@ const googleCallback = async (req: Request, res: Response) => {
 
 const logoutUser = async (req: Request, res: Response) => {
   try {
-    const { refresh_token } = req.body;
+    const refresh_token = req.body?.refresh_token;
     const cookieRefreshToken = req.cookies?.refresh_token;
 
     const finalRefreshToken = refresh_token ?? cookieRefreshToken;

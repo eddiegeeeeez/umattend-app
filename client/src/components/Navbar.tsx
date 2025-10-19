@@ -4,12 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { Menu, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from './ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 import { Skeleton } from './ui/skeleton';
 import { useAuthStore } from '@/store/authStore';
+import { postAuthLogoutMutation } from '@/api/client/@tanstack/react-query.gen';
 
 const Navbar = () => {
   const router = useRouter();
@@ -17,6 +20,25 @@ const Navbar = () => {
   const [now, setNow] = useState<Date>(new Date());
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+
+  // Mutation for logout
+  const logoutMutation = useMutation({
+    mutationFn: postAuthLogoutMutation().mutationFn,
+    onSuccess: () => {
+      // Clear local auth state
+      logout();
+      // Redirect to home page
+      router.push('/');
+      toast.success('Logged out successfully');
+    },
+    onError: (error: unknown) => {
+      // Even if API call fails, clear local state and redirect
+      console.error('Logout error:', error);
+      logout();
+      router.push('/');
+      toast.info('Logged out');
+    }
+  });
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -54,8 +76,8 @@ const Navbar = () => {
   };
 
   const logoutUser = () => {
-    logout();
-    router.push('/');
+    // Call logout API (refresh token will be sent from cookies or can be in Authorization header)
+    logoutMutation.mutate({});
   };
 
   return (
@@ -119,10 +141,11 @@ const Navbar = () => {
                   View Profile
                 </div>
                 <div
-                  className="hover:bg-muted cursor-pointer justify-start bg-transparent px-4 py-3 text-left text-xs font-normal transition-colors"
+                  className="hover:bg-muted cursor-pointer justify-start bg-transparent px-4 py-3 text-left text-xs font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={logoutUser}
+                  style={{ opacity: logoutMutation.isPending ? 0.5 : 1 }}
                 >
-                  Sign Out
+                  {logoutMutation.isPending ? 'Signing Out...' : 'Sign Out'}
                 </div>
               </div>
             </PopoverContent>
