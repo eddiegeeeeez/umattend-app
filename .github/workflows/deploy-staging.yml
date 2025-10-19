@@ -19,18 +19,16 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_PASSPHRASE: ${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}
         run: |
-          # Install expect
+          # Install expect for automated SSH key unlock
           sudo apt-get update && sudo apt-get install -y expect
           
-          # Create SSH directory and key file
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           
-          # Start ssh-agent
           eval $(ssh-agent -s)
           
-          # Create expect script to add key with passphrase
+          # Unlock SSH key using passphrase
           cat > /tmp/add-ssh-key.exp << 'EOF'
           #!/usr/bin/expect -f
           set timeout -1
@@ -43,10 +41,7 @@ jobs:
           chmod +x /tmp/add-ssh-key.exp
           /tmp/add-ssh-key.exp
           
-          # Verify key is loaded
           ssh-add -l
-          
-          # Save agent info for later steps
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
@@ -61,51 +56,49 @@ jobs:
               set -euo pipefail
 
               APP_PATH='${{ secrets.STAGING_APP_PATH }}'
+              REPO_SSH="git@github.com:${{ github.repository }}.git"
 
-              echo "SSH OK"
-              
-              # Create directory if it doesn't exist
-              if [ ! -d "$APP_PATH" ]; then
-                echo "Creating directory: $APP_PATH"
+              echo "🔐 SSH connection established successfully"
+
+              mkdir -p ~/.ssh
+              ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
+
+              # Check if valid repo exists
+              if [ ! -d "$APP_PATH/.git" ]; then
+                echo "⚠️  Repository missing or invalid at: $APP_PATH"
+                echo "Cleaning and recloning..."
+                rm -rf "$APP_PATH"
                 mkdir -p "$APP_PATH"
-                echo "Cloning repository..."
-                # DEBUG: show who we are and parent dir permissions (helpful if clone fails)
-                echo "Remote user: $(whoami)"
-                echo "Home: $HOME"
-                echo "Parent dir permissions:"
-                ls -ld "$(dirname "$APP_PATH")" || true
-                echo "Git version:"
-                git --version || true
-
-                # Recommended: use the workflow token so remote can clone private repo non-interactively
-                git clone https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git "$APP_PATH"
+                git clone "$REPO_SSH" "$APP_PATH"
               fi
-              
+
               cd "$APP_PATH"
 
-              echo "Updating code..."
+              echo "📦 Updating code..."
               BRANCH="${{ github.ref_name }}"
-              git fetch origin "$BRANCH"
+              git fetch origin "$BRANCH" --depth=1
               git reset --hard "origin/$BRANCH"
 
-              echo "Setting up environment files..."
-              
-              echo "Creating client/.env from CLIENT_ENV_FILE secret..."
+              echo "⚙️ Setting up environment files..."
+
+              echo "Creating client/.env..."
+              mkdir -p client
               cat > client/.env << 'CLIENTENVEOF'
           ${{ secrets.CLIENT_STAGING_ENV_FILE }}
           CLIENTENVEOF
-              echo "✓ Created client/.env"
+              echo "✅ client/.env created"
 
-              echo "Creating server/.env from SERVER_ENV_FILE secret..."
+              echo "Creating server/.env..."
+              mkdir -p server
               cat > server/.env << 'SERVERENVEOF'
           ${{ secrets.SERVER_STAGING_ENV_FILE }}
           SERVERENVEOF
-              echo "✓ Created server/.env"
+              echo "✅ server/.env created"
 
-              echo "Rebuilding with Docker Compose (Staging)..."
+              echo "🐳 Rebuilding containers (Staging)..."
               docker compose -f docker-compose.yml -f docker-compose.staging.yml down || true
               docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d --build --remove-orphans
-              
-              echo "✅ Staging deployment complete!"
+
+              echo "✅ Deployment completed successfully!"
               docker compose -f docker-compose.yml -f docker-compose.staging.yml ps
           EOF
