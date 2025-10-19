@@ -1,14 +1,14 @@
-"use client"
+'use client';
 
-import { Skeleton } from "@/components/ui/skeleton"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export function OrganizersSkeleton() {
-  const columns = 7 // Student ID, Name, Department, Program, Email, Added By, Added At
+  const columns = 7; // Student ID, Name, Department, Program, Email, Added By, Added At
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between py-4 gap-4">
+      <div className="flex items-center justify-between gap-4 py-4">
         <Skeleton className="h-10 w-full max-w-sm" />
         <div className="flex items-center gap-2">
           <Skeleton className="h-10 w-24" />
@@ -43,11 +43,11 @@ export function OrganizersSkeleton() {
 
       <div className="flex items-center justify-between space-x-2 py-4">
         <Skeleton className="h-4 w-48" />
-        <div className="space-x-2 flex">
+        <div className="flex space-x-2">
           <Skeleton className="h-10 w-20" />
           <Skeleton className="h-10 w-20" />
         </div>
       </div>
     </div>
-  )
+  );
 }

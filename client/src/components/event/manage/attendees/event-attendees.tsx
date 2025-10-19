@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Download, Users, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import type { AttendanceRecord } from '@/types/events';
 import { columns } from './data-table/attendance-columns';
 import { AttendanceDataTable } from './data-table/attendance-data-table';
 import EvenAttendeesSkeleton from './event-attendees-skeleton';
 import { getEventByEventIdAttendeesOptions } from '@/api/client/@tanstack/react-query.gen';
 import { Event } from '@/api/client/sdk.gen';
-import type { AttendanceRecord } from '@/types/events';
 import { formatDateTime } from '@/lib/utils';
 
 interface EventAttendeesProps {
@@ -47,7 +47,7 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
   const handleExport = async () => {
     try {
       toast.loading('Generating export file...');
-      
+
       const response = await Event.getEventExportEventId({
         path: {
           event_id: eventId
@@ -56,27 +56,27 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
 
       // The response.data is a Blob
       const csvBlob = response.data;
-      
+
       if (!csvBlob) {
         toast.dismiss();
         toast.error('No data to export');
         return;
       }
-      
+
       // Create a download link
       const url = window.URL.createObjectURL(csvBlob as Blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `event-${eventId}-attendees.csv`;
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       toast.dismiss();
       toast.success('Export downloaded successfully');
     } catch (error) {
@@ -92,22 +92,24 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
 
   // Transform API data to AttendanceRecord format
   const attendanceRecords: AttendanceRecord[] =
-    attendeesData?.data?.data?.map((item) => {
-      const student = item.student;
-      if (!student) return null;
+    attendeesData?.data?.data
+      ?.map((item) => {
+        const student = item.student;
+        if (!student) return null;
 
-      return {
-        id: student.student_id?.toString() || '',
-        name: student.name || '',
-        department: student.department || '',
-        program: student.program || '',
-        email: student.umindanao_email || '',
-        checkInAt: formatDateTime(student.check_in_at),
-        checkInBy: student.check_in_by || 'Self',
-        checkOutAt: formatDateTime(student.check_out_at),
-        checkOutBy: student.check_out_by || (student.check_out_at ? 'Self' : '-')
-      };
-    }).filter((record): record is AttendanceRecord => record !== null) || [];
+        return {
+          id: student.student_id?.toString() || '',
+          name: student.name || '',
+          department: student.department || '',
+          program: student.program || '',
+          email: student.umindanao_email || '',
+          checkInAt: formatDateTime(student.check_in_at),
+          checkInBy: student.check_in_by || 'Self',
+          checkOutAt: formatDateTime(student.check_out_at),
+          checkOutBy: student.check_out_by || (student.check_out_at ? 'Self' : '-')
+        };
+      })
+      .filter((record): record is AttendanceRecord => record !== null) || [];
 
   const totalStudents = attendeesData?.data?.pagination?.total || 0;
   const checkedInCount = attendanceRecords.filter((r) => r.checkInAt !== '-').length;
@@ -162,10 +164,10 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
           <Button onClick={handleRefresh} variant="outline" className="w-full gap-2 bg-transparent font-semibold shadow-sm sm:w-auto">
             Refresh
           </Button>
-          <Button 
+          <Button
             onClick={handleExport}
             disabled={totalStudents === 0}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 w-full gap-2 font-semibold shadow-sm sm:w-auto disabled:bg-neutral-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 w-full gap-2 font-semibold shadow-sm disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:opacity-50 sm:w-auto"
           >
             <Download className="size-4" />
             Export Data

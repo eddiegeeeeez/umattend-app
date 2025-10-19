@@ -76,18 +76,18 @@ export const formatTimePadded = (date: Date): string => {
  * Example: new Date() -> "2:30 PM GMT+8"
  */
 export const formatTimeWithTimezone = (date: Date): string => {
-  const timeStr = new Intl.DateTimeFormat(undefined, { 
-    hour: 'numeric', 
-    minute: '2-digit', 
-    hour12: true 
+  const timeStr = new Intl.DateTimeFormat(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
   }).format(date);
-  
+
   const formatGmtOffset = (date: Date) => {
     const offset = -date.getTimezoneOffset();
     const hours = Math.floor(Math.abs(offset) / 60);
     return `GMT${offset >= 0 ? '+' : '-'}${hours}`;
   };
-  
+
   return `${timeStr} ${formatGmtOffset(date)}`;
 };
 
@@ -126,13 +126,10 @@ export const formatDateTimeFull = (dateStr: string | undefined): string => {
 
 /**
  * Format an event's date range
- * Example: formatEventDate("2025-03-15T14:00:00Z", "2025-03-15T16:00:00Z") 
+ * Example: formatEventDate("2025-03-15T14:00:00Z", "2025-03-15T16:00:00Z")
  *          -> "Friday, March 15, 2025, 2:00 PM - 4:00 PM"
  */
-export const formatEventDateRange = (
-  startTime: string | null | undefined, 
-  endTime: string | null | undefined
-): string => {
+export const formatEventDateRange = (startTime: string | null | undefined, endTime: string | null | undefined): string => {
   if (!startTime) return 'Date TBA';
   const date = formatDate(startTime);
   const start = formatTime(startTime);

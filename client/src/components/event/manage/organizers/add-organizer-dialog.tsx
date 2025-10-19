@@ -1,63 +1,48 @@
-"use client"
+'use client';
 
-import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Plus } from "lucide-react"
+import type React from 'react';
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface AddOrganizerDialogProps {
-  onAddOrganizer: (organizer: {
-    studentId: string
-    name: string
-    department: string
-    program: string
-    email: string
-  }) => void
+  onAddOrganizer: (organizer: { studentId: string; name: string; department: string; program: string; email: string }) => void;
 }
 
 export function AddOrganizerDialog({ onAddOrganizer }: AddOrganizerDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [email, setEmail] = useState("")
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Validate email
     if (!email) {
-      return
+      return;
     }
 
     // Validate email format
-    if (!email.endsWith("@umindanao.edu.ph")) {
-      alert("Email must be a valid UMindanao email address (@umindanao.edu.ph)")
-      return
+    if (!email.endsWith('@umindanao.edu.ph')) {
+      alert('Email must be a valid UMindanao email address (@umindanao.edu.ph)');
+      return;
     }
 
     // Pass minimal data - API only needs email
     onAddOrganizer({
-      studentId: "",
-      name: "",
-      department: "",
-      program: "",
+      studentId: '',
+      name: '',
+      department: '',
+      program: '',
       email: email
-    })
+    });
 
     // Reset form and close dialog
-    setEmail("")
-    setOpen(false)
-  }
+    setEmail('');
+    setOpen(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -71,9 +56,7 @@ export function AddOrganizerDialog({ onAddOrganizer }: AddOrganizerDialogProps) 
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Add New Organizer</DialogTitle>
-            <DialogDescription>
-              Enter the UMindanao email address of the person you want to add as an organizer.
-            </DialogDescription>
+            <DialogDescription>Enter the UMindanao email address of the person you want to add as an organizer.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -86,9 +69,7 @@ export function AddOrganizerDialog({ onAddOrganizer }: AddOrganizerDialogProps) 
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <p className="text-xs text-muted-foreground">
-                The organizer will be looked up automatically from the system.
-              </p>
+              <p className="text-muted-foreground text-xs">The organizer will be looked up automatically from the system.</p>
             </div>
           </div>
           <DialogFooter>
@@ -100,5 +81,5 @@ export function AddOrganizerDialog({ onAddOrganizer }: AddOrganizerDialogProps) 
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

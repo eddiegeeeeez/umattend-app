@@ -12,7 +12,7 @@ import { useAuthStore } from '@/store/authStore';
 export default function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticating, accessToken, isError, serverMessage, exchangeCode } = useExchangeCode();
+  const { isAuthenticating, isError, serverMessage, exchangeCode } = useExchangeCode();
   const setAuth = useAuthStore((state) => state.setAuth);
   const updateUser = useAuthStore((state) => state.updateUser);
 
@@ -93,13 +93,7 @@ export default function LoginContent() {
 
   return (
     <ClickSpark sparkColor="#000" sparkSize={10} sparkRadius={15} sparkCount={8} duration={400}>
-      <LoginForm
-        serverMessage={serverMessage}
-        isError={isError}
-        isAuthenticating={isAuthenticating}
-        handleGoogleLogin={handleGoogleLogin}
-        accessToken={accessToken}
-      />
+      <LoginForm serverMessage={serverMessage} isError={isError} isAuthenticating={isAuthenticating} handleGoogleLogin={handleGoogleLogin} />
     </ClickSpark>
   );
 }

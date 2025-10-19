@@ -9,5 +9,3 @@ export * from './time-utils';
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-
