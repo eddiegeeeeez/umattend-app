@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -74,8 +73,8 @@ jobs:
           fi
 
           rm -f "$ASKPASS_SCRIPT"
-          
-      - name: Pull latest code
+
+      - name: Pull Catest Code
         run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
             cd ${{ secrets.PRODUCTION_APP_PATH }}
@@ -83,23 +82,17 @@ jobs:
             git reset --hard origin/main
           "
 
-      - name: Create environment files
-        run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
-            cd ${{ secrets.PRODUCTION_APP_PATH }}
-            echo '${{ secrets.CLIENT_PRODUCTION_ENV_FILE }}' > client/.env.production
-            echo '${{ secrets.SERVER_PRODUCTION_ENV_FILE }}' > server/.env
-          "
-
-      - name: Install and build server
+      - name: Building Server
         run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
             cd ${{ secrets.PRODUCTION_APP_PATH }}/server
             npm install
+            npm run prisma:generate
+            npm run prisma:migrate:deploy
             npm run build || true
           "
 
-      - name: Install and build client
+      - name: Build Client
         run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
             cd ${{ secrets.PRODUCTION_APP_PATH }}/client
