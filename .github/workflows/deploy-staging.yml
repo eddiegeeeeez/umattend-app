@@ -212,18 +212,36 @@ jobs:
 
               cd "$APP_PATH"
 
-              echo "Ensuring nginx and certbot services are up..."
-              docker compose -f docker-compose.staging.yml up -d nginx certbot
+              echo "Starting nginx..."
+              docker compose -f docker-compose.staging.yml up -d nginx
 
-              echo "Requesting certificate for $DOMAIN if missing..."
+              echo "Waiting for nginx healthcheck..."
+              # Wait until nginx is reachable
+              for i in {1..15}; do
+                if docker compose -f docker-compose.staging.yml exec -T nginx wget -qO- http://localhost/health >/dev/null 2>&1; then
+                  echo "Nginx is ready."
+                  break
+                fi
+                echo "Waiting for nginx to become ready... ($i/15)"
+                sleep 5
+              done
+
+              echo "Requesting certificate for $DOMAIN..."
               docker compose -f docker-compose.staging.yml run --rm certbot \
-                certonly --webroot -w /var/www/certbot -d "$DOMAIN" \
-                --email "$EMAIL" --agree-tos --no-eff-email --keep-until-expiring --expand
+                certonly --webroot -w /var/www/certbot \
+                -d "$DOMAIN" \
+                --email "$EMAIL" \
+                --agree-tos --no-eff-email --keep-until-expiring --expand
 
-              echo "Reloading nginx to pick up certificates..."
-              docker compose -f docker-compose.staging.yml exec -T nginx nginx -s reload || \
-              docker compose -f docker-compose.staging.yml restart nginx
+              echo "Reloading nginx to pick up new certificates..."
+              if ! docker compose -f docker-compose.staging.yml exec -T nginx nginx -s reload; then
+                echo "Nginx reload failed, restarting container instead..."
+                docker compose -f docker-compose.staging.yml restart nginx
+              fi
+
+              echo "✅ Certificate process completed successfully."
           EOF
+
 
       - name: Verify Deployment
         run: |
