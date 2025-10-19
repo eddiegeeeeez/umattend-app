@@ -16,16 +16,50 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up SSH
+        env:
+          SSH_ASKPASS: /usr/bin/ssh-askpass
         run: |
+          set -e
           mkdir -p ~/.ssh
+          umask 077
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          
-          # Setup SSH agent and add key with passphrase
+
+          # Create a temporary SSH_ASKPASS script that prints the passphrase
+          ASKPASS_SCRIPT=$(mktemp)
+          printf '%s\n' '#!/bin/sh' 'echo "${SSH_PASSPHRASE}"' > "$ASKPASS_SCRIPT"
+          chmod 700 "$ASKPASS_SCRIPT"
+
+          export SSH_ASKPASS="$ASKPASS_SCRIPT"
+          export SSH_PASSPHRASE="${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}"
+
+          # Start ssh-agent and add key non-interactively using setsid
           eval "$(ssh-agent -s)"
-          echo "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
-          
-          ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+          setsid ssh-add ~/.ssh/id_rsa < /dev/null || true
+
+          # Add remote host to known_hosts (allow unknown host for first-time)
+          ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts || true
+
+          # Test SSH connectivity non-interactively
+          if ssh -o BatchMode=yes -o ConnectTimeout=5 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
+            echo "SSH agent authentication succeeded"
+          else
+            echo "SSH agent auth failed — attempting to remove key passphrase and retry"
+            # If passphrase provided, non-interactively remove the passphrase from the private key
+            if [ -n "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" ]; then
+              ssh-keygen -p -P "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" -N "" -f ~/.ssh/id_rsa || true
+            fi
+            # Try connectivity again
+            if ssh -o BatchMode=yes -o ConnectTimeout=5 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
+              echo "SSH auth succeeded after removing passphrase"
+            else
+              echo "SSH authentication still failing. Exiting with failure."
+              exit 1
+            fi
+          fi
+
+          # Cleanup the askpass helper file (agent keeps the key if used)
+          rm -f "$ASKPASS_SCRIPT"
 
       - name: Create deployment directory
         run: |
