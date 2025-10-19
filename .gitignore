@@ -21,6 +21,12 @@ pm2-log.json
 # Docker files
 docker-compose.override.yml
 
+# SSL Certificates & Certbot
+certbot/
+nginx/ssl/
+*.pem
+*.crt
+*.key
 
 # Logs
 logs/

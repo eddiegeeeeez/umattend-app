@@ -12,7 +12,11 @@
     "type-check": "tsc --noEmit",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "build": "tsup src/server.ts --format esm --out-dir dist --dts --minify terser"
+    "build": "tsup src/server.ts --format esm --out-dir dist --dts --minify terser",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
   },
   "keywords": [],
   "author": "",

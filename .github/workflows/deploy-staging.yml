@@ -1,367 +1,107 @@
-name: UMAttend CI/CD Staging Pipeline
+name: Deploy to Staging
 
 on:
   push:
-    branches: [staging]
+    branches:
+      - staging
   workflow_dispatch:
 
 jobs:
   deploy:
+    name: Deploy to Staging Server
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
+    
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Add SSH key to agent
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_PASSPHRASE: ${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}
+      - name: Set up SSH
         run: |
-          sudo apt-get update && sudo apt-get install -y expect
-          
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           
-          eval $(ssh-agent -s)
+          # Setup SSH agent and add key with passphrase
+          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
           
-          cat > /tmp/add-ssh-key.exp << 'EOF'
-          #!/usr/bin/expect -f
-          set timeout 10
-          spawn ssh-add /home/runner/.ssh/deploy_key
-          expect "Enter passphrase"
-          send -- "$env(SSH_PASSPHRASE)\r"
-          expect eof
-          catch wait result
-          exit [lindex $result 3]
-          EOF
-          
-          chmod +x /tmp/add-ssh-key.exp
-          /tmp/add-ssh-key.exp
-          
-          ssh-add -l
-          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
-          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
+          ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Test SSH Connection
+      - name: Create deployment directory
         run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            -o ConnectTimeout=10 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            'echo "SSH connection successful"' || exit 1
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.STAGING_APP_PATH }}"
 
-      - name: Setup Repository
+      - name: Copy project files to server
         run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
-              REPO_SSH="git@github.com:${{ github.repository }}.git"
-              
-              echo "Setting up repository at $APP_PATH..."
-              
-              mkdir -p ~/.ssh
-              ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null || true
-              
-              if [ ! -d "$APP_PATH/.git" ]; then
-                echo "Repository missing or invalid. Cloning fresh..."
-                rm -rf "$APP_PATH"
-                mkdir -p "$APP_PATH"
-                git clone "$REPO_SSH" "$APP_PATH" || { echo "Clone failed"; exit 1; }
-              else
-                echo "Repository exists. Validating..."
-                cd "$APP_PATH"
-                git rev-parse --git-dir > /dev/null 2>&1 || { echo "Invalid git repo"; exit 1; }
-              fi
-              
-              echo "Repository ready"
+          rsync -avz -e "ssh -p ${{ secrets.DEPLOY_PORT }}" \
+            --exclude 'node_modules' \
+            --exclude '.git' \
+            --exclude '.next' \
+            --exclude 'dist' \
+            --exclude '.env' \
+            ./ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.STAGING_APP_PATH }}/
+
+      - name: Create environment files
+        run: |
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            echo "${{ secrets.CLIENT_STAGING_ENV_FILE }}" > ${{ secrets.STAGING_APP_PATH }}/client/.env.production
+            echo "${{ secrets.SERVER_STAGING_ENV_FILE }}" > ${{ secrets.STAGING_APP_PATH }}/server/.env
           EOF
 
-      - name: Pull Latest Code
+      - name: Deploy with Docker Compose
         run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
-              BRANCH="${{ github.ref_name }}"
-              
-              cd "$APP_PATH"
-              
-              echo "Fetching latest code from $BRANCH..."
-              git fetch origin "$BRANCH" --depth=1 || { echo "Fetch failed"; exit 1; }
-              git reset --hard "origin/$BRANCH" || { echo "Reset failed"; exit 1; }
-              
-              echo "Code updated. Current commit: $(git rev-parse HEAD)"
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            cd ${{ secrets.STAGING_APP_PATH }}
+            
+            # Stop existing containers
+            docker compose -f docker-compose.staging.yml down
+            
+            # Build and start new containers
+            docker compose -f docker-compose.staging.yml up -d --build
+            
+            # Run database migrations
+            docker compose -f docker-compose.staging.yml exec -T server npm run prisma:migrate:deploy
+            
+            # Prune unused images
+            docker image prune -f
           EOF
 
-      - name: Create Environment Files
+      - name: Setup SSL with Let's Encrypt
         run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            cd ${{ secrets.STAGING_APP_PATH }}
+            
+            # Create certbot directory if not exists
+            mkdir -p certbot/conf certbot/www
+            
+            # Check if certificate exists
+            if [ ! -d "certbot/conf/live/${{ secrets.STAGING_DOMAIN }}" ]; then
+              echo "Obtaining SSL certificate..."
+              docker compose -f docker-compose.staging.yml run --rm certbot certonly \
+                --webroot \
+                --webroot-path=/var/www/certbot \
+                --email ${{ secrets.LETSENCRYPT_EMAIL }} \
+                --agree-tos \
+                --no-eff-email \
+                -d ${{ secrets.STAGING_DOMAIN }}
               
-              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
-              
-              cd "$APP_PATH"
-              
-              echo "Creating environment files..."
-              
-              mkdir -p client server
-              
-              cat > client/.env << 'CLIENTENVEOF'
-          ${{ secrets.CLIENT_STAGING_ENV_FILE }}
-          CLIENTENVEOF
-              chmod 600 client/.env
-              echo "client/.env created"
-              
-              cat > server/.env << 'SERVERENVEOF'
-          ${{ secrets.SERVER_STAGING_ENV_FILE }}
-          SERVERENVEOF
-              chmod 600 server/.env
-              echo "server/.env created"
+              # Reload nginx to use new certificate
+              docker compose -f docker-compose.staging.yml exec nginx nginx -s reload
+            fi
           EOF
 
-      - name: Stop Existing Containers
+      - name: Verify deployment
         run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
-              
-              cd "$APP_PATH"
-              
-              echo "Stopping existing containers..."
-              docker compose -f docker-compose.staging.yml down --remove-orphans || true
-              docker system prune -f --volumes || true
-              
-              echo "Containers stopped and cleaned"
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            cd ${{ secrets.STAGING_APP_PATH }}
+            docker compose -f docker-compose.staging.yml ps
           EOF
 
-      - name: Build and Start Containers
+      - name: Cleanup
+        if: always()
         run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
-              
-              cd "$APP_PATH"
-              
-              echo "Building and starting containers..."
-              docker compose -f docker-compose.staging.yml up -d --build --remove-orphans
-              
-              echo "Waiting for server to start..."
-              sleep 20
-              
-              echo "Checking server logs..."
-              docker compose -f docker-compose.staging.yml logs --tail=50 server
-              
-              echo "Checking server health..."
-              for i in {1..12}; do
-                if docker compose -f docker-compose.staging.yml ps server | grep -q "healthy"; then
-                  echo "✓ Server is healthy"
-                  break
-                elif docker compose -f docker-compose.staging.yml ps server | grep -q "unhealthy"; then
-                  echo "✗ Server is unhealthy"
-                  echo "Server logs:"
-                  docker compose -f docker-compose.staging.yml logs server
-                  exit 1
-                fi
-                echo "Waiting for server health check... ($i/12)"
-                sleep 5
-              done
-              
-              echo "Container status:"
-              docker compose -f docker-compose.staging.yml ps
-              
-              echo "Containers started successfully"
-          EOF
-
-      - name: Prepare Certbot Environment
-        run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
-              DOMAIN='${{ secrets.STAGING_DOMAIN }}'
-              
-              cd "$APP_PATH"
-              
-              echo "Ensuring certbot directory structure..."
-              docker compose -f docker-compose.staging.yml run --rm certbot \
-                sh -c "mkdir -p /var/www/certbot/.well-known/acme-challenge && chmod -R 755 /var/www/certbot"
-              
-              echo "Creating test file..."
-              docker compose -f docker-compose.staging.yml exec -T nginx \
-                sh -c "mkdir -p /var/www/certbot/.well-known/acme-challenge && echo 'nginx-working' > /var/www/certbot/.well-known/acme-challenge/test.txt"
-              
-              echo "Waiting for nginx to be ready..."
-              sleep 5
-              
-              echo "Testing ACME challenge accessibility from server..."
-              if curl -f "http://localhost/.well-known/acme-challenge/test.txt" 2>/dev/null | grep -q "nginx-working"; then
-                echo "✓ ACME challenge accessible locally"
-              else
-                echo "⚠ Warning: ACME challenge not accessible locally"
-              fi
-              
-              echo "Nginx configuration test..."
-              docker compose -f docker-compose.staging.yml exec -T nginx nginx -t
-          EOF
-
-      - name: Issue/Renew Let's Encrypt Certificate
-        env:
-          DOMAIN: ${{ secrets.STAGING_DOMAIN }}
-          EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
-        run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-
-              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
-              DOMAIN='${{ env.DOMAIN }}'
-              EMAIL='${{ env.EMAIL }}'
-
-              if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
-                echo "Error: STAGING_DOMAIN and LETSENCRYPT_EMAIL secrets required" >&2
-                exit 1
-              fi
-
-              cd "$APP_PATH"
-
-              echo "Running certbot..."
-              docker compose -f docker-compose.staging.yml run --rm certbot \
-                certonly --webroot -w /var/www/certbot \
-                -d "$DOMAIN" \
-                --email "$EMAIL" \
-                --agree-tos --no-eff-email \
-                --keep-until-expiring \
-                --expand \
-                -v 2>&1 | tee /tmp/certbot.log
-
-              if grep -q "Successfully received certificate" /tmp/certbot.log; then
-                echo "Certificate issued/renewed successfully"
-              elif grep -q "Certificate not yet due for renewal" /tmp/certbot.log; then
-                echo "Certificate valid, no renewal needed"
-              else
-                echo "Certbot completed with status: $?"
-              fi
-
-              echo "Certificate inventory:"
-              docker compose -f docker-compose.staging.yml run --rm certbot certificates || true
-
-              echo "Reloading nginx..."
-              docker compose -f docker-compose.staging.yml exec -T nginx nginx -s reload || \
-                docker compose -f docker-compose.staging.yml restart nginx
-
-              sleep 5
-              echo "Nginx reloaded"
-          EOF
-
-      - name: Verify HTTPS Setup
-        run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
-              DOMAIN='${{ secrets.STAGING_DOMAIN }}'
-              
-              cd "$APP_PATH"
-              
-              echo "Testing HTTPS..."
-              if curl -fI --max-time 10 "https://$DOMAIN" 2>&1 | grep -q "HTTP"; then
-                echo "HTTPS connection successful"
-              else
-                echo "Warning: HTTPS check inconclusive. Checking certificate files..."
-              fi
-              
-              echo "Certificate details:"
-              docker compose -f docker-compose.staging.yml run --rm certbot \
-                certificates 2>&1 | grep -A 5 "$DOMAIN" || echo "Certificate info unavailable"
-              
-              echo "Nginx status:"
-              docker compose -f docker-compose.staging.yml exec -T nginx \
-                sh -c "ps aux | grep '[n]ginx'"
-              
-              echo "Recent nginx logs:"
-              docker compose -f docker-compose.staging.yml logs --tail=30 nginx
-          EOF
-
-      - name: Verify Deployment
-        run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=~/.ssh/known_hosts \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
-              
-              cd "$APP_PATH"
-              
-              echo "Container status:"
-              docker compose -f docker-compose.staging.yml ps
-              
-              echo "Service health:"
-              docker compose -f docker-compose.staging.yml ps | grep -E "healthy|unhealthy" || echo "Health status unavailable"
-              
-              echo "Application logs (last 50 lines):"
-              docker compose -f docker-compose.staging.yml logs --tail=50
-              
-              echo "Deployment completed successfully"
-          EOF
+          # Kill ssh-agent if running
+          if [ -n "$SSH_AGENT_PID" ]; then
+            ssh-agent -k
+          fi
+          rm -rf ~/.ssh/id_rsa

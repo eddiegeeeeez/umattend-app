@@ -1,263 +1,108 @@
-name: UMAttend CI/CD Production Pipeline
+name: Deploy to Production
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 jobs:
   deploy:
+    name: Deploy to Production Server
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Await Manual Approval
-        uses: trstringer/manual-approval@v1
-        with:
-          secret: ${{ github.token }}
-          approvers: wbert,riomar0001
-          minimum-approvals: 1
-          issue-title: "Deploying to Production Environment"
-          issue-body: "Please approve or deny the production deployment of branch `${{ github.ref_name }}`. This will deploy to the live production server."
-
-      - name: Setup SSH Key with Passphrase
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_PASSPHRASE: ${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}
+      - name: Set up SSH
         run: |
-          sudo apt-get update && sudo apt-get install -y expect
-
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Setup SSH agent and add key with passphrase
+          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
+          
+          ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
-          eval $(ssh-agent -s)
+      - name: Create deployment directory
+        run: |
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.PRODUCTION_APP_PATH }}"
 
-          # Use expect to enter SSH key passphrase automatically
-          cat > /tmp/add-ssh-key.exp << 'EOF'
-          #!/usr/bin/expect -f
-          set timeout -1
-          spawn ssh-add /home/runner/.ssh/deploy_key
-          expect "Enter passphrase"
-          send -- "$env(SSH_PASSPHRASE)\r"
-          expect eof
+      - name: Copy project files to server
+        run: |
+          rsync -avz -e "ssh -p ${{ secrets.DEPLOY_PORT }}" \
+            --exclude 'node_modules' \
+            --exclude '.git' \
+            --exclude '.next' \
+            --exclude 'dist' \
+            --exclude '.env' \
+            ./ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.PRODUCTION_APP_PATH }}/
+
+      - name: Create environment files
+        run: |
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            echo "${{ secrets.CLIENT_PRODUCTION_ENV_FILE }}" > ${{ secrets.PRODUCTION_APP_PATH }}/client/.env.production
+            echo "${{ secrets.SERVER_PRODUCTION_ENV_FILE }}" > ${{ secrets.PRODUCTION_APP_PATH }}/server/.env
           EOF
 
-          chmod +x /tmp/add-ssh-key.exp
-          /tmp/add-ssh-key.exp
-
-          ssh-add -l
-          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
-          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-
-      - name: Test SSH Connection
+      - name: Deploy with Docker Compose
         run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            'echo "SSH connection successful"'
-
-      - name: Setup Repository
-        run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.PRODUCTION_APP_PATH }}'
-              REPO_SSH="git@github.com:${{ github.repository }}.git"
-              
-              echo "Setting up repository..."
-              
-              # Add GitHub to known hosts
-              mkdir -p ~/.ssh
-              ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null
-              
-              # Check if valid repo exists
-              if [ ! -d "$APP_PATH/.git" ]; then
-                echo "Repository missing or invalid at: $APP_PATH"
-                echo "Cleaning and recloning..."
-                rm -rf "$APP_PATH"
-                mkdir -p "$APP_PATH"
-                git clone "$REPO_SSH" "$APP_PATH"
-              fi
-              
-              echo "Repository ready"
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            cd ${{ secrets.PRODUCTION_APP_PATH }}
+            
+            # Stop existing containers
+            docker compose -f docker-compose.production.yml down
+            
+            # Build and start new containers
+            docker compose -f docker-compose.production.yml up -d --build
+            
+            # Run database migrations
+            docker compose -f docker-compose.production.yml exec -T server npm run prisma:migrate:deploy
+            
+            # Prune unused images
+            docker image prune -f
           EOF
 
-      - name: Pull Latest Code
+      - name: Setup SSL with Let's Encrypt
         run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            cd ${{ secrets.PRODUCTION_APP_PATH }}
+            
+            # Create certbot directory if not exists
+            mkdir -p certbot/conf certbot/www
+            
+            # Check if certificate exists
+            if [ ! -d "certbot/conf/live/${{ secrets.PRODUCTION_DOMAIN }}" ]; then
+              echo "Obtaining SSL certificate..."
+              docker compose -f docker-compose.production.yml run --rm certbot certonly \
+                --webroot \
+                --webroot-path=/var/www/certbot \
+                --email ${{ secrets.LETSENCRYPT_EMAIL }} \
+                --agree-tos \
+                --no-eff-email \
+                -d ${{ secrets.PRODUCTION_DOMAIN }}
               
-              APP_PATH='${{ secrets.PRODUCTION_APP_PATH }}'
-              BRANCH="${{ github.ref_name }}"
-              
-              cd "$APP_PATH"
-              
-              echo "📦 Fetching latest code from $BRANCH..."
-              git fetch origin "$BRANCH" --depth=1
-              git reset --hard "origin/$BRANCH"
-              
-              echo "Code updated to latest commit"
+              # Reload nginx to use new certificate
+              docker compose -f docker-compose.production.yml exec nginx nginx -s reload
+            fi
           EOF
 
-      - name: Create Environment Files
+      - name: Verify deployment
         run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.PRODUCTION_APP_PATH }}'
-              
-              cd "$APP_PATH"
-              
-              echo "Creating environment files..."
-              
-              # Create client .env
-              echo "Creating client/.env..."
-              mkdir -p client
-              cat > client/.env << 'CLIENTENVEOF'
-          ${{ secrets.CLIENT_PRODUCTION_ENV_FILE }}
-          CLIENTENVEOF
-              echo "client/.env created"
-              
-              # Create server .env
-              echo "Creating server/.env..."
-              mkdir -p server
-              cat > server/.env << 'SERVERENVEOF'
-          ${{ secrets.SERVER_PRODUCTION_ENV_FILE }}
-          SERVERENVEOF
-              echo "server/.env created"
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            cd ${{ secrets.PRODUCTION_APP_PATH }}
+            docker compose -f docker-compose.production.yml ps
           EOF
 
-      - name: Stop Existing Containers
+      - name: Cleanup
+        if: always()
         run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.PRODUCTION_APP_PATH }}'
-              
-              cd "$APP_PATH"
-              
-              echo "Stopping existing containers..."
-              docker compose -f docker-compose.production.yml down || true
-              
-              echo "Containers stopped"
-          EOF
-
-      - name: Build and Start Containers
-        run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.PRODUCTION_APP_PATH }}'
-              
-              cd "$APP_PATH"
-              
-              echo "Building and starting containers..."
-              docker compose -f docker-compose.production.yml up -d --build --remove-orphans
-              
-              echo "Containers built and started"
-          EOF
-      
-      - name: Issue/Ensure Let's Encrypt Certificate (Production)
-        env:
-          DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-          EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
-        run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-
-              APP_PATH='${{ secrets.PRODUCTION_APP_PATH }}'
-              DOMAIN='${{ env.DOMAIN }}'
-              EMAIL='${{ env.EMAIL }}'
-
-              if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
-                echo "PRODUCTION_DOMAIN and LETSENCRYPT_EMAIL secrets are required" >&2
-                exit 1
-              fi
-
-              cd "$APP_PATH"
-
-              echo "Ensuring nginx and certbot services are up..."
-              docker compose -f docker-compose.production.yml up -d nginx certbot
-
-              echo "Requesting certificate for $DOMAIN if missing..."
-              docker compose -f docker-compose.production.yml run --rm certbot \
-                certonly --webroot -w /var/www/certbot -d "$DOMAIN" \
-                --email "$EMAIL" --agree-tos --no-eff-email --keep-until-expiring --expand
-
-              echo "Reloading nginx to pick up certificates..."
-              docker compose -f docker-compose.production.yml exec -T nginx nginx -s reload || \
-              docker compose -f docker-compose.production.yml restart nginx
-          EOF
-
-      - name: Verify Deployment
-        run: |
-          ssh -T \
-            -p ${{ secrets.DEPLOY_PORT }} \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=3 \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
-              set -euo pipefail
-              
-              APP_PATH='${{ secrets.PRODUCTION_APP_PATH }}'
-              
-              cd "$APP_PATH"
-              
-              echo "Checking container status..."
-              docker compose -f docker-compose.production.yml ps
-              
-              echo "Checking certificate files..."
-              DOMAIN='${{ secrets.PRODUCTION_DOMAIN }}'
-              if [ -n "$DOMAIN" ]; then
-                docker compose -f docker-compose.production.yml run --rm certbot \
-                  certificates || true
-              fi
-              
-              echo ""
-              echo "Production deployment completed successfully!"
-          EOF
+          # Kill ssh-agent if running
+          if [ -n "$SSH_AGENT_PID" ]; then
+            ssh-agent -k
+          fi
+          rm -rf ~/.ssh/id_rsa

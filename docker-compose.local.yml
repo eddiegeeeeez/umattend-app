@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: umattend-client-local
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+    networks:
+      - umattend-network
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: umattend-server-local
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+      - /app/dist
+    env_file:
+      - ./server/.env
+    environment:
+      - NODE_ENV=development
+    networks:
+      - umattend-network
+
+networks:
+  umattend-network:
+    driver: bridge

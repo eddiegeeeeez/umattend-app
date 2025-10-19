@@ -1,119 +1,62 @@
-# Staging Environment Configuration
-# Production-ready setup with proper health checks, dependencies, and error handling
-
-networks:
-  appnet:
-    driver: bridge
-
-volumes:
-  letsencrypt:
-  certbot-www:
+version: '3.8'
 
 services:
-  server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-      args:
-        NODE_VERSION: 20.11.1
-    container_name: umattend_server_staging
-    restart: unless-stopped
-    env_file:
-      - ./server/.env
-    environment:
-      NODE_ENV: staging
-      PORT: 4000
-    networks: [appnet]
-    expose:
-      - "4000"
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4000/api/v1/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
       args:
-        NODE_VERSION: 20.11.1
-    container_name: umattend_client_staging
+        - NODE_ENV=production
+    container_name: umattend-client-staging
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - umattend-network
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: umattend-server-staging
     restart: unless-stopped
     env_file:
-      - ./client/.env
+      - ./server/.env
     environment:
-      NODE_ENV: staging
-      HOSTNAME: 0.0.0.0
-      PORT: 3000
-      API_URL: http://server:4000
-    depends_on:
-      server:
-        condition: service_healthy
-    networks: [appnet]
-    expose:
-      - "3000"
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - NODE_ENV=production
+    networks:
+      - umattend-network
+    volumes:
+      - ./server/prisma:/app/prisma
 
   nginx:
-    image: nginx:1.25.5-alpine
-    container_name: umattend_nginx_staging
+    image: nginx:alpine
+    container_name: umattend-nginx-staging
     restart: unless-stopped
-    depends_on:
-      client:
-        condition: service_healthy
-      server:
-        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf:ro
-      - letsencrypt:/etc/letsencrypt
-      - certbot-www:/var/www/certbot
-    networks: [appnet]
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    # Graceful shutdown to allow certificate operations
-    stop_signal: SIGTERM
-    stop_grace_period: 30s
+      - ./nginx/staging.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    networks:
+      - umattend-network
+    depends_on:
+      - client
+      - server
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
   certbot:
-    image: certbot/certbot:latest
-    container_name: umattend_certbot_staging
-    restart: "no"
+    image: certbot/certbot
+    container_name: umattend-certbot-staging
     volumes:
-      - letsencrypt:/etc/letsencrypt
-      - certbot-www:/var/www/certbot
-    networks: [appnet]
-    command: tail -f /dev/null
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  umattend-network:
+    driver: bridge

@@ -1,39 +1,51 @@
-ARG NODE_VERSION=20.11.1
+# Multi-stage build for Express.js server
+FROM node:20-alpine AS base
 
-FROM node:${NODE_VERSION}-slim AS deps
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
-
+# Copy package files
 COPY package*.json ./
 RUN npm ci
 
-COPY prisma ./prisma
+# Generate Prisma Client
+COPY prisma ./prisma/
 RUN npx prisma generate
 
-FROM node:${NODE_VERSION}-slim AS builder
+# Build the source code
+FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-
+# Build TypeScript
 RUN npm run build
 
-RUN npm prune --omit=dev
-
-FROM node:${NODE_VERSION}-slim AS runner
+# Production image
+FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=4000
 
-RUN useradd -m -u 1001 appuser
-USER appuser
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 expressjs
 
-COPY --from=builder /app ./
+# Install production dependencies and OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
+# Copy necessary files
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package*.json ./
+
+# Set correct permissions
+RUN chown -R expressjs:nodejs /app
+
+USER expressjs
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
-
+CMD ["node", "dist/server.js"]
