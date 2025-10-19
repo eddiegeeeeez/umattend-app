@@ -225,11 +225,8 @@ jobs:
 
               echo "Requesting certificate for $DOMAIN if missing..."
               docker compose -f docker-compose.production.yml run --rm certbot \
-                sh -c "if [ ! -f /etc/letsencrypt/live/$DOMAIN/fullchain.pem ]; then \
-                  certbot certonly --webroot -w /var/www/certbot -d $DOMAIN --email $EMAIL --agree-tos --no-eff-email; \
-                else \
-                  echo 'Certificate already exists for $DOMAIN'; \
-                fi"
+                certbot certonly --webroot -w /var/www/certbot -d "$DOMAIN" \
+                --email "$EMAIL" --agree-tos --no-eff-email --keep-until-expiring --expand
 
               echo "Reloading nginx to pick up certificates..."
               docker compose -f docker-compose.production.yml exec -T nginx nginx -s reload || \
@@ -258,7 +255,7 @@ jobs:
               DOMAIN='${{ secrets.PRODUCTION_DOMAIN }}'
               if [ -n "$DOMAIN" ]; then
                 docker compose -f docker-compose.production.yml run --rm certbot \
-                  sh -c "ls -l /etc/letsencrypt/live/$DOMAIN || true"
+                  certbot certificates || true
               fi
               
               echo ""

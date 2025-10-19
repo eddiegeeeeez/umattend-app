@@ -47,7 +47,7 @@ jobs:
              APP_PATH="'"'${{ secrets.STAGING_APP_PATH }}'"'"; \
              cd "$APP_PATH"; \
              docker compose -f docker-compose.staging.yml up -d nginx certbot; \
-             docker compose -f docker-compose.staging.yml run --rm certbot sh -c "certbot renew --webroot -w /var/www/certbot || true"; \
+             docker compose -f docker-compose.staging.yml run --rm certbot certbot renew --webroot -w /var/www/certbot || true; \
              docker compose -f docker-compose.staging.yml exec -T nginx nginx -s reload || docker compose -f docker-compose.staging.yml restart nginx'
 
   renew-production:
@@ -91,5 +91,5 @@ jobs:
              APP_PATH="'"'${{ secrets.PRODUCTION_APP_PATH }}'"'"; \
              cd "$APP_PATH"; \
              docker compose -f docker-compose.production.yml up -d nginx certbot; \
-             docker compose -f docker-compose.production.yml run --rm certbot sh -c "certbot renew --webroot -w /var/www/certbot || true"; \
+             docker compose -f docker-compose.production.yml run --rm certbot certbot renew --webroot -w /var/www/certbot || true; \
              docker compose -f docker-compose.production.yml exec -T nginx nginx -s reload || docker compose -f docker-compose.production.yml restart nginx'
