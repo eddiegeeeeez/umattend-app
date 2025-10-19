@@ -94,17 +94,23 @@ jobs:
             echo "${{ secrets.SERVER_STAGING_ENV_FILE }}" > ${{ secrets.STAGING_APP_PATH }}/server/.env
           EOF
 
-      - name: Setup SSL certificate first
+      - name: Create dummy SSL certificate
         run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
             cd ${{ secrets.STAGING_APP_PATH }}
             
-            mkdir -p certbot/conf certbot/www
+            mkdir -p certbot/conf/live/${{ secrets.STAGING_DOMAIN }}
+            mkdir -p certbot/www
             
-            if [ ! -d "certbot/conf/live/${{ secrets.STAGING_DOMAIN }}" ]; then
-              echo "Obtaining SSL certificate..."
-              docker compose -f docker-compose.staging.yml run --rm --entrypoint "" certbot sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot --email ${{ secrets.LETSENCRYPT_EMAIL }} --agree-tos --no-eff-email --non-interactive -d ${{ secrets.STAGING_DOMAIN }}" || true
-              sleep 5
+            # Create dummy certs only if real ones don't exist
+            if [ ! -f "certbot/conf/live/${{ secrets.STAGING_DOMAIN }}/fullchain.pem" ]; then
+              echo "Creating dummy certificate for Nginx to start..."
+              openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
+                -keyout "certbot/conf/live/${{ secrets.STAGING_DOMAIN }}/privkey.pem" \
+                -out "certbot/conf/live/${{ secrets.STAGING_DOMAIN }}/fullchain.pem" \
+                -subj "/CN=localhost"
+            else
+              echo "Certificate or dummy already exists."
             fi
           EOF
 
@@ -120,6 +126,24 @@ jobs:
             
             docker compose -f docker-compose.staging.yml exec -T server npm run prisma:migrate:deploy || true
             docker image prune -f
+          EOF
+
+      - name: Obtain/Renew SSL certificate
+        run: |
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            cd ${{ secrets.STAGING_APP_PATH }}
+
+            echo "Requesting Let's Encrypt certificate..."
+            
+            # Nginx is already running, so --webroot will succeed
+            # This command will replace the dummy certs
+            docker compose -f docker-compose.staging.yml run --rm --entrypoint "" certbot \
+              sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot \
+              --email ${{ secrets.LETSENCRYPT_EMAIL }} --agree-tos --no-eff-email --non-interactive \
+              -d ${{ secrets.STAGING_DOMAIN }}"
+
+            echo "Reloading Nginx to apply new certificate..."
+            docker compose -f docker-compose.staging.yml exec nginx nginx -s reload
           EOF
 
       - name: Verify deployment

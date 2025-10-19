@@ -1,5 +1,5 @@
 # Multi-stage build for Express.js server
-FROM node:20-alpine3.20 AS base
+FROM node:25-alpine3.21 AS base
 
 # Install dependencies only when needed
 FROM base AS deps

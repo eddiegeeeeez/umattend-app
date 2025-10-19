@@ -78,3 +78,6 @@ firebase-service-account.json
 # SSH keys
 id_ed25519
 id_ed25519.pub
+
+# Azure credentials
+.azure/
