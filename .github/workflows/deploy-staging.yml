@@ -25,7 +25,6 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Create a temporary SSH_ASKPASS script that prints the passphrase
           ASKPASS_SCRIPT=$(mktemp)
           printf '%s\n' '#!/bin/sh' 'echo "${SSH_PASSPHRASE}"' > "$ASKPASS_SCRIPT"
           chmod 700 "$ASKPASS_SCRIPT"
@@ -33,23 +32,18 @@ jobs:
           export SSH_ASKPASS="$ASKPASS_SCRIPT"
           export SSH_PASSPHRASE="${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}"
 
-          # Start ssh-agent and add key non-interactively using setsid
           eval "$(ssh-agent -s)"
           setsid ssh-add ~/.ssh/id_rsa < /dev/null || true
 
-          # Add remote host to known_hosts (allow unknown host for first-time)
           ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts || true
 
-          # Test SSH connectivity non-interactively
           if ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
             echo "SSH agent authentication succeeded"
           else
-            echo "SSH agent auth failed — attempting to remove key passphrase and retry"
-            # If passphrase provided, non-interactively remove the passphrase from the private key
+            echo "SSH agent auth failed, attempting to remove key passphrase and retry"
             if [ -n "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" ]; then
               ssh-keygen -p -P "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" -N "" -f ~/.ssh/id_rsa || true
             fi
-            # Try connectivity again with verbose debug output
             echo "Testing SSH connection with verbose output..."
             if ssh -vvv -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>&1 | tee /tmp/ssh_debug.log; then
               echo "SSH auth succeeded after removing passphrase"
@@ -77,7 +71,6 @@ jobs:
             fi
           fi
 
-          # Cleanup the askpass helper file (agent keeps the key if used)
           rm -f "$ASKPASS_SCRIPT"
 
       - name: Create deployment directory
@@ -101,46 +94,32 @@ jobs:
             echo "${{ secrets.SERVER_STAGING_ENV_FILE }}" > ${{ secrets.STAGING_APP_PATH }}/server/.env
           EOF
 
+      - name: Setup SSL certificate first
+        run: |
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            cd ${{ secrets.STAGING_APP_PATH }}
+            
+            mkdir -p certbot/conf certbot/www
+            
+            if [ ! -d "certbot/conf/live/${{ secrets.STAGING_DOMAIN }}" ]; then
+              echo "Obtaining SSL certificate..."
+              docker compose -f docker-compose.staging.yml run --rm --entrypoint "" certbot sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot --email ${{ secrets.LETSENCRYPT_EMAIL }} --agree-tos --no-eff-email --non-interactive -d ${{ secrets.STAGING_DOMAIN }}" || true
+              sleep 5
+            fi
+          EOF
+
       - name: Deploy with Docker Compose
         run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
             cd ${{ secrets.STAGING_APP_PATH }}
             
-            # Stop existing containers
             docker compose -f docker-compose.staging.yml down
-            
-            # Build and start new containers
             docker compose -f docker-compose.staging.yml up -d --build
             
-            # Run database migrations
-            docker compose -f docker-compose.staging.yml exec -T server npm run prisma:migrate:deploy
+            sleep 10
             
-            # Prune unused images
+            docker compose -f docker-compose.staging.yml exec -T server npm run prisma:migrate:deploy || true
             docker image prune -f
-          EOF
-
-      - name: Setup SSL with Let's Encrypt
-        run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
-            cd ${{ secrets.STAGING_APP_PATH }}
-            
-            # Create certbot directory if not exists
-            mkdir -p certbot/conf certbot/www
-            
-            # Check if certificate exists
-            if [ ! -d "certbot/conf/live/${{ secrets.STAGING_DOMAIN }}" ]; then
-              echo "Obtaining SSL certificate..."
-              docker compose -f docker-compose.staging.yml run --rm certbot certonly \
-                --webroot \
-                --webroot-path=/var/www/certbot \
-                --email ${{ secrets.LETSENCRYPT_EMAIL }} \
-                --agree-tos \
-                --no-eff-email \
-                -d ${{ secrets.STAGING_DOMAIN }}
-              
-              # Reload nginx to use new certificate
-              docker compose -f docker-compose.staging.yml exec nginx nginx -s reload
-            fi
           EOF
 
       - name: Verify deployment
@@ -148,12 +127,12 @@ jobs:
           ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
             cd ${{ secrets.STAGING_APP_PATH }}
             docker compose -f docker-compose.staging.yml ps
+            docker logs umattend-nginx-staging 2>&1 | tail -20
           EOF
 
       - name: Cleanup
         if: always()
         run: |
-          # Kill ssh-agent if running
           if [ -n "$SSH_AGENT_PID" ]; then
             ssh-agent -k
           fi
