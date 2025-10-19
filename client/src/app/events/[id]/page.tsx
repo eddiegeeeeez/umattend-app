@@ -4,13 +4,14 @@ import { Calendar, MapPin, Clock, Users, Settings } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
+import EventNotFound from '@/components/event/manage/event-not-found';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getEventStatus, getAttendanceStatus } from '@/utils/events-utils';
+import { getEventStatus, getAttendanceStatus } from '@/lib/events-utils';
 import type { ApiEventData } from '@/types/events';
 import { getEventByEventIdOptions } from '@/api/client/@tanstack/react-query.gen';
 import { formatDate, formatTime } from '@/lib/utils';
@@ -126,14 +127,7 @@ export default function EventDetailsPage() {
   }
 
   if (isError) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-100">
-        <div className="text-center">
-          <h2 className="text-foreground mb-2 text-2xl font-bold">Event Not Found</h2>
-          <p className="text-muted-foreground">The event you&apos;re looking for doesn&apos;t exist or has been removed.</p>
-        </div>
-      </div>
-    );
+    return <EventNotFound />;
   }
 
   const eventStatus = getEventStatus(event);

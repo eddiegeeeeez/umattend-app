@@ -6,9 +6,9 @@ import { useQuery } from '@tanstack/react-query';
 import EventContent from '@/components/event/event-content';
 import EventContentEmpty from '@/components/event/event-content-empty';
 import EventDetails from '@/components/event/event-details';
-import EventsSkeleton from '@/components/skeletons/events-skeleton';
+import EventsSkeleton from '@/components/event/events-skeleton';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { transformEventData } from '@/utils/events-utils';
+import { transformEventData } from '@/lib/events-utils';
 import { getEventPastOptions } from '@/api/client/@tanstack/react-query.gen';
 
 export default function PastEventsPage() {

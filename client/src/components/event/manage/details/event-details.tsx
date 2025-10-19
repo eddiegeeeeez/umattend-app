@@ -1,7 +1,7 @@
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Event } from '@/types/event';
+import { Event } from '@/types/events';
 import { formatDate } from '@/lib/utils';
 
 export default function EventDetails({ event }: { event: Event }) {

@@ -9,6 +9,7 @@ import {
   postEventAddOrganizerByEventIdMutation,
   deleteEventRemoveOrganizerByEventIdMutation 
 } from '@/api/client/@tanstack/react-query.gen';
+import { formatDateTimeFull } from '@/lib/utils';
 
 interface EventOrganizersProps {
   eventId: string;
@@ -88,19 +89,6 @@ export default function EventOrganizers({ eventId }: EventOrganizersProps) {
   // Transform API data to OrganizerRecord format
   const organizers: OrganizerRecord[] =
     organizersData?.data?.map((org) => {
-      const formatDateTime = (dateStr: string | undefined) => {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        return date.toLocaleString('en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        });
-      };
-
       // Check if this organizer is the event creator
       // The creator is someone who added themselves (name === added_by) or was added by System
       const isCreator = org.name === org.added_by || org.added_by === 'System';
@@ -112,7 +100,7 @@ export default function EventOrganizers({ eventId }: EventOrganizersProps) {
         program: org.program || '',
         email: org.umindanao_email || '',
         addedBy: org.added_by || '',
-        addedAt: formatDateTime(org.added_at),
+        addedAt: formatDateTimeFull(org.added_at),
         isCreator: isCreator
       };
     }) || [];

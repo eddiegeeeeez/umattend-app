@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import AnimatedContent from './AnimatedContent';
+import AnimatedContent from '@/components/AnimatedContent';
 
 export default function LoginForm({
   serverMessage,

@@ -24,6 +24,23 @@ export interface EventCardData {
   checkout_count?: number;
 }
 
+
+export interface Event {
+  id: string;
+  name: string;
+  description: string;
+  location: string;
+  department: string;
+  startDate: Date;
+  endDate: Date;
+  startTime: string;
+  endTime: string;
+  capacity: number | 'unlimited';
+  attendees: number;
+  status: EventStatus;
+  checkOutRequired: boolean;
+}
+
 /**
  * Event status representing the current state of an event
  */
@@ -67,3 +84,18 @@ export interface ApiEventData {
     check_out_at?: string | null;
   };
 }
+
+/**
+ * Attendance record for event management table
+ */
+export type AttendanceRecord = {
+  id: string;
+  name: string;
+  department: string;
+  program: string;
+  email: string;
+  checkInAt: string;
+  checkInBy: string;
+  checkOutAt: string;
+  checkOutBy: string;
+};

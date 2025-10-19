@@ -5,7 +5,7 @@ import type { AxiosError } from 'axios';
 
 import { client } from '../client.gen';
 import { Authentication, Event, type Options, User } from '../sdk.gen';
-import type { DeleteEventByEventIdData, DeleteEventByEventIdError, DeleteEventByEventIdResponse, DeleteEventRemoveOrganizerByEventIdData, DeleteEventRemoveOrganizerByEventIdError, DeleteEventRemoveOrganizerByEventIdResponse, GetAuthLoginHistoryData, GetEventByEventIdAttendeesData, GetEventByEventIdAttendeesError, GetEventByEventIdAttendeesResponse, GetEventByEventIdData, GetEventByEventIdOrganizersData, GetEventData, GetEventExportEventIdData, GetEventPastData, GetUserData, GetUserEventsData, PostAuthExchangeData, PostAuthExchangeError, PostAuthExchangeResponse, PostAuthLogoutData, PostAuthLogoutError, PostAuthLogoutResponse, PostAuthRefreshData, PostAuthRefreshError, PostAuthRefreshResponse, PostEventAddOrganizerByEventIdData, PostEventAddOrganizerByEventIdError, PostEventAddOrganizerByEventIdResponse, PostEventCheckInByEventIdByUserIdData, PostEventCheckInByEventIdByUserIdError, PostEventCheckInByEventIdByUserIdResponse, PostEventCheckOutByEventIdByUserIdData, PostEventCheckOutByEventIdByUserIdError, PostEventCheckOutByEventIdByUserIdResponse, PostEventData, PostEventError, PostEventResponse, PostUserOnboardingData, PostUserOnboardingError, PostUserOnboardingResponse, PutEventByEventIdData, PutEventByEventIdError, PutEventByEventIdResponse } from '../types.gen';
+import type { DeleteEventByEventIdData, DeleteEventByEventIdError, DeleteEventByEventIdResponse, DeleteEventRemoveOrganizerByEventIdData, DeleteEventRemoveOrganizerByEventIdError, DeleteEventRemoveOrganizerByEventIdResponse, GetAuthLoginHistoryData, GetEventByEventIdAttendeesData, GetEventByEventIdAttendeesError, GetEventByEventIdAttendeesResponse, GetEventByEventIdData, GetEventByEventIdOrganizersData, GetEventData, GetEventExportEventIdData, GetEventPastData, GetUserAttendedEventsData, GetUserData, GetUserEventsData, GetUserHostedEventsData, PostAuthExchangeData, PostAuthExchangeError, PostAuthExchangeResponse, PostAuthLogoutData, PostAuthLogoutError, PostAuthLogoutResponse, PostAuthRefreshData, PostAuthRefreshError, PostAuthRefreshResponse, PostEventAddOrganizerByEventIdData, PostEventAddOrganizerByEventIdError, PostEventAddOrganizerByEventIdResponse, PostEventCheckInByEventIdByUserIdData, PostEventCheckInByEventIdByUserIdError, PostEventCheckInByEventIdByUserIdResponse, PostEventCheckOutByEventIdByUserIdData, PostEventCheckOutByEventIdByUserIdError, PostEventCheckOutByEventIdByUserIdResponse, PostEventData, PostEventError, PostEventResponse, PostUserOnboardingData, PostUserOnboardingError, PostUserOnboardingResponse, PutEventByEventIdData, PutEventByEventIdError, PutEventByEventIdResponse } from '../types.gen';
 
 /**
  * Refresh access token
@@ -181,6 +181,50 @@ export const getUserEventsOptions = (options?: Options<GetUserEventsData>) => {
             return data;
         },
         queryKey: getUserEventsQueryKey(options)
+    });
+};
+
+export const getUserAttendedEventsQueryKey = (options?: Options<GetUserAttendedEventsData>) => createQueryKey('getUserAttendedEvents', options);
+
+/**
+ * Get user attended events with details
+ *
+ * Retrieve all events the user has attended with event details including creator name and date/time
+ */
+export const getUserAttendedEventsOptions = (options?: Options<GetUserAttendedEventsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await User.getUserAttendedEvents({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getUserAttendedEventsQueryKey(options)
+    });
+};
+
+export const getUserHostedEventsQueryKey = (options?: Options<GetUserHostedEventsData>) => createQueryKey('getUserHostedEvents', options);
+
+/**
+ * Get user hosted events
+ *
+ * Retrieve all events created/hosted by the user with attendee counts
+ */
+export const getUserHostedEventsOptions = (options?: Options<GetUserHostedEventsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await User.getUserHostedEvents({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getUserHostedEventsQueryKey(options)
     });
 };
 

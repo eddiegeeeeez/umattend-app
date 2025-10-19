@@ -2,7 +2,7 @@ import React from 'react';
 import { BarChart3, Calendar, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Event } from '@/types/event';
+import { Event } from '@/types/events';
 
 export default function EventOverview({ event }: { event: Event }) {
   return (

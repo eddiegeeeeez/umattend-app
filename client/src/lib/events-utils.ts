@@ -2,41 +2,7 @@
  * Utility functions for event-related operations
  */
 import type { ApiEventData, ExtendedEventCardData, EventStatus, AttendanceStatus } from '@/types/events';
-
-/**
- * Format date consistently for SSR/client hydration
- * Returns format like "Mar 15"
- */
-const formatEventDate = (date: Date): string => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[date.getMonth()]} ${date.getDate()}`;
-};
-
-/**
- * Format day of week consistently for SSR/client hydration
- * Returns format like "Mon"
- */
-const formatDayOfWeek = (date: Date): string => {
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  return days[date.getDay()];
-};
-
-/**
- * Format time consistently for SSR/client hydration
- * Returns format like "2:30 PM"
- */
-const formatEventTime = (date: Date): string => {
-  let hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-
-  hours = hours % 12;
-  hours = hours ? hours : 12; // 0 should be 12
-
-  const minutesStr = minutes < 10 ? `0${minutes}` : minutes.toString();
-
-  return `${hours}:${minutesStr} ${ampm}`;
-};
+import { formatDateVeryShort, formatDayOfWeek, formatTime } from '@/lib/utils';
 
 /**
  * Transform API event data to EventCardData format
@@ -54,10 +20,10 @@ export const transformEventData = (apiEvent: ApiEventData): ExtendedEventCardDat
     apiId: apiEvent.id || '',
     title: apiEvent.title || 'Untitled Event',
     description: apiEvent.description,
-    date: formatEventDate(startDate),
+    date: formatDateVeryShort(startDate),
     dayOfWeek: formatDayOfWeek(startDate),
-    startTime: apiEvent.all_day ? 'All Day' : formatEventTime(startDate),
-    endTime: apiEvent.all_day ? '' : formatEventTime(endDate),
+    startTime: apiEvent.all_day ? 'All Day' : formatTime(startDate),
+    endTime: apiEvent.all_day ? '' : formatTime(endDate),
     location: apiEvent.location,
     hasLocation: !!apiEvent.location,
     attendees: attendees,

@@ -156,6 +156,53 @@ export const zGetUserEventsResponse = z.object({
     })))
 });
 
+export const zGetUserAttendedEventsData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * List of attended events retrieved successfully
+ */
+export const zGetUserAttendedEventsResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.string()),
+    data: z.optional(z.object({
+        events: z.optional(z.array(z.object({
+            id: z.optional(z.string()),
+            title: z.optional(z.string()),
+            created_by: z.optional(z.string()),
+            start_time: z.optional(z.iso.datetime()),
+            end_time: z.optional(z.iso.datetime())
+        })))
+    }))
+});
+
+export const zGetUserHostedEventsData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * List of hosted events retrieved successfully
+ */
+export const zGetUserHostedEventsResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.string()),
+    data: z.optional(z.object({
+        events: z.optional(z.array(z.object({
+            id: z.optional(z.string()),
+            title: z.optional(z.string()),
+            created_by: z.optional(z.string()),
+            start_time: z.optional(z.iso.datetime()),
+            end_time: z.optional(z.iso.datetime()),
+            attendees: z.optional(z.number())
+        })))
+    }))
+});
+
 export const zGetEventData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),

@@ -1,6 +1,6 @@
 import { Calendar, MapPin, Users, Clock, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Event } from '@/types/event';
+import { Event } from '@/types/events';
 import { formatDate } from '@/lib/utils';
 
 export default function HeroSeciont({ event, setIsSheetOpen }: { event: Event; setIsSheetOpen: (open: boolean) => void }) {
