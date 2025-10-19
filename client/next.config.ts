@@ -1,8 +1,10 @@
+// TODO migrate the endpoints to secrets
 import type { NextConfig } from 'next';
 
 const apiBase = process.env.API_URL;
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   async rewrites() {
     return [
       {

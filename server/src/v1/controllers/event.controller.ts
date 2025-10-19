@@ -96,7 +96,7 @@ const addEvent = async (req: Request, res: Response) => {
 
     console.log(error);
 
-    if (NODE_ENV === 'development') {
+    if (NODE_ENV === 'DEVELOPMENT') {
       console.error('Error: ', error);
     }
     return HTTPErrorResponse(res, 500, error);

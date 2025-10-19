@@ -1,3 +1,4 @@
+//TODO migrate the uri and endpoints to secrets
 'use client';
 
 import { useEffect } from 'react';

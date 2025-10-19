@@ -38,9 +38,8 @@ const googleCallback = async (req: Request, res: Response) => {
   try {
     const { code, state } = req.query;
 
-    const currentUri = `${req.protocol}://${req.get('host')}${
-      req.originalUrl.split('?')[0]
-    }`;
+    const currentUri = `${req.protocol}://${req.get('host')}${req.originalUrl.split('?')[0]
+      }`;
 
     const frontendUrl = FRONTEND_URL;
 

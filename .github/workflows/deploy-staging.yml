@@ -1,0 +1,82 @@
+name: UMAttend CI/CD Pipeline
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Await Manual Approval
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.token }}
+          approvers: wbert,riomar0001
+          minimum-approvals: 1
+          issue-title: "Deploying to Staging Environment"
+          issue-body: "Please approve or deny the staging deployment of branch `${{ github.ref_name }}`."
+
+      - name: Add SSH key to agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        env:
+          SSH_PASSPHRASE: ${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}
+
+      - name: Deploy via SSH
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+
+              APP_PATH='${{ secrets.STAGING_APP_PATH }}'
+
+              echo "SSH OK"
+              
+              # Create directory if it doesn't exist
+              if [ ! -d "$APP_PATH" ]; then
+                echo "Creating directory: $APP_PATH"
+                mkdir -p "$APP_PATH"
+                echo "Cloning repository..."
+                git clone https://github.com/${{ github.repository }}.git "$APP_PATH"
+              fi
+              
+              cd "$APP_PATH"
+
+              echo "Updating code..."
+              BRANCH="${{ github.ref_name }}"
+              git fetch origin "$BRANCH"
+              git reset --hard "origin/$BRANCH"
+
+              echo "Setting up environment files..."
+              
+              echo "Creating client/.env from CLIENT_ENV_FILE secret..."
+              cat > client/.env << 'CLIENTENVEOF'
+          ${{ secrets.CLIENT_STAGING_ENV_FILE }}
+          CLIENTENVEOF
+              echo "✓ Created client/.env"
+
+              echo "Creating server/.env from SERVER_ENV_FILE secret..."
+              cat > server/.env << 'SERVERENVEOF'
+          ${{ secrets.SERVER_STAGING_ENV_FILE }}
+          SERVERENVEOF
+              echo "✓ Created server/.env"
+
+              echo "Rebuilding with Docker Compose (Staging)..."
+              docker compose -f docker-compose.yml -f docker-compose.staging.yml down || true
+              docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d --build --remove-orphans
+              
+              echo "✅ Staging deployment complete!"
+              docker compose -f docker-compose.yml -f docker-compose.staging.yml ps
+          EOF

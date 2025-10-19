@@ -40,7 +40,7 @@ const addEvent = async (event_data: AddEventInterface) => {
 
     if (
       error instanceof Prisma.PrismaClientValidationError &&
-      NODE_ENV === 'development'
+      NODE_ENV === 'DEVELOPMENT'
     ) {
       throw new Error('Validation failed: ' + error.message);
     }
@@ -121,7 +121,7 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
     }
     if (
       error instanceof Prisma.PrismaClientValidationError &&
-      NODE_ENV === 'development'
+      NODE_ENV === 'DEVELOPMENT'
     ) {
       throw new Error('Validation failed: ' + error.message);
     }
@@ -159,7 +159,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
     }
     if (
       error instanceof Prisma.PrismaClientValidationError &&
-      NODE_ENV === 'development'
+      NODE_ENV === 'DEVELOPMENT'
     ) {
       throw new Error('Validation failed: ' + error.message);
     }
