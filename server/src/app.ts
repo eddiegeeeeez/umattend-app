@@ -19,7 +19,7 @@ import { NODE_ENV, ALLOWED_ORIGINS } from './constants/app.constants';
 const app = express();
 
 // ---------- SECURITY & PERFORMANCE MIDDLEWARE ----------
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
 
 // Disable CSP for documentation routes in dev/staging
 app.use(

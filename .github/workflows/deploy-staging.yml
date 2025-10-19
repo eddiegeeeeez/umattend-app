@@ -75,7 +75,7 @@ jobs:
           rm -f "$ASKPASS_SCRIPT"
 
 
-      - name: Pull latest code
+      - name: Pull Latest Code
         run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
             cd ${{ secrets.STAGING_APP_PATH }}
@@ -83,23 +83,17 @@ jobs:
             git reset --hard origin/staging
           "
 
-      - name: Create environment files
-        run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
-            cd ${{ secrets.STAGING_APP_PATH }}
-            echo '${{ secrets.CLIENT_STAGING_ENV_FILE }}' > client/.env
-            echo '${{ secrets.SERVER_STAGING_ENV_FILE }}' > server/.env
-          "
-
-      - name: Install and build server
+      - name: Building Server
         run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
             cd ${{ secrets.STAGING_APP_PATH }}/server
             npm install
+            npm run prisma:generate
+            npm run prisma:migrate:deploy
             npm run build || true
           "
 
-      - name: Install and build client
+      - name: Build Client
         run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
             cd ${{ secrets.STAGING_APP_PATH }}/client

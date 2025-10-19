@@ -1,0 +1,30 @@
+name: PR Code Quality Check
+
+on:
+  pull_request:
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npx eslint . --ext .js,.ts,.jsx,.tsx
+
+      - name: Check code formatting with Prettier
+        run: npx prettier --check .
+
+      - name: Type-check with TypeScript
+        run: npx tsc --noEmit
