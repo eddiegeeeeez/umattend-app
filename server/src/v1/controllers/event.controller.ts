@@ -60,14 +60,8 @@ const addEvent = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
     }
 
-    console.log('start time', event_data.start_time);
-
-    console.log('end time ', event_data.end_time);
-
     // Validate that end time is not before start time
     if (event_data.end_time < event_data.start_time) {
-      console.log('End time cannot be before start time');
-
       return HTTPErrorResponse(
         res,
         400,

@@ -115,9 +115,6 @@ export default function EventDetailsPage() {
     enabled: !!eventId
   });
 
-  console.log(eventData?.data);
-  console.log(isError);
-
   const event = eventData?.data as ApiEventData | undefined;
 
   const attendanceStatus = event ? getAttendanceStatus(event) : 'did_not_attend';
