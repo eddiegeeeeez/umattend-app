@@ -47,6 +47,23 @@ export interface FetchUserAttendedEvents {
   end_time: Date | null;
 }
 
+export interface FetchUserAttendedEventsDetailed {
+  id: string;
+  title: string;
+  created_by: string;
+  start_time: Date | null;
+  end_time: Date | null;
+}
+
+export interface FetchUserHostedEvents {
+  id: string;
+  title: string;
+  created_by: string;
+  start_time: Date | null;
+  end_time: Date | null;
+  attendees: number;
+}
+
 export interface OnboardedUserInfoResult {
   access_token: string;
   user: {

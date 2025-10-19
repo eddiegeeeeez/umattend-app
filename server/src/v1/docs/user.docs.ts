@@ -321,8 +321,211 @@ const getUserAttendedEvents = {
     },
   },
 };
+
+const getUserAttendedEventsDetailed = {
+  '/user/attended-events': {
+    get: {
+      tags: ['User'],
+      summary: 'Get user attended events with details',
+      description:
+        'Retrieve all events the user has attended with event details including creator name and date/time',
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: {
+          description: 'List of attended events retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Attended events successfully fetched',
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      events: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            id: {
+                              type: 'string',
+                              example: 'evt_12345',
+                            },
+                            title: {
+                              type: 'string',
+                              example: 'Orientation Day',
+                            },
+                            created_by: {
+                              type: 'string',
+                              example: 'John Doe',
+                            },
+                            start_time: {
+                              type: 'string',
+                              format: 'date-time',
+                              example: '2025-10-10T08:00:00Z',
+                            },
+                            end_time: {
+                              type: 'string',
+                              format: 'date-time',
+                              example: '2025-10-10T10:00:00Z',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Unauthorized' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: {
+                    type: 'string',
+                    example: 'Internal server error',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+const getUserHostedEvents = {
+  '/user/hosted-events': {
+    get: {
+      tags: ['User'],
+      summary: 'Get user hosted events',
+      description:
+        'Retrieve all events created/hosted by the user with attendee counts',
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: {
+          description: 'List of hosted events retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Hosted events successfully fetched',
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      events: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            id: {
+                              type: 'string',
+                              example: 'evt_12345',
+                            },
+                            title: {
+                              type: 'string',
+                              example: 'Tech Workshop 2025',
+                            },
+                            created_by: {
+                              type: 'string',
+                              example: 'Jane Smith',
+                            },
+                            start_time: {
+                              type: 'string',
+                              format: 'date-time',
+                              example: '2025-10-15T14:00:00Z',
+                            },
+                            end_time: {
+                              type: 'string',
+                              format: 'date-time',
+                              example: '2025-10-15T17:00:00Z',
+                            },
+                            attendees: {
+                              type: 'number',
+                              example: 42,
+                              description:
+                                'Number of attendees (check-in count or check-out count if check-out is required)',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Unauthorized' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: {
+                    type: 'string',
+                    example: 'Internal server error',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export const user = {
   ...getUser,
   ...onboarding,
   ...getUserAttendedEvents,
+  ...getUserAttendedEventsDetailed,
+  ...getUserHostedEvents,
 };
