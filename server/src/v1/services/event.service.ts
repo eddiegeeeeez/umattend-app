@@ -275,7 +275,7 @@ const getOrganizersByEventId = async (event_id: string) => {
 
   const organizers = await eventRepository.getOrganizersByEventId(event_id);
 
-  if (!organizers || organizers.length === 0) {
+  if (organizers?.length === 0) {
     throw new NotFoundError('No organizers found for this event');
   }
 

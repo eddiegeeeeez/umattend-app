@@ -73,7 +73,5 @@ export const parseTimeToMinutes = (timeStr: string) => {
 
   if (period.toUpperCase() === 'PM' && hours !== 12) hours += 12;
   if (period.toUpperCase() === 'AM' && hours === 12) hours = 0;
-
-  console.log(`${timeStr} = ${hours * 60 + minutes} minutes`);
   return hours * 60 + minutes;
 };

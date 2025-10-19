@@ -33,8 +33,6 @@ export function RemoveOrganizerDialog({ open, onOpenChange, organizerName, organ
       return;
     }
 
-    console.log(organizerEmail);
-
     onConfirm();
     onOpenChange(false);
     setEmailInput('');

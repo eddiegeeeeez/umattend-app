@@ -8,10 +8,10 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Staging Server
     runs-on: ubuntu-latest
 
     steps:
+      
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -40,10 +40,11 @@ jobs:
           if ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
             echo "SSH agent authentication succeeded"
           else
-            echo "SSH agent auth failed, attempting to remove key passphrase and retry"
+            echo "SSH agent auth failed — attempting to remove key passphrase and retry"
             if [ -n "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" ]; then
               ssh-keygen -p -P "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" -N "" -f ~/.ssh/id_rsa || true
             fi
+            
             echo "Testing SSH connection with verbose output..."
             if ssh -vvv -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>&1 | tee /tmp/ssh_debug.log; then
               echo "SSH auth succeeded after removing passphrase"
@@ -73,44 +74,56 @@ jobs:
 
           rm -f "$ASKPASS_SCRIPT"
 
-      - name: Create deployment directory
-        run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.STAGING_APP_PATH }}"
 
-      - name: Copy project files to server
+      - name: Pull latest code
         run: |
-          rsync -avz -e "ssh -p ${{ secrets.DEPLOY_PORT }}" \
-            --exclude 'node_modules' \
-            --exclude '.git' \
-            --exclude '.next' \
-            --exclude 'dist' \
-            --exclude '.env' \
-            ./ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.STAGING_APP_PATH }}/
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+            cd ${{ secrets.STAGING_APP_PATH }}
+            git fetch --all
+            git reset --hard origin/staging
+          "
 
       - name: Create environment files
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "echo '${{ secrets.CLIENT_STAGING_ENV_FILE }}' > ${{ secrets.STAGING_APP_PATH }}/client/.env.production && echo '${{ secrets.SERVER_STAGING_ENV_FILE }}' > ${{ secrets.STAGING_APP_PATH }}/server/.env"
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+            cd ${{ secrets.STAGING_APP_PATH }}
+            echo '${{ secrets.CLIENT_STAGING_ENV_FILE }}' > client/.env
+            echo '${{ secrets.SERVER_STAGING_ENV_FILE }}' > server/.env
+          "
 
-      - name: Create dummy SSL certificate
+      - name: Install and build server
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.STAGING_APP_PATH }} && mkdir -p certbot/conf/live/${{ secrets.STAGING_DOMAIN }} certbot/www && if [ ! -f 'certbot/conf/live/${{ secrets.STAGING_DOMAIN }}/fullchain.pem' ]; then echo 'Creating dummy certificate for Nginx to start...' && openssl req -x509 -nodes -days 1 -newkey rsa:2048 -keyout 'certbot/conf/live/${{ secrets.STAGING_DOMAIN }}/privkey.pem' -out 'certbot/conf/live/${{ secrets.STAGING_DOMAIN }}/fullchain.pem' -subj '/CN=localhost'; else echo 'Certificate or dummy already exists.'; fi"
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+            cd ${{ secrets.STAGING_APP_PATH }}/server
+            npm install
+            npm run build || true
+          "
 
-      - name: Deploy with Docker Compose
+      - name: Install and build client
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.STAGING_APP_PATH }} && docker compose -f docker-compose.staging.yml down && docker compose -f docker-compose.staging.yml up -d --build && sleep 10 && docker compose -f docker-compose.staging.yml exec -T server npm run prisma:migrate:deploy || true && docker image prune -f"
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+            cd ${{ secrets.STAGING_APP_PATH }}/client
+            npm install
+            npm run build
+          "
 
-      - name: Obtain/Renew SSL certificate
+      - name: Restart PM2 apps
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.STAGING_APP_PATH }} && echo 'Requesting Let'\''s Encrypt certificate...' && docker compose -f docker-compose.staging.yml run --rm --entrypoint '' certbot sh -c 'certbot certonly --webroot --webroot-path=/var/www/certbot --email ${{ secrets.LETSENCRYPT_EMAIL }} --agree-tos --no-eff-email --non-interactive -d ${{ secrets.STAGING_DOMAIN }}' && echo 'Reloading Nginx to apply new certificate...' && docker compose -f docker-compose.staging.yml exec nginx nginx -s reload"
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+            cd ${{ secrets.STAGING_APP_PATH }}
+            
+            # Server
+            pm2 describe umattend-server-staging >/dev/null 2>&1 && pm2 restart umattend-server-staging || pm2 start server --name umattend-server-staging -- start
+
+            # Client
+            pm2 describe umattend-client-staging >/dev/null 2>&1 && pm2 restart umattend-client-staging || pm2 start client --name umattend-client-staging -- start
+
+            pm2 save
+          "
 
       - name: Verify deployment
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "cd ${{ secrets.STAGING_APP_PATH }} && docker compose -f docker-compose.staging.yml ps && docker logs umattend-nginx-staging 2>&1 | tail -20"
-
-      - name: Cleanup
-        if: always()
-        run: |
-          if [ -n "$SSH_AGENT_PID" ]; then
-            ssh-agent -k
-          fi
-          rm -rf ~/.ssh/id_rsa
+          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+            cd ${{ secrets.STAGING_APP_PATH }}
+            pm2 ls
+          "
