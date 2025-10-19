@@ -169,7 +169,7 @@ jobs:
               cd "$APP_PATH"
               
               echo "Stopping existing containers..."
-              docker compose -f docker-compose.yml -f docker-compose.production.yml down || true
+              docker compose -f docker-compose.production.yml down || true
               
               echo "Containers stopped"
           EOF
@@ -190,9 +190,50 @@ jobs:
               cd "$APP_PATH"
               
               echo "Building and starting containers..."
-              docker compose -f docker-compose.yml -f docker-compose.production.yml up -d --build --remove-orphans
+              docker compose -f docker-compose.production.yml up -d --build --remove-orphans
               
               echo "Containers built and started"
+          EOF
+      
+      - name: Issue/Ensure Let's Encrypt Certificate (Production)
+        env:
+          DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
+          EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
+        run: |
+          ssh -T \
+            -p ${{ secrets.DEPLOY_PORT }} \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'EOF'
+              set -euo pipefail
+
+              APP_PATH='${{ secrets.PRODUCTION_APP_PATH }}'
+              DOMAIN='${{ env.DOMAIN }}'
+              EMAIL='${{ env.EMAIL }}'
+
+              if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
+                echo "PRODUCTION_DOMAIN and LETSENCRYPT_EMAIL secrets are required" >&2
+                exit 1
+              fi
+
+              cd "$APP_PATH"
+
+              echo "Ensuring nginx and certbot services are up..."
+              docker compose -f docker-compose.production.yml up -d nginx certbot
+
+              echo "Requesting certificate for $DOMAIN if missing..."
+              docker compose -f docker-compose.production.yml run --rm certbot \
+                sh -c "if [ ! -f /etc/letsencrypt/live/$DOMAIN/fullchain.pem ]; then \
+                  certbot certonly --webroot -w /var/www/certbot -d $DOMAIN --email $EMAIL --agree-tos --no-eff-email; \
+                else \
+                  echo 'Certificate already exists for $DOMAIN'; \
+                fi"
+
+              echo "Reloading nginx to pick up certificates..."
+              docker compose -f docker-compose.production.yml exec -T nginx nginx -s reload || \
+              docker compose -f docker-compose.production.yml restart nginx
           EOF
 
       - name: Verify Deployment
@@ -211,7 +252,14 @@ jobs:
               cd "$APP_PATH"
               
               echo "Checking container status..."
-              docker compose -f docker-compose.yml -f docker-compose.production.yml ps
+              docker compose -f docker-compose.production.yml ps
+              
+              echo "Checking certificate files..."
+              DOMAIN='${{ secrets.PRODUCTION_DOMAIN }}'
+              if [ -n "$DOMAIN" ]; then
+                docker compose -f docker-compose.production.yml run --rm certbot \
+                  sh -c "ls -l /etc/letsencrypt/live/$DOMAIN || true"
+              fi
               
               echo ""
               echo "Production deployment completed successfully!"
