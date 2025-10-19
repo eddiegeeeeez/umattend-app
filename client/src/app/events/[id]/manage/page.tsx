@@ -14,8 +14,8 @@ import { UpdateEventSheet } from '@/components/event/manage/update-event-sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Event } from '@/types/events';
 import { getEventByEventIdOptions } from '@/api/client/@tanstack/react-query.gen';
-import { formatTimePadded } from '@/lib/utils';
 import { getEventStatus } from '@/lib/events-utils';
+import { formatTimePadded } from '@/lib/utils';
 
 export default function ManageSingleEventPage() {
   const params = useParams();

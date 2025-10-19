@@ -36,9 +36,7 @@ export default function ManageEventSkeleton() {
                 </div>
 
                 {/* Button Skeleton */}
-                <div className="pt-2">
-                  {/* <Skeleton className="h-10 w-32 bg-neutral-200" /> */}
-                </div>
+                <div className="pt-2">{/* <Skeleton className="h-10 w-32 bg-neutral-200" /> */}</div>
               </div>
             </div>
           </div>

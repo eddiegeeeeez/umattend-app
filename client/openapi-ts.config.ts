@@ -5,7 +5,7 @@ config();
 
 export default defineConfig({
   input: {
-    path: `${process.env.API_URL}/docs/openapi.json`,
+    path: `${process.env.API_URL}/api/v1/docs/openapi.json`,
     watch: true
   },
   output: 'src/api/client',

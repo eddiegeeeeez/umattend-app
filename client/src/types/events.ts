@@ -24,7 +24,6 @@ export interface EventCardData {
   checkout_count?: number;
 }
 
-
 export interface Event {
   id: string;
   name: string;

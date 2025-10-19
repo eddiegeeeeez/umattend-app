@@ -8,8 +8,8 @@ import EventContentEmpty from '@/components/event/event-content-empty';
 import EventDetails from '@/components/event/event-details';
 import EventsSkeleton from '@/components/event/events-skeleton';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { transformEventData } from '@/lib/events-utils';
 import { getEventPastOptions } from '@/api/client/@tanstack/react-query.gen';
+import { transformEventData } from '@/lib/events-utils';
 
 export default function PastEventsPage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);

@@ -2,9 +2,9 @@
 
 import type React from 'react';
 import { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { MapPin, FileText, Users, Building2, CalendarIcon, ChevronsLeft, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
@@ -14,8 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { putEventByEventIdMutation } from '@/api/client/@tanstack/react-query.gen';
 import type { Event } from '@/types/events';
+import { putEventByEventIdMutation } from '@/api/client/@tanstack/react-query.gen';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
 import { generateTimeOptions, parseTimeToMinutes, formatDateShort } from '@/lib/utils';
 
@@ -50,29 +50,29 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
   // Validate dates and times
   useEffect(() => {
     const errors: { endDate?: string; endTime?: string } = {};
-    
+
     const start = new Date(formData.startDate);
     const end = new Date(formData.endDate);
-    
+
     // Normalize to midnight for date comparison
     start.setHours(0, 0, 0, 0);
     end.setHours(0, 0, 0, 0);
-    
+
     // Check if end date is before start date
     if (end < start) {
       errors.endDate = 'End date cannot be before start date';
     }
-    
+
     // Check time only if dates are the same
     if (end.getTime() === start.getTime()) {
       const startMinutes = parseTimeToMinutes(formData.startTime);
       const endMinutes = parseTimeToMinutes(formData.endTime);
-      
+
       if (endMinutes <= startMinutes) {
         errors.endTime = 'End time must be after start time';
       }
     }
-    
+
     setValidationErrors(errors);
   }, [formData.startDate, formData.endDate, formData.startTime, formData.endTime]);
 
@@ -103,11 +103,11 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
       const date = new Date(dateStr);
       const [time, period] = timeStr.split(' ');
       const [hours, minutes] = time.split(':').map(Number);
-      
+
       let hour = hours;
       if (period === 'PM' && hours !== 12) hour += 12;
       if (period === 'AM' && hours === 12) hour = 0;
-      
+
       date.setHours(hour, minutes, 0, 0);
       return date.toISOString();
     };
@@ -231,8 +231,8 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                   <Label className="text-muted-foreground text-xs font-medium">End Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className={`bg-background h-11 w-full justify-start text-left font-medium shadow-sm ${
                           validationErrors.endDate ? 'border-red-500' : ''
                         }`}
@@ -250,7 +250,7 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                     </PopoverContent>
                   </Popover>
                   {validationErrors.endDate && (
-                    <p className="text-xs text-red-500 flex items-center gap-1">
+                    <p className="flex items-center gap-1 text-xs text-red-500">
                       <AlertCircle className="h-3 w-3" />
                       {validationErrors.endDate}
                     </p>
@@ -259,10 +259,7 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
 
                 <div className="space-y-2">
                   <Label className="text-muted-foreground text-xs font-medium">End Time</Label>
-                  <Select 
-                    value={formData.endTime} 
-                    onValueChange={(value) => setFormData({ ...formData, endTime: value })}
-                  >
+                  <Select value={formData.endTime} onValueChange={(value) => setFormData({ ...formData, endTime: value })}>
                     <SelectTrigger className={`h-11 shadow-sm ${validationErrors.endTime ? 'border-red-500' : ''}`}>
                       <SelectValue placeholder="Select time" />
                     </SelectTrigger>
@@ -275,7 +272,7 @@ export function UpdateEventSheet({ event, open, onOpenChange, onUpdate }: Update
                     </SelectContent>
                   </Select>
                   {validationErrors.endTime && (
-                    <p className="text-xs text-red-500 flex items-center gap-1">
+                    <p className="flex items-center gap-1 text-xs text-red-500">
                       <AlertCircle className="h-3 w-3" />
                       {validationErrors.endTime}
                     </p>

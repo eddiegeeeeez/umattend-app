@@ -1,13 +1,13 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { OrganizersSkeleton } from '@/components/event/manage/organizers/organizers-skeleton';
 import { Card } from '@/components/ui/card';
 import { organizersColumns, type OrganizerRecord } from './data-table/organizers-columns';
 import { OrganizersDataTable } from './data-table/organizers-data-table';
-import { 
-  getEventByEventIdOrganizersOptions, 
+import {
+  getEventByEventIdOrganizersOptions,
   postEventAddOrganizerByEventIdMutation,
-  deleteEventRemoveOrganizerByEventIdMutation 
+  deleteEventRemoveOrganizerByEventIdMutation
 } from '@/api/client/@tanstack/react-query.gen';
 import { formatDateTimeFull } from '@/lib/utils';
 
@@ -111,12 +111,7 @@ export default function EventOrganizers({ eventId }: EventOrganizersProps) {
         <h3 className="text-foreground mb-1 text-lg font-semibold">Event Organizers</h3>
         <p className="text-muted-foreground text-sm">Manage organizers who can help coordinate and run this event.</p>
       </div>
-      <OrganizersDataTable 
-        columns={organizersColumns} 
-        data={organizers} 
-        onAddOrganizer={handleAddOrganizer}
-        onRemoveOrganizer={handleRemoveOrganizer}
-      />
+      <OrganizersDataTable columns={organizersColumns} data={organizers} onAddOrganizer={handleAddOrganizer} onRemoveOrganizer={handleRemoveOrganizer} />
     </Card>
   );
 }

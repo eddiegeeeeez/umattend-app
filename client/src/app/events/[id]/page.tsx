@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getEventStatus, getAttendanceStatus } from '@/lib/events-utils';
 import type { ApiEventData } from '@/types/events';
 import { getEventByEventIdOptions } from '@/api/client/@tanstack/react-query.gen';
+import { getEventStatus, getAttendanceStatus } from '@/lib/events-utils';
 import { formatDate, formatTime } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 

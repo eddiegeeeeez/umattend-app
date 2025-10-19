@@ -4,16 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { Menu, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from './ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 import { Skeleton } from './ui/skeleton';
-import { useAuthStore } from '@/store/authStore';
 import { postAuthLogoutMutation } from '@/api/client/@tanstack/react-query.gen';
 import { getInitials, formatTimeWithTimezone } from '@/lib/utils';
+import { useAuthStore } from '@/store/authStore';
 
 const Navbar = () => {
   const router = useRouter();
@@ -120,7 +120,7 @@ const Navbar = () => {
                   View Profile
                 </div>
                 <div
-                  className="hover:bg-muted cursor-pointer justify-start bg-transparent px-4 py-3 text-left text-xs font-normal transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="hover:bg-muted cursor-pointer justify-start bg-transparent px-4 py-3 text-left text-xs font-normal transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                   onClick={logoutUser}
                   style={{ opacity: logoutMutation.isPending ? 0.5 : 1 }}
                 >

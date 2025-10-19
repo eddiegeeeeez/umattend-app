@@ -1,19 +1,17 @@
+import AnimatedContent from '@/components/AnimatedContent';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import AnimatedContent from '@/components/AnimatedContent';
 
 export default function LoginForm({
   serverMessage,
   isError,
   isAuthenticating,
-  handleGoogleLogin,
-  accessToken
+  handleGoogleLogin
 }: {
   serverMessage: string | null;
   isError: boolean;
   isAuthenticating: boolean;
   handleGoogleLogin: () => void;
-  accessToken: string | null;
 }) {
   return (
     <div className="bg-background flex min-h-screen flex-col items-center justify-between p-4">
@@ -109,7 +107,6 @@ export default function LoginForm({
               </p>
             </div>
           </AnimatedContent>
-
         </div>
       </div>
 

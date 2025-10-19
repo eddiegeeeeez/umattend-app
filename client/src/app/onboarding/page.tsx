@@ -15,8 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { postUserOnboardingMutation, getUserOptions } from '@/api/client/@tanstack/react-query.gen';
 import type { PostUserOnboardingError } from '@/api/client/types.gen';
 import { DepartmentAndPrograms } from '@/lib/department-and-program';
-import { useAuthStore } from '@/store/authStore';
 import { getInitials } from '@/lib/utils';
+import { useAuthStore } from '@/store/authStore';
 
 interface OnboardingFormData {
   department: string;
@@ -100,7 +100,7 @@ export default function OnboardingPage() {
 
         // Fetch updated user data to get profile picture and other info
         const userDataResponse = await refetchUser();
-        
+
         if (userDataResponse.data?.success && userDataResponse.data?.data?.user) {
           const apiUser = userDataResponse.data.data.user as {
             id?: string;

@@ -1,11 +1,13 @@
 import type { NextConfig } from 'next';
 
+const apiBase = process.env.API_URL;
+
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:4000/api/:path*'
+        destination: `${apiBase}/api/:path*`
       }
     ];
   },
