@@ -264,11 +264,8 @@ const updateAndDeleteEvent = {
                       description: { type: 'string' },
                       department: { type: 'string' },
                       location: { type: 'string' },
-                      capacity: { 
-                        oneOf: [
-                          { type: 'number' },
-                          { type: 'null' }
-                        ]
+                      capacity: {
+                        oneOf: [{ type: 'number' }, { type: 'null' }],
                       },
                       all_day: { type: 'boolean' },
                       start_time: {
@@ -416,10 +413,7 @@ const updateAndDeleteEvent = {
                         example: 'Main Auditorium, Building A',
                       },
                       capacity: {
-                        oneOf: [
-                          { type: 'number' },
-                          { type: 'null' }
-                        ],
+                        oneOf: [{ type: 'number' }, { type: 'null' }],
                         example: 100,
                         description: 'Maximum event capacity',
                       },
@@ -972,7 +966,8 @@ const removeOrganizer = {
     delete: {
       tags: ['Event'],
       summary: 'Remove organizer',
-      description: 'Remove an organizer from an event (Admin/CSG/Organizer only). The event creator cannot be removed.',
+      description:
+        'Remove an organizer from an event (Admin/CSG/Organizer only). The event creator cannot be removed.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -1049,14 +1044,18 @@ const removeOrganizer = {
           },
         },
         403: {
-          description: 'Forbidden - Cannot remove event creator or insufficient permissions',
+          description:
+            'Forbidden - Cannot remove event creator or insufficient permissions',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'Cannot remove the event creator as an organizer' },
+                  message: {
+                    type: 'string',
+                    example: 'Cannot remove the event creator as an organizer',
+                  },
                 },
               },
             },
@@ -1243,11 +1242,8 @@ const createAndGetEvent = {
                       description: { type: 'string' },
                       department: { type: 'string' },
                       location: { type: 'string' },
-                      capacity: { 
-                        oneOf: [
-                          { type: 'number' },
-                          { type: 'null' }
-                        ]
+                      capacity: {
+                        oneOf: [{ type: 'number' }, { type: 'null' }],
                       },
                       all_day: { type: 'boolean' },
                       start_time: {
@@ -1372,12 +1368,9 @@ const createAndGetEvent = {
                           type: 'string',
                           example: 'Main Auditorium, Building A',
                         },
-                        capacity: { 
-                          oneOf: [
-                            { type: 'number' },
-                            { type: 'null' }
-                          ],
-                          example: 100
+                        capacity: {
+                          oneOf: [{ type: 'number' }, { type: 'null' }],
+                          example: 100,
                         },
                         all_day: { type: 'boolean', example: false },
                         start_time: {
@@ -1509,12 +1502,9 @@ const getAllPastEvents = {
                           type: 'string',
                           example: 'Main Auditorium, Building A',
                         },
-                        capacity: { 
-                          oneOf: [
-                            { type: 'number' },
-                            { type: 'null' }
-                          ],
-                          example: 100
+                        capacity: {
+                          oneOf: [{ type: 'number' }, { type: 'null' }],
+                          example: 100,
                         },
                         all_day: { type: 'boolean', example: false },
                         start_time: {
@@ -1635,7 +1625,8 @@ const getPaginatedAttendeesByEventId = {
           name: 'search',
           required: false,
           schema: { type: 'string', example: 'John' },
-          description: 'Search term to filter attendees by name, student ID, or email (case-insensitive)',
+          description:
+            'Search term to filter attendees by name, student ID, or email (case-insensitive)',
         },
       ],
       responses: {
@@ -1884,7 +1875,8 @@ const getOrganizersByEventId = {
                         added_by: {
                           type: 'string',
                           example: 'Jane Admin',
-                          description: 'Name of the user who added this organizer',
+                          description:
+                            'Name of the user who added this organizer',
                         },
                         added_at: {
                           type: 'string',

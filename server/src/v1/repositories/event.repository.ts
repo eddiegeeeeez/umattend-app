@@ -239,7 +239,11 @@ const checkOrganizer = async (user_id: string, event_id: string) => {
   });
 };
 
-const addOrganizer = async (user_id: string, added_by:string, event_id: string) => {
+const addOrganizer = async (
+  user_id: string,
+  added_by: string,
+  event_id: string
+) => {
   return await prisma.organizers.create({
     data: {
       user_id,
@@ -455,7 +459,6 @@ const checkIfUserAttended = async (event_id: string, student_id: string) => {
     check_out_at: event?.check_out_required ? attendance.check_out_at : false,
   };
 };
-
 
 const eventRepository = {
   createEvent,

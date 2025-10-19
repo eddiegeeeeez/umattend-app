@@ -24,4 +24,3 @@ export const decodeAndVerifyQR = (qrCode: string) => {
     student_id: valid ? studentId : null,
   };
 };
-

@@ -16,7 +16,9 @@ const connection = {
   enableReadyCheck: false,
 };
 
-export const endEventStatusQueue = new Queue('event-end-status-queue', { connection });
+export const endEventStatusQueue = new Queue('event-end-status-queue', {
+  connection,
+});
 
 const endEventStatusWorker = new Worker(
   'event-end-status-queue',

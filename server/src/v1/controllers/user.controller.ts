@@ -110,9 +110,14 @@ const getUserAttendedEventsDetailed = async (req: Request, res: Response) => {
       );
     }
 
-    return HTTPSuccessResponse(res, 200, 'Attended events successfully fetched', {
-      events,
-    }) as Response;
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Attended events successfully fetched',
+      {
+        events,
+      }
+    ) as Response;
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {
       return HTTPErrorResponse(res, 404, error.message) as Response;

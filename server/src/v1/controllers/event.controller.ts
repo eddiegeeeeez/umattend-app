@@ -66,9 +66,8 @@ const addEvent = async (req: Request, res: Response) => {
 
     // Validate that end time is not before start time
     if (event_data.end_time < event_data.start_time) {
+      console.log('End time cannot be before start time');
 
-      console.log("End time cannot be before start time");
-      
       return HTTPErrorResponse(
         res,
         400,
@@ -458,7 +457,7 @@ const removeOrganizer = async (req: Request, res: Response) => {
     }
 
     await eventServices.removeOrganizer(umindanao_email, event_id);
-    
+
     return HTTPSuccessResponse(
       res,
       200,
@@ -484,15 +483,15 @@ const getEventDetailsById = async (req: Request, res: Response) => {
   try {
     const { event_id } = req.params;
     const user_id = req.user?.id;
-    
+
     if (!event_id) {
       return HTTPErrorResponse(res, 400, 'Event ID is required');
     }
-    
+
     if (!user_id) {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
     }
-    
+
     const event = await eventServices.getEventDetailsById(event_id, user_id);
     return HTTPSuccessResponse(res, 200, 'Event details retrieved', event);
   } catch (error: unknown) {
@@ -535,11 +534,11 @@ const getOrganizersByEventId = async (req: Request, res: Response) => {
 const getAllEvents = async (req: Request, res: Response) => {
   try {
     const user_id = req.user?.id;
-    
+
     if (!user_id) {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
     }
-    
+
     const events = await eventServices.getAllEvents(user_id);
     return HTTPSuccessResponse(
       res,
@@ -562,11 +561,11 @@ const getAllEvents = async (req: Request, res: Response) => {
 const getAllPastEvents = async (req: Request, res: Response) => {
   try {
     const user_id = req.user?.id;
-    
+
     if (!user_id) {
       return HTTPErrorResponse(res, 401, 'Unauthorized');
     }
-    
+
     const events = await eventServices.getAllPastEvents(user_id);
     return HTTPSuccessResponse(
       res,
@@ -598,7 +597,12 @@ const getPaginatedAttendeesByEventId = async (req: Request, res: Response) => {
     }
 
     const { data, pagination } =
-      await eventServices.getPaginatedAttendeesByEventId(event_id, page, limit, search);
+      await eventServices.getPaginatedAttendeesByEventId(
+        event_id,
+        page,
+        limit,
+        search
+      );
 
     return HTTPSuccessResponse(res, 200, 'Attendees retrieved successfully', {
       data,
