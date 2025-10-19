@@ -182,18 +182,43 @@ jobs:
               
               cd "$APP_PATH"
               
+              echo "Creating placeholder certificates if missing..."
+              mkdir -p letsencrypt/live/umattend-env-staging.vintasystem.com
+              
+              if [ ! -f "letsencrypt/live/umattend-env-staging.vintasystem.com/fullchain.pem" ]; then
+                echo "Generating self-signed certificate for initial startup..."
+                docker run --rm -v $(pwd)/letsencrypt:/etc/letsencrypt certbot/certbot \
+                  certonly --standalone -d umattend-env-staging.vintasystem.com \
+                  --email admin@example.com --agree-tos --no-eff-email \
+                  --dry-run 2>/dev/null || true
+              fi
+              
               echo "Building and starting containers..."
               docker compose -f docker-compose.staging.yml up -d --build --remove-orphans
               
-              echo "Waiting for services to be healthy..."
-              sleep 15
+              echo "Waiting for services to stabilize..."
+              for i in {1..10}; do
+                if docker compose -f docker-compose.staging.yml ps | grep -q "nginx.*Up"; then
+                  echo "Nginx is running"
+                  break
+                fi
+                echo "Waiting... ($i/10)"
+                sleep 3
+              done
+              
+              sleep 10
               
               echo "Container status:"
               docker compose -f docker-compose.staging.yml ps
               
-              if docker compose -f docker-compose.staging.yml ps | grep -q "unhealthy\|Exit"; then
-                echo "Container health check failed"
-                docker compose -f docker-compose.staging.yml logs
+              UNHEALTHY=$(docker compose -f docker-compose.staging.yml ps | grep -c "unhealthy" || true)
+              EXITED=$(docker compose -f docker-compose.staging.yml ps | grep -c "Exit" || true)
+              
+              if [ "$UNHEALTHY" -gt 0 ] || [ "$EXITED" -gt 0 ]; then
+                echo "Containers unhealthy or exited. Checking logs..."
+                docker compose -f docker-compose.staging.yml logs --tail=100 nginx
+                docker compose -f docker-compose.staging.yml logs --tail=100 server
+                docker compose -f docker-compose.staging.yml logs --tail=100 client
                 exit 1
               fi
               
