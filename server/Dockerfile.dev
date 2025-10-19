@@ -1,30 +1,22 @@
-ARG NODE_VERSION=20.11.1
+# Development Dockerfile for Express.js server
+FROM node:25-alpine3.21 AS base
 
-FROM node:${NODE_VERSION}-slim
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-# Install dependencies including dev tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    openssl \
-    ca-certificates \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy package files
+# Install dependencies
 COPY package*.json ./
-
-# Install ALL dependencies (including dev)
 RUN npm install
 
-# Copy prisma schema
-COPY prisma ./prisma
-
 # Generate Prisma Client
+COPY prisma ./prisma/
 RUN npx prisma generate
 
-# Expose port
+# Copy application files
+COPY . .
+
 EXPOSE 4000
 
-# Development command with hot-reload
 CMD ["npm", "run", "dev"]

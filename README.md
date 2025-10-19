@@ -285,6 +285,54 @@ umattend-app/
 - **Events**: `/api/v1/events/*`
 - **Students**: `/api/v1/students/*`
 
+## 🚀 Deployment
+
+This project includes automated CI/CD pipelines using GitHub Actions with Docker, Nginx, and Let's Encrypt SSL.
+
+### Quick Deployment Guide
+
+**For a complete setup guide, see [QUICKSTART.md](./QUICKSTART.md) (30 minutes)**
+
+**Deployment documentation:**
+- 📘 [Deployment Guide](./DEPLOYMENT.md) - Comprehensive deployment documentation
+- ✅ [Deployment Checklist](./DEPLOYMENT_CHECKLIST.md) - Step-by-step checklist
+- 📊 [Pipeline Summary](./PIPELINE_SUMMARY.md) - Architecture and overview
+
+### Environments
+
+- **Local**: `docker-compose.local.yml` - Development with hot reload
+- **Staging**: Auto-deploy on push to `staging` branch
+- **Production**: Auto-deploy on push to `main`/`master` branch
+
+### Deployment Features
+
+✅ Automated Docker builds  
+✅ Nginx reverse proxy  
+✅ SSL/TLS with Let's Encrypt  
+✅ Auto-renewal of SSL certificates  
+✅ Database migrations  
+✅ Zero-downtime deployments  
+✅ Environment-specific configurations  
+
+### Quick Commands
+
+```bash
+# Local development with Docker
+docker compose -f docker-compose.local.yml up -d
+
+# Deploy using helper script
+./scripts/deploy.sh staging up    # Start staging
+./scripts/deploy.sh staging logs  # View logs
+```
+
+### Required GitHub Secrets
+
+See `.github/secrets.template` for complete list of required secrets:
+- SSH credentials
+- Domain configuration
+- Environment variables
+- API keys
+
 ### Contributing
 
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on:
@@ -300,3 +348,5 @@ Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on:
 - **Prettier**: Code formatting
 - **TypeScript**: Type safety
 - **Prisma Studio**: Database management UI
+- **Docker**: Containerization and deployment
+- **GitHub Actions**: CI/CD automation

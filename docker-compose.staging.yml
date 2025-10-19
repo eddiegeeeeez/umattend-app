@@ -1,71 +1,62 @@
-version: "3.9"
-
-# Staging Environment Configuration
-# This file contains staging-specific overrides
-
-networks:
-  appnet:
-
 services:
-  server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-      args:
-        NODE_VERSION: 20.11.1
-    container_name: umattend_server_staging
-    restart: unless-stopped
-    env_file:
-      - ./server/.env
-    environment:
-      NODE_ENV: staging
-      PORT: ${SERVER_PORT:-4000}
-    networks: [appnet]
-    healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/api/v1/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
       args:
-        NODE_VERSION: 20.11.1
-    container_name: umattend_client_staging
+        - NODE_ENV=production
+        - NEXT_PUBLIC_API_URL=https://umattend-env-staging.vintasystem.com/api/v1
+    container_name: umattend-client-staging
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=https://umattend-env-staging.vintasystem.com/api/v1
+    networks:
+      - umattend-network
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: umattend-server-staging
     restart: unless-stopped
     env_file:
-      - ./client/.env
+      - ./server/.env
     environment:
-      NODE_ENV: staging
-      HOSTNAME: 0.0.0.0
-      PORT: ${CLIENT_PORT:-3000}
-      # Override API_URL to use Docker service name
-      API_URL: http://server:4000
-    depends_on:
-      server:
-        condition: service_healthy
-    networks: [appnet]
+      - NODE_ENV=production
+    networks:
+      - umattend-network
+    volumes:
+      - ./server/prisma:/app/prisma
 
   nginx:
-    image: nginx:1.25.5-alpine
-    container_name: umattend_nginx_staging
+    image: nginx:alpine
+    container_name: umattend-nginx-staging
     restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/staging.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    networks:
+      - umattend-network
     depends_on:
       - client
       - server
-    ports:
-      - "8080:80"  # Staging on port 8080
-      # - "8443:443"  # Uncomment for HTTPS
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  certbot:
+    image: certbot/certbot
+    container_name: umattend-certbot-staging
     volumes:
-      - ./nginx/nginx.staging.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro  # For SSL certificates
-    networks: [appnet]
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  umattend-network:
+    driver: bridge
