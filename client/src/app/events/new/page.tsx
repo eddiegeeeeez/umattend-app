@@ -252,31 +252,31 @@ export default function CreateEventPage() {
             />
 
             {/* Date and Time */}
-            <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6">
+            <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4 sm:p-6">
               <div className="space-y-4">
                 {/* Start Date/Time */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-4">
-                    <Label className="text-foreground text-md min-w-[80px] font-medium">Start</Label>
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="flex flex-1 items-center justify-end gap-1">
+                <div className="">
+                  <div className="flex items-center justify-between gap-2 sm:gap-4">
+                    <Label className="text-foreground sm:text-md min-w-[60px] text-sm font-medium sm:min-w-[80px]">Start</Label>
+                    <div className="flex flex-1 flex-col items-end justify-center">
+                      <div className="flex w-full items-center justify-end gap-1">
                         <FormField
                           control={form.control}
                           name="startDate"
                           render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="max-w-[155px] flex-1 !space-y-0">
                               <Popover>
                                 <PopoverTrigger asChild>
                                   <FormControl>
                                     <Button
                                       variant="outline"
-                                      className="bg-background text-foreground hover:bg-muted hover:border-primary/50 h-9 w-[155px] justify-start rounded-r-none text-left font-medium shadow-none"
+                                      className="bg-background text-foreground hover:bg-muted hover:border-primary/50 h-9 w-full justify-start rounded-r-none text-left text-xs font-medium shadow-none sm:text-sm"
                                     >
-                                      {field.value ? format(field.value, 'EEE, MMMM d') : 'Pick a date'}
+                                      {field.value ? format(field.value, 'EEE, MMM d') : 'Pick date'}
                                     </Button>
                                   </FormControl>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
+                                <PopoverContent className="w-auto p-0" align="end">
                                   <Calendar
                                     mode="single"
                                     selected={field.value}
@@ -295,10 +295,10 @@ export default function CreateEventPage() {
                           control={form.control}
                           name="startTime"
                           render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="w-[85px] space-y-0 sm:w-[90px]">
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
-                                  <SelectTrigger className="hover:bg-muted hover:border-primary/50 h-9 w-[90px] rounded-l-none font-medium [&>svg]:hidden">
+                                  <SelectTrigger className="hover:bg-muted hover:border-primary/50 h-9 w-full rounded-l-none text-xs font-medium sm:text-sm [&>svg]:hidden">
                                     <SelectValue />
                                   </SelectTrigger>
                                 </FormControl>
@@ -315,12 +315,12 @@ export default function CreateEventPage() {
                         />
                       </div>
                       {/* Start Date/Time Errors */}
-                      <div>
+                      <div className="w-full">
                         <FormField
                           control={form.control}
                           name="startDate"
                           render={() => (
-                            <FormItem>
+                            <FormItem className="space-y-0">
                               <FormMessage />
                             </FormItem>
                           )}
@@ -329,7 +329,7 @@ export default function CreateEventPage() {
                           control={form.control}
                           name="startTime"
                           render={() => (
-                            <FormItem>
+                            <FormItem className="space-y-0">
                               <FormMessage />
                             </FormItem>
                           )}
@@ -340,28 +340,28 @@ export default function CreateEventPage() {
                 </div>
 
                 {/* End Date/Time */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-4">
-                    <Label className="text-foreground text-md min-w-[80px] font-medium">End</Label>
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="flex flex-1 items-center justify-end gap-1">
+                <div className="">
+                  <div className="flex items-center justify-between gap-2 sm:gap-4">
+                    <Label className="text-foreground sm:text-md min-w-[60px] text-sm font-medium sm:min-w-[80px]">End</Label>
+                    <div className="flex flex-1 flex-col items-end justify-center">
+                      <div className="flex w-full items-center justify-end gap-1">
                         <FormField
                           control={form.control}
                           name="endDate"
                           render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="max-w-[155px] flex-1 space-y-0">
                               <Popover>
                                 <PopoverTrigger asChild>
                                   <FormControl>
                                     <Button
                                       variant="outline"
-                                      className="bg-background text-foreground hover:bg-muted hover:border-primary/50 h-9 w-[155px] justify-start rounded-r-none text-left font-medium shadow-none"
+                                      className="bg-background text-foreground hover:bg-muted hover:border-primary/50 h-9 w-full justify-start rounded-r-none text-left text-xs font-medium shadow-none sm:text-sm"
                                     >
-                                      {field.value ? format(field.value, 'EEE, MMMM d') : 'Pick a date'}
+                                      {field.value ? format(field.value, 'EEE, MMM d') : 'Pick date'}
                                     </Button>
                                   </FormControl>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
+                                <PopoverContent className="w-auto p-0" align="end">
                                   <Calendar
                                     mode="single"
                                     selected={field.value}
@@ -380,10 +380,10 @@ export default function CreateEventPage() {
                           control={form.control}
                           name="endTime"
                           render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="w-[85px] space-y-0 sm:w-[90px]">
                               <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
-                                  <SelectTrigger className="hover:bg-muted hover:border-primary/50 h-9 w-[90px] rounded-l-none font-medium [&>svg]:hidden">
+                                  <SelectTrigger className="hover:bg-muted hover:border-primary/50 h-9 w-full rounded-l-none text-xs font-medium sm:text-sm [&>svg]:hidden">
                                     <SelectValue />
                                   </SelectTrigger>
                                 </FormControl>
@@ -400,12 +400,12 @@ export default function CreateEventPage() {
                         />
                       </div>
                       {/* End Date/Time Errors */}
-                      <div>
+                      <div className="w-full">
                         <FormField
                           control={form.control}
                           name="endDate"
                           render={() => (
-                            <FormItem>
+                            <FormItem className="space-y-0">
                               <FormMessage />
                             </FormItem>
                           )}
@@ -414,7 +414,7 @@ export default function CreateEventPage() {
                           control={form.control}
                           name="endTime"
                           render={() => (
-                            <FormItem>
+                            <FormItem className="space-y-0">
                               <FormMessage />
                             </FormItem>
                           )}
