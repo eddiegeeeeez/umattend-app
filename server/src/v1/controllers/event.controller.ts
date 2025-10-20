@@ -93,7 +93,11 @@ const addEvent = async (req: Request, res: Response) => {
     if (NODE_ENV === 'DEVELOPMENT') {
       console.error('Error: ', error);
     }
-    return HTTPErrorResponse(res, 500, error);
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.log('Unexpected error adding event:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -118,8 +122,11 @@ const deleteEvent = async (req: Request, res: Response): Promise<Response> => {
       return HTTPErrorResponse(res, 403, error.message);
     }
 
-    console.error('Unexpected error deleting event:', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error deleting event:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -188,8 +195,11 @@ const updateEvent = async (req: Request, res: Response): Promise<Response> => {
       return HTTPErrorResponse(res, 403, error.message);
     }
 
-    console.error('Unexpected error updating event:', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error updating event:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -285,8 +295,12 @@ const createCheckInEvent = async (
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    console.error('Unexpected error checking in', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error checking in', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -378,8 +392,11 @@ const createCheckOutEvent = async (
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    console.error('Unexpected error checking out', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error checking out', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -423,8 +440,12 @@ const addOrganizer = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    console.error('Unexpected error adding organizer:', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error adding organizer:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -468,8 +489,12 @@ const removeOrganizer = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    console.error('Unexpected error removing organizer:', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error removing organizer:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -495,8 +520,12 @@ const getEventDetailsById = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    console.error('Unexpected error retrieving event details:', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error retrieving event details:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -520,8 +549,12 @@ const getOrganizersByEventId = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    console.error('Unexpected error retrieving organizers:', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error retrieving organizers:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -547,8 +580,12 @@ const getAllEvents = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    console.error('Unexpected error retrieving events:', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error retrieving events:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -574,8 +611,12 @@ const getAllPastEvents = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    console.error('Unexpected error retrieving events:', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error retrieving events:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -614,8 +655,12 @@ const getPaginatedAttendeesByEventId = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    console.error('Unexpected error retrieving attendees:', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error retrieving attendees:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -688,8 +733,12 @@ const exportEventAttendeesToExcel = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    console.error('Unexpected error exporting event attendees:', error);
-    return HTTPErrorResponse(res, 500, 'Internal server error');
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error('Unexpected error exporting event attendees:', error);
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 

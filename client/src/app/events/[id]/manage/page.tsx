@@ -36,7 +36,8 @@ export default function ManageSingleEventPage() {
         event_id: eventId
       }
     }),
-    enabled: !!eventId
+    enabled: !!eventId,
+    retry: false
   });
 
   const handleUpdateEvent = () => {

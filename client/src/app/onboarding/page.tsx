@@ -36,7 +36,8 @@ export default function OnboardingPage() {
   const { data: userData, refetch: refetchUser } = useQuery({
     ...getUserOptions(),
     enabled: isAuthenticated() && !isDoneOnboarding(), // Disable after onboarding is done
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: false
   });
 
   // Update user data in store when fetched (merge with existing JWT data)

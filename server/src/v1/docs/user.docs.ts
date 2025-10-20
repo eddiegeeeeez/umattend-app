@@ -207,6 +207,104 @@ const onboarding = {
     },
   },
 };
+
+const updateUserProfile = {
+  '/user': {
+    put: {
+      tags: ['User'],
+      summary: 'Update user profile',
+      description: 'Update user profile fields such as department and program',
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                department: { type: 'string' },
+                program: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'User profile updated successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'User profile updated' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      user: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string' },
+                          umindanao_email: { type: 'string' },
+                          name: { type: 'string' },
+                          department: { type: 'string' },
+                          program: { type: 'string' },
+                          done_onboarding: { type: 'boolean' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: 'Bad request - no fields to update',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No fields to update' },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
 const getUserAttendedEvents = {
   '/user/events': {
     get: {
@@ -525,6 +623,7 @@ const getUserHostedEvents = {
 export const user = {
   ...getUser,
   ...onboarding,
+  ...updateUserProfile,
   ...getUserAttendedEvents,
   ...getUserAttendedEventsDetailed,
   ...getUserHostedEvents,

@@ -17,4 +17,5 @@ router.get(
   userController.getUserHostedEvents
 );
 router.post('/onboarding', authMiddleware, userController.onboardUser);
+router.put('/', authMiddleware, userController.updateUserProfile);
 export default router;

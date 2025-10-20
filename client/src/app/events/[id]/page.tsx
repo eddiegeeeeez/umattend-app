@@ -112,7 +112,8 @@ export default function EventDetailsPage() {
         event_id: eventId
       }
     }),
-    enabled: !!eventId
+    enabled: !!eventId,
+    retry: false
   });
 
   const event = eventData?.data as ApiEventData | undefined;
