@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Fetch upcoming/active events
-  const { data: eventsData, isLoading } = useQuery(getEventOptions());
+  const { data: eventsData, isLoading } = useQuery({ ...getEventOptions(), retry: false });
 
   const events = eventsData?.data || [];
   const transformedEvents = events.map(transformEventData);

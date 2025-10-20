@@ -37,7 +37,8 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
         search: search || undefined
       }
     }),
-    enabled: !!eventId
+    enabled: !!eventId,
+    retry: false
   });
 
   const handleRefresh = () => {

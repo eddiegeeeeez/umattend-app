@@ -29,7 +29,8 @@ export default function LoginContent() {
   const { data: userData } = useQuery({
     ...getUserOptions(),
     enabled: isAuthenticated(),
-    staleTime: Infinity // Don't refetch unless manually invalidated
+    staleTime: Infinity, 
+    retry: false // Don't refetch unless manually invalidated
   });
 
   // Update user data in store when fetched (merge with existing JWT data)

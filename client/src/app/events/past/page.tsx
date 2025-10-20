@@ -16,7 +16,7 @@ export default function PastEventsPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Fetch past events
-  const { data: eventsData, isLoading } = useQuery(getEventPastOptions());
+  const { data: eventsData, isLoading } = useQuery({ ...getEventPastOptions(), retry: false });
 
   const pastEvents = eventsData?.data || [];
   const transformedEvents = pastEvents.map(transformEventData);
