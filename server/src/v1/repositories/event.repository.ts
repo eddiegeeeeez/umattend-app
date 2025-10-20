@@ -137,7 +137,7 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
     }
 
     const student = await tx.student.findUnique({
-      where: { id: student_id },
+      where: { student_id },
     });
 
     if (!student) {
@@ -161,7 +161,6 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
         student_id,
         check_in_by,
         check_in_at: check_in_at ?? new Date().toISOString(),
-        userId: student.user_id,
       },
       include: {
         event: true,
@@ -188,7 +187,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
     }
 
     const student = await tx.student.findUnique({
-      where: { id: student_id },
+      where: { student_id },
     });
 
     if (!student) {
@@ -430,7 +429,7 @@ const getEventCheckinCount = async (event_id: string) => {
   });
 };
 
-const checkIfUserAttended = async (event_id: string, student_id: string) => {
+const checkIfUserAttended = async (event_id: string, student_id: number) => {
   const [event, attendance] = await Promise.all([
     prisma.events.findUnique({
       where: { id: event_id },

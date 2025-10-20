@@ -133,7 +133,7 @@ model events {
 model attendance {
   id           String    @id @default(cuid())
   event_id     String
-  student_id   String
+  student_id   Int
   check_in_at  DateTime  @default(now())
   check_out_at DateTime?
 
@@ -141,20 +141,19 @@ model attendance {
   check_out_by String?
 
   event             events  @relation(fields: [event_id], references: [id], onDelete: Cascade)
-  student           student @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  student           student @relation(fields: [student_id], references: [student_id], onDelete: Cascade)
   check_in_by_user  user    @relation("CheckInByUser", fields: [check_in_by], references: [id], onDelete: Cascade)
   check_out_by_user user?   @relation("CheckOutByUser", fields: [check_out_by], references: [id], onDelete: Cascade)
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  user       user?    @relation(fields: [userId], references: [id])
-  userId     String?
 
   @@index([event_id])
   @@index([student_id])
   @@index([check_in_at])
   @@index([check_out_at])
   @@map("attendances")
+  user user[]
 }
 
 model organizers {

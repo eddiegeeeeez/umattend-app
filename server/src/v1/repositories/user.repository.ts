@@ -41,10 +41,10 @@ const onboardUser = async (
   return user;
 };
 
-const getUserAttendedEvents = async (user_id: string) => {
+const getUserAttendedEvents = async (student_id: number) => {
   const attendedEvents = await prisma.attendance.findMany({
     where: {
-      userId: user_id,
+      student_id: student_id,
     },
     select: {
       event: {
@@ -68,10 +68,10 @@ const getUserAttendedEvents = async (user_id: string) => {
   }));
 };
 
-const getUserAttendedEventsDetailed = async (user_id: string) => {
+const getUserAttendedEventsDetailed = async (student_id: number) => {
   // First get the student_id for this user
   const student = await prisma.student.findUnique({
-    where: { user_id },
+    where: { student_id },
     select: { id: true },
   });
 
@@ -81,7 +81,7 @@ const getUserAttendedEventsDetailed = async (user_id: string) => {
 
   const attendedEvents = await prisma.attendance.findMany({
     where: {
-      student_id: student.id,
+      student_id,
     },
     select: {
       event: {
