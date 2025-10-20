@@ -49,8 +49,8 @@ const ProfilePage = () => {
     () => ({
       type: 'canvas',
       shape: 'square',
-      width: 170,
-      height: 170,
+      width: 300,
+      height: 300,
       margin: 0,
       qrOptions: {
         mode: 'Byte',
@@ -136,12 +136,14 @@ const ProfilePage = () => {
               {/* Right Column - QR Code and Actions */}
               <div className="flex w-full flex-1 flex-col gap-8">
                 {/* QR Code Card */}
-                <div className="border-border bg-background/90 rounded-xl border p-6 shadow-lg">
+                <div className="border-border bg-background/90 rounded-xl border p-4 shadow-lg">
                   <div className="flex flex-col items-center gap-6 sm:flex-row">
                     <div className="flex-shrink-0">
+                      <style>{`.qr-container canvas, .qr-container svg { width: 100% !important; height: auto !important; display: block; border-radius: 14px !important;}`}</style>
+
                       <div
                         ref={ref}
-                        className="border-primary/30 bg-primary/5 pointer-events-none flex h-44 w-44 items-center justify-center rounded-xl border-2 border-dashed select-none"
+                        className="qr-container border-primary/30 pointer-events-none aspect-square w-full sm:max-w-[190px] items-center justify-center rounded-xl border-dashed select-none border-2"
                         onContextMenu={(e) => e.preventDefault()}
                         style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
                       />
@@ -149,7 +151,7 @@ const ProfilePage = () => {
                     <div className="flex-1 text-center sm:text-left">
                       <h3 className="text-foreground mb-2 text-xl font-bold">Your Digital Pass</h3>
                       <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                        Use this QR code to quickly check in and out of events. Event organizers can scan it to verify your attendance.
+                        Use this QR code to check in and out of events. Event organizers can scan it to verify your attendance.
                       </p>
                     </div>
                   </div>
