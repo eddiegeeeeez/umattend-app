@@ -16,7 +16,8 @@ import type { Event } from '@/types/events';
 import { getEventByEventIdOptions } from '@/api/client/@tanstack/react-query.gen';
 import { getEventStatus } from '@/lib/events-utils';
 import { formatTimePadded } from '@/lib/utils';
-import { EventQRScanner } from '@/components/event/manage/qr-scanner/event-qr-scanner';
+import { EventCheckInScanner } from '@/components/event/manage/qr-scanner/event-check-in-scanner';
+import { EventCheckOutScanner } from '@/components/event/manage/qr-scanner/event-check-out-scanner';
 
 export default function ManageSingleEventPage() {
   const params = useParams();
@@ -71,6 +72,11 @@ export default function ManageSingleEventPage() {
   const startDate = apiEvent.start_time ? new Date(apiEvent.start_time) : new Date();
   const endDate = apiEvent.end_time ? new Date(apiEvent.end_time) : new Date();
 
+  // Determine if event has started
+  const now = new Date();
+  const isEventStarted = startDate <= now;
+  const isEventDone = apiEvent.is_done || false;
+
   const event: Event = {
     id: apiEvent.id || '',
     name: apiEvent.title || 'Untitled Event',
@@ -112,9 +118,14 @@ export default function ManageSingleEventPage() {
                 Attendees
               </TabsTrigger>
 
-              <TabsTrigger value="qr-scanner" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
+              <TabsTrigger value="check-in" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
                 <UserCheck className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                QR Scanner
+                Check In
+              </TabsTrigger>
+
+              <TabsTrigger value="check-out" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
+                <UserCheck className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                Check Out
               </TabsTrigger>
 
               <TabsTrigger value="organizers" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
@@ -128,11 +139,24 @@ export default function ManageSingleEventPage() {
             <EventDetails event={event} />
           </TabsContent>
 
-          <TabsContent value="qr-scanner">
-            <EventQRScanner 
+          <TabsContent value="check-in">
+            <EventCheckInScanner 
               eventId={event.id}
+              isEventDone={isEventDone}
+              isEventStarted={isEventStarted}
               onAttendeeScanned={(attendeeId) => {
-                console.log("[v0] Attendee scanned:", attendeeId)
+                console.log("[Check-In] Scanned:", attendeeId)
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="check-out">
+            <EventCheckOutScanner 
+              eventId={event.id}
+              isEventDone={isEventDone}
+              isEventStarted={isEventStarted}
+              onAttendeeScanned={(attendeeId) => {
+                console.log("[Check-Out] Scanned:", attendeeId)
               }}
             />
           </TabsContent>
