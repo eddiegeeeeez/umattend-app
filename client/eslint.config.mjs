@@ -9,8 +9,6 @@ const compat = new FlatCompat({
   baseDirectory: __dirname
 });
 
-const isProduction = process.env.NEXT_PUBLIC_ENV === 'PRODUCTION' || process.env.NODE_ENV === 'PRODUCTION';
-
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
@@ -26,14 +24,12 @@ const eslintConfig = [
           'ts-nocheck': true
         }
       ],
-      'no-console': isProduction
-        ? [
-            'error',
-            {
-              allow: ['warn', 'error']
-            }
-          ]
-        : 'off'
+      'no-console': [
+        'error',
+        {
+          allow: ['warn', 'error']
+        }
+      ]
     }
   },
   {

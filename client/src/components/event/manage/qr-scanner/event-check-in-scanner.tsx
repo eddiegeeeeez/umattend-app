@@ -14,10 +14,9 @@ interface EventCheckInScannerProps {
   eventId: string;
   isEventDone: boolean;
   isEventStarted: boolean;
-  onAttendeeScanned: (attendeeId: string) => void;
 }
 
-export function EventCheckInScanner({ eventId, isEventDone, isEventStarted, onAttendeeScanned }: EventCheckInScannerProps) {
+export function EventCheckInScanner({ eventId, isEventDone, isEventStarted }: EventCheckInScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedValue, setScannedValue] = useState<string | null>(null);
   const [showDialog, setShowDialog] = useState(false);
@@ -32,15 +31,13 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted, onAt
   // Check-in mutation
   const checkInMutation = useMutation({
     ...postEventCheckInByEventIdByQrCodeMutation(),
-    onSuccess: (data) => {
-      console.log(data);
+    onSuccess: () => {
       toast.success('Check-in successful!');
       setShowDialog(false);
       setIsProcessing(false);
       setScannedValue(null);
       // Reset scanner for next scan
       lastScannedRef.current = '';
-      console.log('[Check-In Scanner] Success:', data);
     },
     onError: (error) => {
       setIsProcessing(false);
@@ -60,7 +57,6 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted, onAt
     script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
     script.onload = () => {
       setJsQRLoaded(true);
-      console.log('[Check-In Scanner] jsQR library loaded successfully');
     };
     script.onerror = () => {
       console.error('[Check-In Scanner] Failed to load jsQR library');
@@ -92,9 +88,6 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted, onAt
             setScannedValue(detectedCode);
             setShowDialog(true);
             setIsProcessing(true);
-            console.log('[Check-In Scanner] QR Code detected:', detectedCode);
-
-            onAttendeeScanned(detectedCode);
 
             // FIX: Use user_id instead of student_id
             checkInMutation.mutate({
@@ -118,7 +111,6 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted, onAt
 
     const code = window.jsQR(imageData.data, imageData.width, imageData.height);
     if (code) {
-      console.log('[Check-In Scanner] QR code data extracted:', code.data);
       return code.data;
     }
 
@@ -128,14 +120,12 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted, onAt
   const startCamera = async () => {
     try {
       setIsScanning(true);
-      console.log('[Check-In Scanner] Starting camera...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
-          console.log('[Check-In Scanner] Camera stream loaded, starting auto-scan');
           startAutoScan();
         };
       }
@@ -152,7 +142,6 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted, onAt
       tracks.forEach((track) => track.stop());
     }
     setIsScanning(false);
-    console.log('[Check-In Scanner] Camera stopped');
   };
 
   // Show message if event hasn't started or is done

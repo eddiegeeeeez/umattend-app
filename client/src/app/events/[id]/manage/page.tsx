@@ -140,25 +140,11 @@ export default function ManageSingleEventPage() {
           </TabsContent>
 
           <TabsContent value="check-in">
-            <EventCheckInScanner
-              eventId={event.id}
-              isEventDone={isEventDone}
-              isEventStarted={isEventStarted}
-              onAttendeeScanned={(attendeeId) => {
-                console.log('[Check-In] Scanned:', attendeeId);
-              }}
-            />
+            <EventCheckInScanner eventId={event.id} isEventDone={isEventDone} isEventStarted={isEventStarted} />
           </TabsContent>
 
           <TabsContent value="check-out">
-            <EventCheckOutScanner
-              eventId={event.id}
-              isEventDone={isEventDone}
-              isEventStarted={isEventStarted}
-              onAttendeeScanned={(attendeeId) => {
-                console.log('[Check-Out] Scanned:', attendeeId);
-              }}
-            />
+            <EventCheckOutScanner eventId={event.id} isEventDone={isEventDone} isEventStarted={isEventStarted} />
           </TabsContent>
 
           <TabsContent value="organizers">

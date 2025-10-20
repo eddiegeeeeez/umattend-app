@@ -25,8 +25,6 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
   const {
     data: attendeesData,
     isLoading,
-    isError,
-    error,
     refetch
   } = useQuery({
     ...getEventByEventIdAttendeesOptions({
@@ -43,10 +41,6 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
     enabled: !!eventId,
     retry: false
   });
-
-  console.log(isError);
-
-  console.log(error);
 
   const handleRefresh = () => {
     refetch();

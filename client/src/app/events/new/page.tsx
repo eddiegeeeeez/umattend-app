@@ -129,8 +129,6 @@ export default function CreateEventPage() {
       router.push('/events');
     },
     onError: (error) => {
-      console.error('Create event error:', error);
-
       const response = error.response;
       const errorData = response?.data;
       let errorMessage = 'Failed to create event';
@@ -204,8 +202,6 @@ export default function CreateEventPage() {
       check_out_required: data.check_out_required,
       is_done: false
     };
-
-    console.log('Payload before capacity check:', payload);
 
     // Only add capacity field if it has a value
     if (!data.isUnlimitedCapacity && data.capacity) {

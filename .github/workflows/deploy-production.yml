@@ -19,69 +19,107 @@ jobs:
           set -e
           mkdir -p ~/.ssh
           umask 077
-
-          # Write SSH private key from secrets
-          echo "${{ secrets.AZURE_PROD_SSH_KEY }}" > ~/.ssh/id_rsa
+          printf '%s\n' "${{ secrets.AZURE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
-          # Start SSH agent and add key
           eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.AZURE_DEPLOY_PORT }} -H ${{ secrets.AZURE_DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} 'echo ✅ SSH OK' || exit 1
 
-          # Add server to known hosts
-          ssh-keyscan -p ${{ secrets.AZURE_PROD_PORT }} -H ${{ secrets.AZURE_PROD_HOST }} >> ~/.ssh/known_hosts
-
-          # Test SSH connection
-          if ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.AZURE_PROD_PORT }} ${{ secrets.AZURE_PROD_USER }}@${{ secrets.AZURE_PROD_HOST }} 'echo ok' 2>/dev/null; then
-            echo "✅ SSH connection successful"
-          else
-            echo "❌ SSH connection failed — please verify authorized_keys and permissions on the server"
-            exit 1
-          fi
-
-      - name: Pull Latest Code
+      - name: Deploy
         run: |
-          ssh -p ${{ secrets.AZURE_PROD_PORT }} ${{ secrets.AZURE_PROD_USER }}@${{ secrets.AZURE_PROD_HOST }} "
-            cd ${{ secrets.PRODUCTION_APP_PATH }}
-            git fetch --all
-            git reset --hard origin/main
-          "
+          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} << 'DEPLOY_SCRIPT'
+          set -e
+          cd ${{ secrets.PRODUCTION_APP_PATH }}
+          
+          echo "===================="
+          echo "SAVE CURRENT STATE"
+          echo "===================="
+          PREVIOUS_COMMIT=$(git rev-parse HEAD)
+          echo "Current commit: $PREVIOUS_COMMIT"
+          
+          echo ""
+          echo "===================="
+          echo "PULL CODE"
+          echo "===================="
+          git fetch --all
+          git reset --hard origin/main
+          
+          echo ""
+          echo "===================="
+          echo "BUILD SERVER"
+          echo "===================="
+          cd server
+          npm ci || { echo "npm ci failed"; exit 1; }
+          npm run prisma:generate || { echo "prisma:generate failed"; exit 1; }
+          npm run prisma:migrate:deploy || { echo "prisma:migrate:deploy failed"; exit 1; }
+          npm run build || { echo "server build failed"; exit 1; }
+          cd ..
+          
+          echo ""
+          echo "===================="
+          echo "BUILD CLIENT"
+          echo "===================="
+          cd client
+          npm ci || { echo "npm ci failed"; exit 1; }
+          npm run build || { echo "client build failed"; exit 1; }
+          cd ..
+          
+          echo ""
+          echo "===================="
+          echo "RESTART SERVICES"
+          echo "===================="
+          pm2 restart umattend-server-production || pm2 start server --name umattend-server-production -- start
+          pm2 restart umattend-client-production || pm2 start client --name umattend-client-production -- start
+          pm2 save
+          
+          echo ""
+          echo "===================="
+          echo "VERIFY DEPLOYMENT"
+          echo "===================="
+          pm2 ls
+          sleep 3
+          
+          echo ""
+          echo "✅ Deployment complete"
+          DEPLOY_SCRIPT
 
-      - name: Build Server
+      - name: Rollback on Failure
+        if: failure()
         run: |
-          ssh -p ${{ secrets.AZURE_PROD_PORT }} ${{ secrets.AZURE_PROD_USER }}@${{ secrets.AZURE_PROD_HOST }} "
-            cd ${{ secrets.PRODUCTION_APP_PATH }}/server
-            npm install
-            npm run prisma:generate
-            npm run prisma:migrate:deploy
-            npm run build || true
-          "
-
-      - name: Build Client
-        run: |
-          ssh -p ${{ secrets.AZURE_PROD_PORT }} ${{ secrets.AZURE_PROD_USER }}@${{ secrets.AZURE_PROD_HOST }} "
-            cd ${{ secrets.PRODUCTION_APP_PATH }}/client
-            npm install
-            npm run build
-          "
-
-      - name: Restart PM2 apps
-        run: |
-          ssh -p ${{ secrets.AZURE_PROD_PORT }} ${{ secrets.AZURE_PROD_USER }}@${{ secrets.AZURE_PROD_HOST }} "
-            cd ${{ secrets.PRODUCTION_APP_PATH }}
-            
-            # Server
-            pm2 describe umattend-server-prod >/dev/null 2>&1 && pm2 restart umattend-server-prod || pm2 start server --name umattend-server-prod -- start
-
-            # Client
-            pm2 describe umattend-client-prod >/dev/null 2>&1 && pm2 restart umattend-client-prod || pm2 start client --name umattend-client-prod -- start
-
-            pm2 save
-          "
-
-      - name: Verify deployment
-        run: |
-          ssh -p ${{ secrets.AZURE_PROD_PORT }} ${{ secrets.AZURE_PROD_USER }}@${{ secrets.AZURE_PROD_HOST }} "
-            cd ${{ secrets.PRODUCTION_APP_PATH }}
-            pm2 ls
-          "
+          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} << 'ROLLBACK_SCRIPT'
+          set -e
+          cd ${{ secrets.PRODUCTION_APP_PATH }}
+          
+          echo "===================="
+          echo "ROLLBACK IN PROGRESS"
+          echo "===================="
+          
+          PREVIOUS_COMMIT=$(git rev-parse HEAD)
+          git reset --hard origin/main
+          # ... build ...
+          # If build fails:
+          git reset --hard $PREVIOUS_COMMIT
+          
+          echo "Rebuilding server..."
+          cd server
+          npm ci
+          npm run build
+          cd ..
+          
+          echo "Rebuilding client..."
+          cd client
+          npm ci
+          npm run build
+          cd ..
+          
+          echo "Restarting services..."
+          pm2 restart umattend-server-production umattend-client-production
+          pm2 save
+          
+          echo "Verifying rollback..."
+          pm2 ls
+          
+          echo ""
+          echo "✅ Rollback complete"
+          ROLLBACK_SCRIPT

@@ -14,10 +14,9 @@ interface EventCheckOutScannerProps {
   eventId: string;
   isEventDone: boolean;
   isEventStarted: boolean;
-  onAttendeeScanned: (attendeeId: string) => void;
 }
 
-export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onAttendeeScanned }: EventCheckOutScannerProps) {
+export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted }: EventCheckOutScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedValue, setScannedValue] = useState<string | null>(null);
   const [showDialog, setShowDialog] = useState(false);
@@ -32,14 +31,13 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
   // Check-out mutation
   const checkOutMutation = useMutation({
     ...postEventCheckOutByEventIdByQrCodeMutation(),
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Check-out successful!');
       setShowDialog(false);
       setIsProcessing(false);
       setScannedValue(null);
       // Reset scanner for next scan
       lastScannedRef.current = '';
-      console.log('[Check-Out Scanner] Success:', data);
     },
     onError: (error) => {
       setIsProcessing(false);
@@ -59,7 +57,6 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
     script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
     script.onload = () => {
       setJsQRLoaded(true);
-      console.log('[Check-Out Scanner] jsQR library loaded successfully');
     };
     script.onerror = () => {
       console.error('[Check-Out Scanner] Failed to load jsQR library');
@@ -91,10 +88,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
             setScannedValue(detectedCode);
             setShowDialog(true);
             setIsProcessing(true);
-            console.log('[Check-Out Scanner] QR Code detected:', detectedCode);
 
-            // Automatically trigger check-out
-            onAttendeeScanned(detectedCode);
             checkOutMutation.mutate({
               path: {
                 event_id: eventId,
@@ -117,7 +111,6 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
 
     const code = window.jsQR(imageData.data, imageData.width, imageData.height);
     if (code) {
-      console.log('[Check-Out Scanner] QR code data extracted:', code.data);
       return code.data;
     }
 
@@ -127,14 +120,13 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
   const startCamera = async () => {
     try {
       setIsScanning(true);
-      console.log('[Check-Out Scanner] Starting camera...');
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
-          console.log('[Check-Out Scanner] Camera stream loaded, starting auto-scan');
           startAutoScan();
         };
       }
@@ -151,7 +143,6 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
       tracks.forEach((track) => track.stop());
     }
     setIsScanning(false);
-    console.log('[Check-Out Scanner] Camera stopped');
   };
 
   // Show message if event hasn't started or is done

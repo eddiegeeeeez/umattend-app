@@ -30,10 +30,9 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
     script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
     script.onload = () => {
       setJsQRLoaded(true);
-      console.log('[v0] jsQR library loaded successfully');
     };
     script.onerror = () => {
-      console.error('[v0] Failed to load jsQR library');
+      console.error('Failed to load jsQR library');
     };
     document.head.appendChild(script);
     return () => {
@@ -60,8 +59,6 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
             setScannedValue(detectedCode);
             setShowDialog(true);
             setIsProcessing(true);
-            console.log('[v0] QR Code detected:', detectedCode);
-            console.log('[v0] Dialog opened with scanned value:', detectedCode);
           }
         }
       }
@@ -78,7 +75,6 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
 
     const code = window.jsQR(imageData.data, imageData.width, imageData.height);
     if (code) {
-      console.log('[v0] QR code data extracted:', code.data);
       return code.data;
     }
 
@@ -88,19 +84,17 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
   const startCamera = async () => {
     try {
       setIsScanning(true);
-      console.log('[v0] Starting camera...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
-          console.log('[v0] Camera stream loaded, starting auto-scan');
           startAutoScan();
         };
       }
     } catch (error) {
-      console.error('[v0] Camera access error:', error);
+      console.error('Camera access error:', error);
       setIsScanning(false);
     }
   };
@@ -112,15 +106,12 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
       tracks.forEach((track) => track.stop());
     }
     setIsScanning(false);
-    console.log('[v0] Camera stopped');
   };
 
   const handleConfirmScan = () => {
     if (scannedValue) {
       setTimeout(() => {
         onAttendeeScanned(scannedValue);
-        console.log('[v0] Confirmed scanned value:', scannedValue);
-        console.log('[v0] Dialog closed after confirmation');
         setShowDialog(false);
         setIsProcessing(false);
       }, 1500);
