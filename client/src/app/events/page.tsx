@@ -22,7 +22,7 @@ export default function DashboardPage() {
   });
 
   const events = eventsData?.data || [];
-  const transformedEvents = events.map(transformEventData);
+  const transformedEvents = events.map(transformEventData).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
   const selectedEvent = transformedEvents.find((event) => event.apiId === selectedEventId);
 
   const handleEventClick = (eventId: string) => {

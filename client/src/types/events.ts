@@ -22,6 +22,7 @@ export interface EventCardData {
   check_out_required?: boolean;
   checkin_count?: number;
   checkout_count?: number;
+  startDateTime?: Date;
 }
 
 export interface Event {

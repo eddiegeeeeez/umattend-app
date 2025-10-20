@@ -14,7 +14,6 @@ import type { ApiEventData } from '@/types/events';
 import { getEventByEventIdOptions } from '@/api/client/@tanstack/react-query.gen';
 import { getEventStatus, getAttendanceStatus } from '@/lib/events-utils';
 import { formatDate, formatTime } from '@/lib/utils';
-import { useAuthStore } from '@/store/authStore';
 
 const EventDetailsSkeleton = () => {
   return (
@@ -94,8 +93,6 @@ const EventDetailsSkeleton = () => {
 
 export default function EventDetailsPage() {
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const isAdmin = user?.role && ['admin'].includes(user.role);
 
   const params = useParams();
   const eventId = params?.id as string;
@@ -183,7 +180,7 @@ export default function EventDetailsPage() {
                 {/* Primary CTA */}
                 <div className="flex flex-wrap gap-3 pt-2">
                   {event.can_edit ||
-                    (isAdmin && eventStatus !== 'upcoming' && (
+                    (eventStatus !== 'upcoming' && (
                       <>
                         {attendanceStatus === 'attended' ? (
                           <Badge className="bg-green-100 px-4 py-2 text-sm text-green-800">✓ Attended</Badge>
@@ -194,7 +191,7 @@ export default function EventDetailsPage() {
                         )}
                       </>
                     ))}
-                  {(event.can_edit || isAdmin) && (
+                  {(event.can_edit) && (
                     <Button
                       size="lg"
                       variant="outline"
