@@ -57,7 +57,14 @@ const onboardUser = async (
 const getUserAttendedEvents = async (
   user_id: string
 ): Promise<FetchUserAttendedEvents[] | null> => {
-  const events = await userRepository.getUserAttendedEvents(user_id);
+  const student = await userRepository.findUserById(user_id);
+  if (!student || !student.student) {
+    return null;
+  }
+
+  const events = await userRepository.getUserAttendedEvents(
+    student.student.student_id
+  );
   if (!events) {
     return null;
   }
@@ -68,7 +75,14 @@ const getUserAttendedEvents = async (
 const getUserAttendedEventsDetailed = async (
   user_id: string
 ): Promise<FetchUserAttendedEventsDetailed[]> => {
-  const events = await userRepository.getUserAttendedEventsDetailed(user_id);
+  const student = await userRepository.findUserById(user_id);
+  if (!student || !student.student) {
+    throw new NotFoundError('User not found');
+  }
+
+  const events = await userRepository.getUserAttendedEventsDetailed(
+    student.student.student_id
+  );
   return events;
 };
 

@@ -17,6 +17,9 @@ export const checkOrganizer = async (
 
     const organizer = await eventRepository.checkOrganizer(user_id, event_id);
 
+
+    
+
     if (!organizer) {
       return HTTPErrorResponse(
         res,

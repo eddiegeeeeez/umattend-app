@@ -72,11 +72,11 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
   };
 
   const detectQRCode = (imageData: ImageData): string | null => {
-    if (typeof (window as any).jsQR === 'undefined') {
+    if (typeof (window).jsQR === 'undefined') {
       return null;
     }
 
-    const code = (window as any).jsQR(imageData.data, imageData.width, imageData.height);
+    const code = (window).jsQR(imageData.data, imageData.width, imageData.height);
     if (code) {
       console.log('[v0] QR code data extracted:', code.data);
       return code.data;

@@ -217,7 +217,7 @@ const createCheckInEvent = async (
     if (!qr_code) {
       return HTTPErrorResponse(res, 400, 'Invalid QR Code');
     }
-    let student_id: string = '';
+    let student_id: number = 0;
     if (qr_code) {
       try {
         const { valid, student_id: qrStudentId } = decodeAndVerifyQR(qr_code);
@@ -226,7 +226,7 @@ const createCheckInEvent = async (
           return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
         }
 
-        student_id = qrStudentId;
+        student_id = Number(qrStudentId);
       } catch {
         return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
       }
@@ -312,7 +312,7 @@ const createCheckOutEvent = async (
       return HTTPErrorResponse(res, 400, 'Invalid QR Code');
     }
 
-    let student_id: string = '';
+    let student_id: number = 0;
 
     if (!student_id && qr_code) {
       try {
@@ -322,7 +322,7 @@ const createCheckOutEvent = async (
           return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
         }
 
-        student_id = qrStudentId;
+        student_id = Number(qrStudentId);
       } catch {
         return HTTPErrorResponse(res, 400, 'Invalid or expired QR code');
       }

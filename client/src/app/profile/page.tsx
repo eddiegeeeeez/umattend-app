@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRef, useEffect, useMemo } from 'react';
-import { Calendar, Mail, Users } from 'lucide-react';
+import { Calendar, Mail, Users, Settings } from 'lucide-react';
+import Link from 'next/link';
 import QRCodeStyling, { Options } from 'qr-code-styling';
 import { useQuery } from '@tanstack/react-query';
 import ProfileSkeleton from '@/components/profile/profile-skeleton';
@@ -126,6 +127,14 @@ const ProfilePage = () => {
                     <p className="text-muted-foreground mb-1 text-center text-sm font-bold">{user?.student_id}</p>
                     <p className="text-muted-foreground mb-2 text-center text-sm">{user?.department}</p>
                     <p className="text-muted-foreground mb-2 text-center text-sm">{user?.program}</p>
+                    <div className="mt-4 flex justify-center">
+                      <Link href="/profile/settings">
+                        <Button variant="outline" size="sm" className="border-border hover:bg-muted gap-2">
+                          <Settings className="h-4 w-4" />
+                          Account Settings
+                        </Button>
+                      </Link>
+                    </div>
                     {/* Stats Cards */}
                   </div>
                 </div>
@@ -153,7 +162,7 @@ const ProfilePage = () => {
 
                       <div
                         ref={ref}
-                        className="qr-container border-primary/30 pointer-events-none aspect-square w-full sm:max-w-[190px] items-center justify-center rounded-xl border-dashed select-none border-2 p-1"
+                        className="qr-container border-primary/30 pointer-events-none aspect-square w-full items-center justify-center rounded-xl border-2 border-dashed select-none sm:max-w-[190px]"
                         onContextMenu={(e) => e.preventDefault()}
                         style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
                       />

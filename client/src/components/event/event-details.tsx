@@ -5,7 +5,6 @@ import type { EventCardData, EventStatus } from '@/types/events';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
-import { useAuthStore } from '@/store/authStore';
 
 interface EventDetailsProps {
   event: EventCardData & { apiId?: string; eventStatus?: EventStatus };
@@ -14,8 +13,6 @@ interface EventDetailsProps {
 
 const EventDetails = ({ event, onClose }: EventDetailsProps) => {
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const isAdmin = user?.role && ['admin'].includes(user.role);
 
   const { id, apiId, title, description, dayOfWeek, date, startTime, endTime, hasLocation = false, location, attendees = 0 } = event;
 
@@ -32,7 +29,7 @@ const EventDetails = ({ event, onClose }: EventDetailsProps) => {
             <ChevronsLeft />
           </Button>
           <div className="flex items-center gap-2">
-            {(event.can_edit || isAdmin) && (
+            {(event.can_edit) && (
               <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push(`/events/${eventId}/manage`)}>
                 <Settings className="h-4 w-4" />
                 Manage

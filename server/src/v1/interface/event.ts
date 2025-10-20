@@ -31,14 +31,14 @@ export interface UpdateEventInterface {
 }
 
 export interface AddCheckInInterface {
-  student_id: string;
+  student_id: number;
   event_id: string;
   check_in_at: string;
   check_in_by: string;
 }
 
 export interface AddCheckOutInterface {
-  student_id: string;
+  student_id: number;
   event_id: string;
   check_out_at: string;
   check_out_by: string;

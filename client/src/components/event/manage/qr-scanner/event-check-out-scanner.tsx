@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
-import { postEventCheckOutByEventIdByUserIdMutation } from '@/api/client/@tanstack/react-query.gen';
+import { postEventCheckOutByEventIdByQrCodeMutation } from '@/api/client/@tanstack/react-query.gen';
 
 interface EventCheckOutScannerProps {
   eventId: string;
@@ -31,7 +31,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
 
   // Check-out mutation
   const checkOutMutation = useMutation({
-    ...postEventCheckOutByEventIdByUserIdMutation(),
+    ...postEventCheckOutByEventIdByQrCodeMutation(),
     onSuccess: (data) => {
       toast.success('Check-out successful!');
       setShowDialog(false);
@@ -41,7 +41,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
       lastScannedRef.current = '';
       console.log('[Check-Out Scanner] Success:', data);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       setIsProcessing(false);
       setShowDialog(false);
       const errorMessage = error?.response?.data?.message || 'Failed to check out student';
@@ -98,7 +98,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
             checkOutMutation.mutate({
               path: {
                 event_id: eventId,
-                student_id: detectedCode
+                qr_code: detectedCode
               }
             });
           }
@@ -111,11 +111,11 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
   };
 
   const detectQRCode = (imageData: ImageData): string | null => {
-    if (typeof (window as any).jsQR === 'undefined') {
+    if (typeof (window).jsQR === 'undefined') {
       return null;
     }
 
-    const code = (window as any).jsQR(imageData.data, imageData.width, imageData.height);
+    const code = (window).jsQR(imageData.data, imageData.width, imageData.height);
     if (code) {
       console.log('[Check-Out Scanner] QR code data extracted:', code.data);
       return code.data;

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import EventContent from '@/components/event/event-content';
-import EventContentEmpty from '@/components/event/event-content-empty';
+import PastEventContentEmpty from '@/components/event/past-event-content-empty';
 import EventDetails from '@/components/event/event-details';
 import EventsSkeleton from '@/components/event/events-skeleton';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -68,7 +68,7 @@ export default function PastEventsPage() {
             ))}
           </div>
         ) : (
-          <EventContentEmpty />
+          <PastEventContentEmpty />
         )}
       </main>
 

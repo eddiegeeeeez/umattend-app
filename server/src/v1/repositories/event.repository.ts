@@ -137,7 +137,7 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
     }
 
     const student = await tx.student.findUnique({
-      where: { id: student_id },
+      where: { student_id },
     });
 
     if (!student) {
@@ -161,7 +161,6 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
         student_id,
         check_in_by,
         check_in_at: check_in_at ?? new Date().toISOString(),
-        userId: student.user_id,
       },
       include: {
         event: true,
@@ -188,7 +187,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
     }
 
     const student = await tx.student.findUnique({
-      where: { id: student_id },
+      where: { student_id },
     });
 
     if (!student) {
@@ -317,10 +316,9 @@ const getPaginatedAttendeesByEventId = async (
 ) => {
   const skip = (page - 1) * limit;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // Build where clause
   const whereClause: any = { event_id };
 
-  // Add search functionality
   if (search) {
     whereClause.OR = [
       {
@@ -334,15 +332,17 @@ const getPaginatedAttendeesByEventId = async (
       {
         student: {
           student_id: {
-            contains: search,
+            equals: Number(search), // better than contains for numeric IDs
           },
         },
       },
       {
-        user: {
-          umindanao_email: {
-            contains: search,
-            mode: 'insensitive',
+        student: {
+          user: {
+            umindanao_email: {
+              contains: search,
+              mode: 'insensitive',
+            },
           },
         },
       },
@@ -353,9 +353,6 @@ const getPaginatedAttendeesByEventId = async (
     prisma.attendance.findMany({
       where: whereClause,
       include: {
-        user: {
-          select: { umindanao_email: true },
-        },
         student: {
           select: {
             id: true,
@@ -367,6 +364,10 @@ const getPaginatedAttendeesByEventId = async (
             profile_picture: true,
             created_at: true,
             updated_at: true,
+            user: {
+              // ✅ now nested under student
+              select: { umindanao_email: true },
+            },
           },
         },
         check_in_by_user: {
@@ -392,7 +393,6 @@ const getAttendeesByEventId = async (event_id: string) => {
   return await prisma.attendance.findMany({
     where: { event_id: event_id },
     include: {
-      user: { select: { umindanao_email: true } },
       student: {
         select: {
           id: true,
@@ -404,6 +404,9 @@ const getAttendeesByEventId = async (event_id: string) => {
           profile_picture: true,
           created_at: true,
           updated_at: true,
+          user: {
+            select: { umindanao_email: true },
+          },
         },
       },
       check_in_by_user: { select: { id: true } },
@@ -430,7 +433,7 @@ const getEventCheckinCount = async (event_id: string) => {
   });
 };
 
-const checkIfUserAttended = async (event_id: string, student_id: string) => {
+const checkIfUserAttended = async (event_id: string, student_id: number) => {
   const [event, attendance] = await Promise.all([
     prisma.events.findUnique({
       where: { id: event_id },
