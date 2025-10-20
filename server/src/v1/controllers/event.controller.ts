@@ -209,23 +209,16 @@ const createCheckInEvent = async (
 ): Promise<Response> => {
   try {
     const { qr_code, event_id } = req.params;
-    const student_id_body = req.body.student_id;
 
     if (!event_id) {
       return HTTPErrorResponse(res, 400, 'event_id is required');
     }
 
-    if (!student_id_body && !qr_code) {
-      return HTTPErrorResponse(
-        res,
-        400,
-        'Either student_id or qr_code is required'
-      );
+    if (!qr_code) {
+      return HTTPErrorResponse(res, 400, 'Invalid QR Code');
     }
-
-    let student_id: string = student_id_body ?? '';
-
-    if (!student_id && qr_code) {
+    let student_id: string = '';
+    if (qr_code) {
       try {
         const { valid, student_id: qrStudentId } = decodeAndVerifyQR(qr_code);
 
@@ -310,17 +303,16 @@ const createCheckOutEvent = async (
 ): Promise<Response> => {
   try {
     const { qr_code, event_id } = req.params;
-    const student_id_body = req.body.student_id;
 
     if (!event_id) {
       return HTTPErrorResponse(res, 400, 'event_id is required');
     }
 
-    if (!student_id_body && !qr_code) {
-      return HTTPErrorResponse(res, 400, 'Invalid Body or QR Code');
+    if (!qr_code) {
+      return HTTPErrorResponse(res, 400, 'Invalid QR Code');
     }
 
-    let student_id: string = student_id_body ?? '';
+    let student_id: string = '';
 
     if (!student_id && qr_code) {
       try {

@@ -32,14 +32,14 @@ router.put(
   eventController.updateEvent
 );
 router.post(
-  `/check_in/:event_id/:student_id`,
+  `/check_in/:event_id/:qr_code`,
   authMiddleware,
   checkRole('admin', 'csg'),
   checkOrganizer,
   eventController.createCheckInEvent
 );
 router.post(
-  `/check_out/:event_id/:student_id`,
+  `/check_out/:event_id/:qr_code`,
   authMiddleware,
   checkRole('admin', 'csg'),
   checkOrganizer,

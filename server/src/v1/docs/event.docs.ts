@@ -557,26 +557,28 @@ const updateAndDeleteEvent = {
 };
 
 const checkIn = {
-  '/event/check_in/{event_id}/{user_id}': {
+  '/event/check_in/{event_id}/{qr_code}': {
     post: {
       tags: ['Event'],
       summary: 'Check in user',
-      description: 'Check in a user to an event (Admin/CSG/Organizer only)',
+      description:
+        'Check in a user to an event (Admin/CSG/Organizer only). The controller expects a QR code path parameter which will be decoded to obtain the student_id.',
       security: [{ bearerAuth: [] }],
       parameters: [
-        {
-          in: 'path',
-          name: 'student_id',
-          required: true,
-          schema: { type: 'string' },
-          description: 'Student ID',
-        },
         {
           in: 'path',
           name: 'event_id',
           required: true,
           schema: { type: 'string' },
           description: 'Event ID',
+        },
+        {
+          in: 'path',
+          name: 'qr_code',
+          required: true,
+          schema: { type: 'string' },
+          description:
+            'QR code token (required). The server will decode and verify it to obtain the student_id.',
         },
       ],
       responses: {
@@ -689,26 +691,28 @@ const checkIn = {
 };
 
 const checkOut = {
-  '/event/check_out/{event_id}/{user_id}': {
+  '/event/check_out/{event_id}/{qr_code}': {
     post: {
       tags: ['Event'],
       summary: 'Check out user',
-      description: 'Check out a user from an event (Admin/CSG/Organizer only)',
+      description:
+        'Check out a user from an event (Admin/CSG/Organizer only). The controller expects a QR code path parameter which will be decoded to obtain the student_id.',
       security: [{ bearerAuth: [] }],
       parameters: [
-        {
-          in: 'path',
-          name: 'student_id',
-          required: true,
-          schema: { type: 'string' },
-          description: 'Student ID',
-        },
         {
           in: 'path',
           name: 'event_id',
           required: true,
           schema: { type: 'string' },
           description: 'Event ID',
+        },
+        {
+          in: 'path',
+          name: 'qr_code',
+          required: true,
+          schema: { type: 'string' },
+          description:
+            'QR code token (required). The server will decode and verify it to obtain the student_id.',
         },
       ],
       responses: {
@@ -1971,7 +1975,7 @@ const getOrganizersByEventId = {
 };
 
 const exportEventAttendeesToExcel = {
-  '/event/export/:event_id': {
+  '/event/export/{event_id}': {
     get: {
       tags: ['Event'],
       summary: 'Export event attendees',
