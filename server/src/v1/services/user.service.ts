@@ -79,12 +79,39 @@ const getUserHostedEvents = async (
   return events;
 };
 
+const updateUserProfile = async (
+  user_id: string,
+  department?: string,
+  program?: string
+) => {
+  const user = await userRepository.updateUserProfile(
+    user_id,
+    department,
+    program
+  );
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  return {
+    id: user.id,
+    umindanao_email: user.umindanao_email,
+    name: user.student?.name ?? undefined,
+    department: user.student?.department ?? undefined,
+    program: user.student?.program ?? undefined,
+    profile_picture: user.student?.profile_picture ?? undefined,
+    done_onboarding: user.done_onboarding,
+    role: user.role,
+  };
+};
+
 const userService = {
   getUserById,
   onboardUser,
   getUserAttendedEvents,
   getUserAttendedEventsDetailed,
   getUserHostedEvents,
+  updateUserProfile,
 };
 
 export default userService;
