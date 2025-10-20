@@ -209,7 +209,7 @@ const createCheckInEvent = async (
 ): Promise<Response> => {
   try {
     const { qr_code, event_id } = req.params;
-    const { student_id: student_id_body } = req.body;
+    const student_id_body = req.body.student_id;
 
     if (!event_id) {
       return HTTPErrorResponse(res, 400, 'event_id is required');
@@ -310,7 +310,7 @@ const createCheckOutEvent = async (
 ): Promise<Response> => {
   try {
     const { qr_code, event_id } = req.params;
-    const { student_id: student_id_body } = req.body;
+    const student_id_body = req.body.student_id;
 
     if (!event_id) {
       return HTTPErrorResponse(res, 400, 'event_id is required');
