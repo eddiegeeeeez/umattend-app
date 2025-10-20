@@ -19,39 +19,23 @@ jobs:
           set -e
           mkdir -p ~/.ssh
           umask 077
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+          # Write SSH private key from secrets
+          echo "${{ secrets.AZURE_DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Start SSH agent and add key (no passphrase)
+          # Start SSH agent and add key
           eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/id_rsa
 
           # Add server to known hosts
-          ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts || true
+          ssh-keyscan -p ${{ secrets.AZURE_DEPLOY_HOST }} -H ${{ secrets.AZURE_DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
           # Test SSH connection
-          if ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
-            echo "✅ SSH agent authentication succeeded"
+          if ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
+            echo "SSH connection successful"
           else
-            echo ""
-            echo "=========================================="
-            echo "❌ SSH AUTHENTICATION FAILED"
-            echo "=========================================="
-            echo ""
-            echo "Common causes:"
-            echo "1. Public key not in ~/.ssh/authorized_keys on server"
-            echo "2. Wrong DEPLOY_USER (current: ${{ secrets.DEPLOY_USER }})"
-            echo "3. SSH server config doesn't allow key authentication"
-            echo "4. Home directory or .ssh permissions wrong on server"
-            echo ""
-            echo "To fix:"
-            echo "1. SSH to your server manually"
-            echo "2. Run: mkdir -p ~/.ssh && chmod 700 ~/.ssh"
-            echo "3. Add your public key to ~/.ssh/authorized_keys"
-            echo "4. Run: chmod 600 ~/.ssh/authorized_keys"
-            echo ""
-            echo "Debug output (verbose SSH connection test):"
-            ssh -vvv -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' || true
+            echo "SSH connection failed — please verify authorized_keys and permissions on the server"
             exit 1
           fi
 
