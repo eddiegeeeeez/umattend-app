@@ -72,11 +72,11 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
   };
 
   const detectQRCode = (imageData: ImageData): string | null => {
-    if (typeof window.jsQR === 'undefined') {
+    if (typeof (window as any).jsQR === 'undefined') {
       return null;
     }
 
-    const code = window.jsQR(imageData.data, imageData.width, imageData.height);
+    const code = (window as any).jsQR(imageData.data, imageData.width, imageData.height);
     if (code) {
       console.log('[v0] QR code data extracted:', code.data);
       return code.data;
@@ -128,26 +128,26 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
   };
 
   return (
-    <div className="w-full space-y-4 md:space-y-6">
+    <div className="w-full space-y-3 sm:space-y-4 md:space-y-6">
       {/* Scanner Section */}
-      <Card className="border-border bg-card p-4 md:p-6">
-        <h3 className="text-foreground mb-4 text-base font-semibold md:text-lg">QR Code Scanner</h3>
+      <Card className="border-border bg-card p-4 sm:p-5 md:p-6">
+        <h3 className="text-foreground mb-3 sm:mb-4 text-sm font-semibold sm:text-base md:text-lg">QR Code Scanner</h3>
 
         {!isScanning ? (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4">
             <Button onClick={startCamera} className="w-full gap-2 text-sm md:text-base" disabled={!jsQRLoaded}>
               <Scan className="h-4 w-4" />
               {jsQRLoaded ? 'Start Camera' : 'Loading QR Scanner...'}
             </Button>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            <div className="relative mx-auto aspect-video w-full max-w-2xl overflow-hidden rounded-lg bg-black">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="relative mx-auto aspect-[3/4] w-full max-w-lg overflow-hidden rounded-lg bg-black">
               <video ref={videoRef} autoPlay playsInline className="h-full w-full object-cover" />
               <canvas ref={canvasRef} className="hidden" width={640} height={480} />
 
-              <div className="absolute inset-0 flex items-center justify-center p-4 md:p-0">
-                <div className="border-primary relative h-48 w-48 rounded-lg border-2 sm:h-56 sm:w-56 md:h-64 md:w-64">
+              <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4 md:p-0">
+                <div className="border-primary relative h-40 w-40 rounded-lg border-2 xs:h-48 xs:w-48 sm:h-56 sm:w-56 md:h-64 md:w-64">
                   <div className="border-primary absolute top-0 left-0 h-3 w-3 border-t-2 border-l-2 sm:h-4 sm:w-4" />
                   <div className="border-primary absolute top-0 right-0 h-3 w-3 border-t-2 border-r-2 sm:h-4 sm:w-4" />
                   <div className="border-primary absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 sm:h-4 sm:w-4" />
@@ -172,37 +172,37 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
           }
         }}
       >
-        <DialogContent className="mx-4 w-full max-w-sm md:max-w-md">
+        <DialogContent className="w-[90vw] max-w-sm sm:w-full md:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg md:text-xl">QR Code Scanned</DialogTitle>
-            <DialogDescription className="text-sm md:text-base">Processing scanned data...</DialogDescription>
+            <DialogTitle className="text-base sm:text-lg md:text-xl">QR Code Scanned</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm md:text-base">Processing scanned data...</DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center gap-4 py-6">
-            <Spinner className="h-8 w-8" />
-            <div className="bg-muted w-full rounded-lg p-3 md:p-4">
-              <p className="text-foreground text-center font-mono text-base font-semibold break-all md:text-lg">{scannedValue}</p>
+          <div className="flex flex-col items-center justify-center gap-3 py-4 sm:gap-4 sm:py-6">
+            <Spinner className="h-6 w-6 sm:h-8 sm:w-8" />
+            <div className="bg-muted w-full rounded-lg p-2.5 sm:p-3 md:p-4">
+              <p className="text-foreground text-center font-mono text-sm font-semibold break-all sm:text-base md:text-lg">{scannedValue}</p>
             </div>
-            <p className="text-muted-foreground text-center text-xs md:text-sm">Processing attendee information...</p>
+            <p className="text-muted-foreground text-center text-xs sm:text-sm">Processing attendee information...</p>
           </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showDialog && !isProcessing} onOpenChange={setShowDialog}>
-        <DialogContent className="mx-4 w-full max-w-sm md:max-w-md">
+        <DialogContent className="w-[90vw] max-w-sm sm:w-full md:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg md:text-xl">QR Code Scanned</DialogTitle>
-            <DialogDescription className="text-sm md:text-base">The following value was detected from the QR code:</DialogDescription>
+            <DialogTitle className="text-base sm:text-lg md:text-xl">QR Code Scanned</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm md:text-base">The following value was detected from the QR code:</DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <div className="bg-muted rounded-lg p-3 md:p-4">
-              <p className="text-foreground text-center font-mono text-base font-semibold break-all md:text-lg">{scannedValue}</p>
+          <div className="py-3 sm:py-4">
+            <div className="bg-muted rounded-lg p-2.5 sm:p-3 md:p-4">
+              <p className="text-foreground text-center font-mono text-sm font-semibold break-all sm:text-base md:text-lg">{scannedValue}</p>
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowDialog(false)} className="text-sm md:text-base">
+            <Button variant="outline" onClick={() => setShowDialog(false)} className="text-xs sm:text-sm md:text-base">
               Cancel
             </Button>
-            <Button onClick={handleConfirmScan} className="text-sm md:text-base">
+            <Button onClick={handleConfirmScan} className="text-xs sm:text-sm md:text-base">
               Confirm
             </Button>
           </div>

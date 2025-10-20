@@ -97,30 +97,32 @@ export default function ManageSingleEventPage() {
       <HeroSection event={event} setIsSheetOpen={setIsSheetOpen} />
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
         {/* Tabs Section */}
-        <Tabs defaultValue="details" className="space-y-6">
-          <TabsList className="bg-muted text-muted-foreground inline-flex h-11 items-center justify-center gap-x-2 rounded-lg p-1">
-            <TabsTrigger value="details" className="rounded-md px-4 py-2 text-sm font-medium">
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Details
-            </TabsTrigger>
+        <Tabs defaultValue="details" className="space-y-4 sm:space-y-6">
+          <div className="w-full overflow-x-auto">
+            <TabsList className="bg-muted text-muted-foreground inline-flex h-10 sm:h-11 items-center justify-start sm:justify-center gap-x-1 sm:gap-x-2 rounded-lg p-1 w-full sm:w-auto min-w-max">
+              <TabsTrigger value="details" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
+                <BarChart3 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                Details
+              </TabsTrigger>
 
-            <TabsTrigger value="attendees" className="rounded-md px-4 py-2 text-sm font-medium">
-              <UserCheck className="mr-2 h-4 w-4" />
-              Attendees
-            </TabsTrigger>
+              <TabsTrigger value="attendees" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
+                <UserCheck className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                Attendees
+              </TabsTrigger>
 
-            <TabsTrigger value="qr-scanner" className="rounded-md px-4 py-2 text-sm font-medium">
-              <UserCheck className="mr-2 h-4 w-4" />
-              QR Scanner
-            </TabsTrigger>
+              <TabsTrigger value="qr-scanner" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
+                <UserCheck className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                QR Scanner
+              </TabsTrigger>
 
-            <TabsTrigger value="organizers" className="rounded-md px-4 py-2 text-sm font-medium">
-              <UserCheck className="mr-2 h-4 w-4" />
-              Organizers
-            </TabsTrigger>
-          </TabsList>
+              <TabsTrigger value="organizers" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
+                <UserCheck className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                Organizers
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="details">
             <EventDetails event={event} />

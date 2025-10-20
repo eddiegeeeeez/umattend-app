@@ -51,8 +51,8 @@ const ProfilePage = () => {
     () => ({
       type: 'canvas',
       shape: 'square',
-      width: 300,
-      height: 300,
+      width: 1000,
+      height: 1000,
       margin: 0,
       qrOptions: {
         mode: 'Byte',
@@ -64,10 +64,10 @@ const ProfilePage = () => {
         imageSize: 0.4,
         margin: 0
       },
-      dotsOptions: { type: 'rounded', color: '#000000', roundSize: true },
+      dotsOptions: { type: 'rounded', color: '#1B1212', roundSize: true },
       backgroundOptions: { round: 0, color: '#fdfcf1' },
-      cornersSquareOptions: { type: 'extra-rounded', color: '#f3cb00' },
-      cornersDotOptions: { type: 'dot', color: '#000000' },
+      cornersSquareOptions: { type: 'extra-rounded', color: '#36454F' },
+      cornersDotOptions: { type: 'dot', color: '#36454F' },
       data: `${QRCode}`
     }),
     [QRCode]
@@ -153,7 +153,7 @@ const ProfilePage = () => {
 
                       <div
                         ref={ref}
-                        className="qr-container border-primary/30 pointer-events-none aspect-square w-full sm:max-w-[190px] items-center justify-center rounded-xl border-dashed select-none border-2"
+                        className="qr-container border-primary/30 pointer-events-none aspect-square w-full sm:max-w-[190px] items-center justify-center rounded-xl border-dashed select-none border-2 p-1"
                         onContextMenu={(e) => e.preventDefault()}
                         style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
                       />
