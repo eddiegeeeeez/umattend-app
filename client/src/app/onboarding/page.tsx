@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { AxiosError } from 'axios';
-import { Building2, GraduationCap, Mail, User, Hash, LogOut } from 'lucide-react';
+import { Building2, GraduationCap, Mail, User, Hash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -31,7 +31,6 @@ export default function OnboardingPage() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const updateUser = useAuthStore((state) => state.updateUser);
   const refreshToken = useAuthStore((state) => state.refreshToken);
-  const logout = useAuthStore((state) => state.logout);
 
   // Fetch user data to ensure we have the latest info (but not during onboarding submission)
   const { data: userData, refetch: refetchUser } = useQuery({
@@ -173,12 +172,6 @@ export default function OnboardingPage() {
     });
   };
 
-  const handleLogout = () => {
-    logout();
-    toast.success('Logged out successfully');
-    router.push('/');
-  };
-
   // Student data from auth store
   const studentData = {
     name: user?.name || 'User',
@@ -294,28 +287,16 @@ export default function OnboardingPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="space-y-4 pt-4">
+              <div className="pt-4">
                 {!onboardingMutation.isPending ? (
-                  <>
-                    <Button
-                      type="submit"
-                      disabled={!isValid || onboardingMutation.isPending}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full text-base font-semibold shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
-                      size="lg"
-                    >
-                      Continue to Dashboard
-                    </Button>
-                    <div className="text-center">
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="text-muted-foreground hover:text-foreground focus:ring-primary inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-sm font-medium transition-colors hover:underline focus:ring-2 focus:ring-offset-2 focus:outline-none"
-                      >
-                        <LogOut className="h-3.5 w-3.5" />
-                        Logout
-                      </button>
-                    </div>
-                  </>
+                  <Button
+                    type="submit"
+                    disabled={!isValid || onboardingMutation.isPending}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full text-base font-semibold shadow-sm transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
+                    size="lg"
+                  >
+                    Continue to Dashboard
+                  </Button>
                 ) : (
                   <div className="flex flex-col items-center justify-center space-y-4 py-6">
                     <div className="relative">
