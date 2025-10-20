@@ -12,6 +12,8 @@ import { useAuthStore } from '@/store/authStore';
 
 //TODO migrate the uri and endpoints to secrets
 
+//TODO migrate the uri and endpoints to secrets
+
 export default function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();

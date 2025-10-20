@@ -100,8 +100,6 @@ export const AcademicInfoForm = () => {
     });
   };
 
-  
-
   const isDirty = form.formState.isDirty;
   const isValid = form.formState.isValid;
 

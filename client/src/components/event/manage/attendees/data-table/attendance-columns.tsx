@@ -125,9 +125,9 @@ export const columns: ColumnDef<AttendanceRecord>[] = [
   },
   {
     accessorKey: 'checkOutBy',
-    header: () => <div className="text-foreground pl-3 text-xs font-medium md:text-sm mr-6">Check out by</div>,
-    cell: ({ row }) => <div className="text-muted-foreground pl-3 text-xs font-medium md:text-sm ">{row.getValue('checkOutBy')}</div>
-  },
+    header: () => <div className="text-foreground mr-6 pl-3 text-xs font-medium md:text-sm">Check out by</div>,
+    cell: ({ row }) => <div className="text-muted-foreground pl-3 text-xs font-medium md:text-sm">{row.getValue('checkOutBy')}</div>
+  }
   // {
   //   id: 'actions',
   //   header: () => <div className="text-foreground px-4 text-center text-xs font-medium md:text-sm">Actions</div>,

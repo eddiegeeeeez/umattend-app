@@ -92,7 +92,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
             setShowDialog(true);
             setIsProcessing(true);
             console.log('[Check-Out Scanner] QR Code detected:', detectedCode);
-            
+
             // Automatically trigger check-out
             onAttendeeScanned(detectedCode);
             checkOutMutation.mutate({
@@ -111,11 +111,11 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
   };
 
   const detectQRCode = (imageData: ImageData): string | null => {
-    if (typeof (window).jsQR === 'undefined') {
+    if (typeof window.jsQR === 'undefined') {
       return null;
     }
 
-    const code = (window).jsQR(imageData.data, imageData.width, imageData.height);
+    const code = window.jsQR(imageData.data, imageData.width, imageData.height);
     if (code) {
       console.log('[Check-Out Scanner] QR code data extracted:', code.data);
       return code.data;
@@ -159,7 +159,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
     return (
       <Card className="border-border bg-card p-4 sm:p-5 md:p-6">
         <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
-          <div className="bg-yellow-500/10 flex h-12 w-12 items-center justify-center rounded-full">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500/10">
             <AlertCircle className="h-6 w-6 text-yellow-600" />
           </div>
           <div>
@@ -175,7 +175,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
     return (
       <Card className="border-border bg-card p-4 sm:p-5 md:p-6">
         <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
-          <div className="bg-red-500/10 flex h-12 w-12 items-center justify-center rounded-full">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
             <AlertCircle className="h-6 w-6 text-red-600" />
           </div>
           <div>
@@ -191,7 +191,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
     <div className="w-full space-y-3 sm:space-y-4 md:space-y-6">
       {/* Scanner Section */}
       <Card className="border-border bg-card p-4 sm:p-5 md:p-6">
-        <h3 className="text-foreground mb-3 sm:mb-4 text-sm font-semibold sm:text-base md:text-lg">Check-Out QR Scanner</h3>
+        <h3 className="text-foreground mb-3 text-sm font-semibold sm:mb-4 sm:text-base md:text-lg">Check-Out QR Scanner</h3>
         <p className="text-muted-foreground mb-4 text-xs sm:text-sm">Scan student QR codes to check them out of the event.</p>
 
         {!isScanning ? (
@@ -208,7 +208,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onA
               <canvas ref={canvasRef} className="hidden" width={640} height={480} />
 
               <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4 md:p-0">
-                <div className="border-primary relative h-40 w-40 rounded-lg border-2 xs:h-48 xs:w-48 sm:h-56 sm:w-56 md:h-64 md:w-64">
+                <div className="border-primary xs:h-48 xs:w-48 relative h-40 w-40 rounded-lg border-2 sm:h-56 sm:w-56 md:h-64 md:w-64">
                   <div className="border-primary absolute top-0 left-0 h-3 w-3 border-t-2 border-l-2 sm:h-4 sm:w-4" />
                   <div className="border-primary absolute top-0 right-0 h-3 w-3 border-t-2 border-r-2 sm:h-4 sm:w-4" />
                   <div className="border-primary absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 sm:h-4 sm:w-4" />

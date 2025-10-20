@@ -64,7 +64,6 @@ export function AttendanceDataTable<TData, TValue>({ columns, data }: DataTableP
   });
 
   console.log(data);
-  
 
   return (
     <div className="w-full">

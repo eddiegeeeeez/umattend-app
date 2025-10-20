@@ -47,8 +47,6 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
   console.log(isError);
 
   console.log(error);
-  
-  
 
   const handleRefresh = () => {
     refetch();

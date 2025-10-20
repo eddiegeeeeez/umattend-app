@@ -1,8 +1,8 @@
 'use client';
 
 import { Settings as SettingsIcon } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AcademicInfoForm, LoginHistoryTable } from '@/components/profile/settings';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function SettingsPage() {
   return (

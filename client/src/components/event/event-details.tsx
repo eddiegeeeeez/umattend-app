@@ -29,7 +29,7 @@ const EventDetails = ({ event, onClose }: EventDetailsProps) => {
             <ChevronsLeft />
           </Button>
           <div className="flex items-center gap-2">
-            {(event.can_edit) && (
+            {event.can_edit && (
               <Button className="hover:text-primary !h-8 cursor-pointer !py-1 hover:bg-stone-800" onClick={() => router.push(`/events/${eventId}/manage`)}>
                 <Settings className="h-4 w-4" />
                 Manage

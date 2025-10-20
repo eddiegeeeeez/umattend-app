@@ -10,14 +10,14 @@ import EventNotFound from '@/components/event/manage/event-not-found';
 import HeroSection from '@/components/event/manage/hero-section';
 import ManageEventSkeleton from '@/components/event/manage/manage-event-skeleton';
 import EventOrganizers from '@/components/event/manage/organizers/event-organizers';
+import { EventCheckInScanner } from '@/components/event/manage/qr-scanner/event-check-in-scanner';
+import { EventCheckOutScanner } from '@/components/event/manage/qr-scanner/event-check-out-scanner';
 import { UpdateEventSheet } from '@/components/event/manage/update-event-sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Event } from '@/types/events';
 import { getEventByEventIdOptions } from '@/api/client/@tanstack/react-query.gen';
 import { getEventStatus } from '@/lib/events-utils';
 import { formatTimePadded } from '@/lib/utils';
-import { EventCheckInScanner } from '@/components/event/manage/qr-scanner/event-check-in-scanner';
-import { EventCheckOutScanner } from '@/components/event/manage/qr-scanner/event-check-out-scanner';
 
 export default function ManageSingleEventPage() {
   const params = useParams();
@@ -103,33 +103,33 @@ export default function ManageSingleEventPage() {
       <HeroSection event={event} setIsSheetOpen={setIsSheetOpen} />
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Tabs Section */}
         <Tabs defaultValue="details" className="space-y-4 sm:space-y-6">
           <div className="w-full overflow-x-auto">
-            <TabsList className="bg-muted text-muted-foreground inline-flex h-10 sm:h-11 items-center justify-start sm:justify-center gap-x-1 sm:gap-x-2 rounded-lg p-1 w-full sm:w-auto min-w-max">
-              <TabsTrigger value="details" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
-                <BarChart3 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <TabsList className="bg-muted text-muted-foreground inline-flex h-10 w-full min-w-max items-center justify-start gap-x-1 rounded-lg p-1 sm:h-11 sm:w-auto sm:justify-center sm:gap-x-2">
+              <TabsTrigger value="details" className="rounded-md px-2 py-1.5 text-xs font-medium whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
+                <BarChart3 className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
                 Details
               </TabsTrigger>
 
-              <TabsTrigger value="attendees" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
-                <UserCheck className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <TabsTrigger value="attendees" className="rounded-md px-2 py-1.5 text-xs font-medium whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
+                <UserCheck className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
                 Attendees
               </TabsTrigger>
 
-              <TabsTrigger value="check-in" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
-                <UserCheck className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <TabsTrigger value="check-in" className="rounded-md px-2 py-1.5 text-xs font-medium whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
+                <UserCheck className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
                 Check In
               </TabsTrigger>
 
-              <TabsTrigger value="check-out" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
-                <UserCheck className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <TabsTrigger value="check-out" className="rounded-md px-2 py-1.5 text-xs font-medium whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
+                <UserCheck className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
                 Check Out
               </TabsTrigger>
 
-              <TabsTrigger value="organizers" className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium whitespace-nowrap">
-                <UserCheck className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <TabsTrigger value="organizers" className="rounded-md px-2 py-1.5 text-xs font-medium whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
+                <UserCheck className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
                 Organizers
               </TabsTrigger>
             </TabsList>
@@ -140,23 +140,23 @@ export default function ManageSingleEventPage() {
           </TabsContent>
 
           <TabsContent value="check-in">
-            <EventCheckInScanner 
+            <EventCheckInScanner
               eventId={event.id}
               isEventDone={isEventDone}
               isEventStarted={isEventStarted}
               onAttendeeScanned={(attendeeId) => {
-                console.log("[Check-In] Scanned:", attendeeId)
+                console.log('[Check-In] Scanned:', attendeeId);
               }}
             />
           </TabsContent>
 
           <TabsContent value="check-out">
-            <EventCheckOutScanner 
+            <EventCheckOutScanner
               eventId={event.id}
               isEventDone={isEventDone}
               isEventStarted={isEventStarted}
               onAttendeeScanned={(attendeeId) => {
-                console.log("[Check-Out] Scanned:", attendeeId)
+                console.log('[Check-Out] Scanned:', attendeeId);
               }}
             />
           </TabsContent>
