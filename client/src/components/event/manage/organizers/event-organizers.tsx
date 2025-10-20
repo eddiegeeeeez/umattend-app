@@ -27,7 +27,8 @@ export default function EventOrganizers({ eventId }: EventOrganizersProps) {
         event_id: eventId
       }
     }),
-    enabled: !!eventId
+    enabled: !!eventId,
+    retry: false
   });
 
   // Mutation for adding organizer

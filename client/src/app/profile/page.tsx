@@ -24,13 +24,15 @@ const ProfilePage = () => {
   // Fetch attended events
   const { data: attendedEventsData, isLoading: isLoadingAttended } = useQuery({
     ...getUserAttendedEventsOptions(),
-    enabled: !!user
+    enabled: !!user,
+    retry: false
   });
 
   // Fetch hosted events (only for users with appropriate roles)
   const { data: hostedEventsData, isLoading: isLoadingHosted } = useQuery({
     ...getUserHostedEventsOptions(),
-    enabled: !!user && !!canHostEvents
+    enabled: !!user && !!canHostEvents,
+    retry: false
   });
 
   const QRCode = useMemo(() => {
