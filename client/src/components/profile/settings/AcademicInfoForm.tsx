@@ -61,8 +61,8 @@ export const AcademicInfoForm = () => {
           student_id: user?.student_id,
           umindanao_email: apiUser.umindanao_email || user?.umindanao_email,
           name: apiUser.name || user?.name,
-          department: apiUser.department,
-          program: apiUser.program,
+          department: apiUser.department || '',
+          program: apiUser.program || '',
           role: user?.role || 'student',
           done_onboarding: apiUser.done_onboarding ?? user?.done_onboarding ?? false,
           profile_picture: user?.profile_picture || ''
@@ -153,7 +153,14 @@ export const AcademicInfoForm = () => {
                     <GraduationCap className="text-primary h-4 w-4" />
                     Program
                   </FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange} disabled={!selectedDepartment}>
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.clearErrors('program');
+                    }}
+                    disabled={!selectedDepartment}
+                  >
                     <FormControl>
                       <SelectTrigger className="border-border hover:border-foreground/20 bg-background h-11 w-full text-left text-sm break-words !whitespace-normal transition-colors disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-2 [&>span]:text-left [&>span]:leading-normal [&>span]:break-words [&>span]:whitespace-normal">
                         <SelectValue placeholder={selectedDepartment ? 'Select your program' : 'Please select a department first'} />

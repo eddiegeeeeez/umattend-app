@@ -1,11 +1,10 @@
 'use client';
 
-import { Calendar, MapPin, Clock, Users, Settings } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import EventNotFound from '@/components/event/manage/event-not-found';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -220,9 +219,7 @@ export default function EventDetailsPage() {
           {attendanceStatus === 'attended' && (
             <Card className="border-2 border-green-200 bg-green-50">
               <CardContent className="flex items-start gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback>✓</AvatarFallback>
-                </Avatar>
+                <CheckCircle className="h-12 w-12 text-green-600" />
                 <div>
                   <h3 className="text-foreground font-semibold">Attendance Confirmed</h3>
                   <p className="text-muted-foreground text-sm">
@@ -238,9 +235,7 @@ export default function EventDetailsPage() {
           {attendanceStatus === 'partially_attended' && (
             <Card className="border-2 border-yellow-200 bg-yellow-50">
               <CardContent className="flex items-start gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback>⚠</AvatarFallback>
-                </Avatar>
+                <AlertTriangle className="h-12 w-12 text-yellow-600" />
                 <div>
                   <h3 className="text-foreground font-semibold">Checked In</h3>
                   <p className="text-muted-foreground text-sm">Don&apos;t forget to check out when you leave to complete your attendance!</p>

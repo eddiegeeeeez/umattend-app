@@ -298,9 +298,14 @@ const getEventDetailsById = async (
     checkout_count = await eventRepository.getEventCheckoutCount(event_id);
   }
 
+  const student = await studentRepository.getStudentByUserId(user_id);
+  if (!student) {
+    throw new NotFoundError('Student not found');
+  }
+
   const attendanceData = await eventRepository.checkIfUserAttended(
     event_id,
-    user_id
+    student.student_id
   );
   const check_in_at = attendanceData?.check_in_at ?? null;
   const check_out_at =
@@ -445,7 +450,7 @@ const getPaginatedAttendeesByEventId = async (
           user_id: attendee.student.user_id,
           student_id: attendee.student.student_id,
           name: attendee.student.name,
-          umindanao_email: attendee.user?.umindanao_email,
+          umindanao_email: attendee.student.user?.umindanao_email,
           department: attendee.student.department,
           program: attendee.student.program,
           profile_picture: attendee.student.profile_picture,
@@ -496,7 +501,7 @@ const getAttendeesByEventId = async (
           user_id: attendee.student.user_id,
           student_id: attendee.student.student_id,
           name: attendee.student.name,
-          umindanao_email: attendee.user?.umindanao_email,
+          umindanao_email: attendee.student.user?.umindanao_email,
           department: attendee.student.department,
           program: attendee.student.program,
           profile_picture: attendee.student.profile_picture,

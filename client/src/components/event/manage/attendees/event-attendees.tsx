@@ -25,6 +25,8 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
   const {
     data: attendeesData,
     isLoading,
+    isError,
+    error,
     refetch
   } = useQuery({
     ...getEventByEventIdAttendeesOptions({
@@ -37,9 +39,14 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
         search: search || undefined
       }
     }),
+    // Enable the query only when we have an eventId
     enabled: !!eventId,
     retry: false
   });
+
+  console.log(isError);
+
+  console.log(error);
 
   const handleRefresh = () => {
     refetch();
@@ -49,7 +56,7 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
     try {
       toast.loading('Generating export file...');
 
-      const response = await Event.getEventExportEventId({
+      const response = await Event.getEventExportByEventId({
         path: {
           event_id: eventId
         }
@@ -104,9 +111,9 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
           department: student.department || '',
           program: student.program || '',
           email: student.umindanao_email || '',
-          checkInAt: formatDateTime(student.check_in_at),
+          checkInAt: formatDateTime(student.check_in_at ?? undefined),
           checkInBy: student.check_in_by || 'Self',
-          checkOutAt: formatDateTime(student.check_out_at),
+          checkOutAt: formatDateTime(student.check_out_at ?? undefined),
           checkOutBy: student.check_out_by || (student.check_out_at ? 'Self' : '-')
         };
       })
@@ -118,60 +125,61 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
 
   return (
     <div>
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mb-8 md:grid-cols-3 md:gap-6">
-        <div className="bg-card border-border rounded-xl border p-5 shadow-sm transition-shadow hover:shadow-md md:p-6">
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 md:mb-8 md:grid-cols-3 md:gap-6">
+        <div className="bg-card border-border rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-xs font-medium md:text-sm">Total Students</p>
-              <p className="text-foreground mt-1 text-2xl font-bold md:mt-2 md:text-3xl">{totalStudents}</p>
+              <p className="text-muted-foreground text-xs font-medium sm:text-sm">Total Students</p>
+              <p className="text-foreground mt-1 text-xl font-bold sm:text-2xl md:mt-2 md:text-3xl">{totalStudents}</p>
             </div>
-            <div className="bg-primary/10 flex size-10 items-center justify-center rounded-full md:size-12">
-              <Users className="text-primary size-5 md:size-6" />
+            <div className="bg-primary/10 flex size-9 items-center justify-center rounded-full sm:size-10 md:size-12">
+              <Users className="text-primary size-4 sm:size-5 md:size-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card border-border rounded-xl border p-5 shadow-sm transition-shadow hover:shadow-md md:p-6">
+        <div className="bg-card border-border rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-xs font-medium md:text-sm">Checked In</p>
-              <p className="text-foreground mt-1 text-2xl font-bold md:mt-2 md:text-3xl">{checkedInCount}</p>
+              <p className="text-muted-foreground text-xs font-medium sm:text-sm">Checked In</p>
+              <p className="text-foreground mt-1 text-xl font-bold sm:text-2xl md:mt-2 md:text-3xl">{checkedInCount}</p>
             </div>
-            <div className="flex size-10 items-center justify-center rounded-full bg-green-500/10 md:size-12">
-              <Calendar className="size-5 text-green-600 md:size-6" />
+            <div className="flex size-9 items-center justify-center rounded-full bg-green-500/10 sm:size-10 md:size-12">
+              <Calendar className="size-4 text-green-600 sm:size-5 md:size-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card border-border rounded-xl border p-5 shadow-sm transition-shadow hover:shadow-md md:p-6">
+        <div className="bg-card border-border rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-xs font-medium md:text-sm">Checked Out</p>
-              <p className="text-foreground mt-1 text-2xl font-bold md:mt-2 md:text-3xl">{checkedOutCount}</p>
+              <p className="text-muted-foreground text-xs font-medium sm:text-sm">Checked Out</p>
+              <p className="text-foreground mt-1 text-xl font-bold sm:text-2xl md:mt-2 md:text-3xl">{checkedOutCount}</p>
             </div>
-            <div className="flex size-10 items-center justify-center rounded-full bg-blue-500/10 md:size-12">
-              <Calendar className="size-5 text-blue-600 md:size-6" />
+            <div className="flex size-9 items-center justify-center rounded-full bg-blue-500/10 sm:size-10 md:size-12">
+              <Calendar className="size-4 text-blue-600 sm:size-5 md:size-6" />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:mb-8">
+      <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 md:mb-8">
         <div>
-          <h1 className="text-foreground text-2xl font-bold tracking-tight md:text-4xl">Attendance Records</h1>
-          <p className="text-muted-foreground mt-1 text-sm md:mt-2 md:text-lg">Manage student check-in and check-out records</p>
+          <h1 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">Attendance Records</h1>
+          <p className="text-muted-foreground mt-1 text-xs sm:text-sm md:mt-2 md:text-base lg:text-lg">Manage student check-in and check-out records</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleRefresh} variant="outline" className="w-full gap-2 bg-transparent font-semibold shadow-sm sm:w-auto">
+          <Button onClick={handleRefresh} variant="outline" className="flex-1 gap-2 bg-transparent text-sm font-semibold shadow-sm sm:flex-none">
             Refresh
           </Button>
           <Button
             onClick={handleExport}
             disabled={totalStudents === 0}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 w-full gap-2 font-semibold shadow-sm disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:opacity-50 sm:w-auto"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 gap-2 text-sm font-semibold shadow-sm disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:opacity-50 sm:flex-none"
           >
             <Download className="size-4" />
-            Export Data
+            <span className="xs:inline hidden">Export Data</span>
+            <span className="xs:hidden">Export</span>
           </Button>
         </div>
       </div>

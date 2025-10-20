@@ -98,3 +98,9 @@ export type AttendanceRecord = {
   checkOutAt: string;
   checkOutBy: string;
 };
+
+declare global {
+  interface Window {
+    jsQR?: (data: Uint8ClampedArray, width: number, height: number) => { data: string } | null;
+  }
+}

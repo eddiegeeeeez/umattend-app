@@ -1,18 +1,23 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Scan } from 'lucide-react';
+import { Scan, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { postEventCheckOutByEventIdByQrCodeMutation } from '@/api/client/@tanstack/react-query.gen';
 
-interface EventQRScannerProps {
+interface EventCheckOutScannerProps {
   eventId: string;
+  isEventDone: boolean;
+  isEventStarted: boolean;
   onAttendeeScanned: (attendeeId: string) => void;
 }
 
-export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
+export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted, onAttendeeScanned }: EventCheckOutScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedValue, setScannedValue] = useState<string | null>(null);
   const [showDialog, setShowDialog] = useState(false);
@@ -24,20 +29,46 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
   const lastScannedTimeRef = useRef<number>(0);
   const [jsQRLoaded, setJsQRLoaded] = useState(false);
 
+  // Check-out mutation
+  const checkOutMutation = useMutation({
+    ...postEventCheckOutByEventIdByQrCodeMutation(),
+    onSuccess: (data) => {
+      toast.success('Check-out successful!');
+      setShowDialog(false);
+      setIsProcessing(false);
+      setScannedValue(null);
+      // Reset scanner for next scan
+      lastScannedRef.current = '';
+      console.log('[Check-Out Scanner] Success:', data);
+    },
+    onError: (error) => {
+      setIsProcessing(false);
+      setShowDialog(false);
+      const errorMessage = error?.response?.data?.message || 'Failed to check out student';
+      toast.error(errorMessage);
+      console.error('[Check-Out Scanner] Error:', error);
+      // Reset for retry
+      setScannedValue(null);
+      lastScannedRef.current = '';
+    }
+  });
+
   // Load jsQR library
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
     script.onload = () => {
       setJsQRLoaded(true);
-      console.log('[v0] jsQR library loaded successfully');
+      console.log('[Check-Out Scanner] jsQR library loaded successfully');
     };
     script.onerror = () => {
-      console.error('[v0] Failed to load jsQR library');
+      console.error('[Check-Out Scanner] Failed to load jsQR library');
     };
     document.head.appendChild(script);
     return () => {
-      document.head.removeChild(script);
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
     };
   }, []);
 
@@ -60,8 +91,16 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
             setScannedValue(detectedCode);
             setShowDialog(true);
             setIsProcessing(true);
-            console.log('[v0] QR Code detected:', detectedCode);
-            console.log('[v0] Dialog opened with scanned value:', detectedCode);
+            console.log('[Check-Out Scanner] QR Code detected:', detectedCode);
+
+            // Automatically trigger check-out
+            onAttendeeScanned(detectedCode);
+            checkOutMutation.mutate({
+              path: {
+                event_id: eventId,
+                qr_code: detectedCode
+              }
+            });
           }
         }
       }
@@ -78,7 +117,7 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
 
     const code = window.jsQR(imageData.data, imageData.width, imageData.height);
     if (code) {
-      console.log('[v0] QR code data extracted:', code.data);
+      console.log('[Check-Out Scanner] QR code data extracted:', code.data);
       return code.data;
     }
 
@@ -88,19 +127,19 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
   const startCamera = async () => {
     try {
       setIsScanning(true);
-      console.log('[v0] Starting camera...');
+      console.log('[Check-Out Scanner] Starting camera...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
-          console.log('[v0] Camera stream loaded, starting auto-scan');
+          console.log('[Check-Out Scanner] Camera stream loaded, starting auto-scan');
           startAutoScan();
         };
       }
     } catch (error) {
-      console.error('[v0] Camera access error:', error);
+      console.error('[Check-Out Scanner] Camera access error:', error);
       setIsScanning(false);
     }
   };
@@ -112,26 +151,48 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
       tracks.forEach((track) => track.stop());
     }
     setIsScanning(false);
-    console.log('[v0] Camera stopped');
+    console.log('[Check-Out Scanner] Camera stopped');
   };
 
-  const handleConfirmScan = () => {
-    if (scannedValue) {
-      setTimeout(() => {
-        onAttendeeScanned(scannedValue);
-        console.log('[v0] Confirmed scanned value:', scannedValue);
-        console.log('[v0] Dialog closed after confirmation');
-        setShowDialog(false);
-        setIsProcessing(false);
-      }, 1500);
-    }
-  };
+  // Show message if event hasn't started or is done
+  if (!isEventStarted) {
+    return (
+      <Card className="border-border bg-card p-4 sm:p-5 md:p-6">
+        <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500/10">
+            <AlertCircle className="h-6 w-6 text-yellow-600" />
+          </div>
+          <div>
+            <h3 className="text-foreground mb-2 text-base font-semibold sm:text-lg">Event Not Started</h3>
+            <p className="text-muted-foreground text-xs sm:text-sm">Check-out will be available once the event starts.</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (isEventDone) {
+    return (
+      <Card className="border-border bg-card p-4 sm:p-5 md:p-6">
+        <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
+            <AlertCircle className="h-6 w-6 text-red-600" />
+          </div>
+          <div>
+            <h3 className="text-foreground mb-2 text-base font-semibold sm:text-lg">Event Completed</h3>
+            <p className="text-muted-foreground text-xs sm:text-sm">Check-out is no longer available for this event.</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <div className="w-full space-y-3 sm:space-y-4 md:space-y-6">
       {/* Scanner Section */}
       <Card className="border-border bg-card p-4 sm:p-5 md:p-6">
-        <h3 className="text-foreground mb-3 text-sm font-semibold sm:mb-4 sm:text-base md:text-lg">QR Code Scanner</h3>
+        <h3 className="text-foreground mb-3 text-sm font-semibold sm:mb-4 sm:text-base md:text-lg">Check-Out QR Scanner</h3>
+        <p className="text-muted-foreground mb-4 text-xs sm:text-sm">Scan student QR codes to check them out of the event.</p>
 
         {!isScanning ? (
           <div className="flex flex-col gap-3 sm:gap-4">
@@ -175,36 +236,14 @@ export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
         <DialogContent className="w-[90vw] max-w-sm sm:w-full md:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base sm:text-lg md:text-xl">QR Code Scanned</DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm md:text-base">Processing scanned data...</DialogDescription>
+            <DialogDescription className="text-xs sm:text-sm md:text-base">Processing check-out...</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center gap-3 py-4 sm:gap-4 sm:py-6">
             <Spinner className="h-6 w-6 sm:h-8 sm:w-8" />
             <div className="bg-muted w-full rounded-lg p-2.5 sm:p-3 md:p-4">
               <p className="text-foreground text-center font-mono text-sm font-semibold break-all sm:text-base md:text-lg">{scannedValue}</p>
             </div>
-            <p className="text-muted-foreground text-center text-xs sm:text-sm">Processing attendee information...</p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showDialog && !isProcessing} onOpenChange={setShowDialog}>
-        <DialogContent className="w-[90vw] max-w-sm sm:w-full md:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-base sm:text-lg md:text-xl">QR Code Scanned</DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm md:text-base">The following value was detected from the QR code:</DialogDescription>
-          </DialogHeader>
-          <div className="py-3 sm:py-4">
-            <div className="bg-muted rounded-lg p-2.5 sm:p-3 md:p-4">
-              <p className="text-foreground text-center font-mono text-sm font-semibold break-all sm:text-base md:text-lg">{scannedValue}</p>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowDialog(false)} className="text-xs sm:text-sm md:text-base">
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmScan} className="text-xs sm:text-sm md:text-base">
-              Confirm
-            </Button>
+            <p className="text-muted-foreground text-center text-xs sm:text-sm">Checking out attendee...</p>
           </div>
         </DialogContent>
       </Dialog>

@@ -81,7 +81,7 @@ export default function EventOrganizers({ eventId }: EventOrganizersProps) {
 
   if (isLoading) {
     return (
-      <Card className="border-border bg-card p-6">
+      <Card className="border-border bg-card p-4 sm:p-6">
         <OrganizersSkeleton />
       </Card>
     );
@@ -107,10 +107,10 @@ export default function EventOrganizers({ eventId }: EventOrganizersProps) {
     }) || [];
 
   return (
-    <Card className="border-border bg-card p-6">
-      <div className="mb-4">
-        <h3 className="text-foreground mb-1 text-lg font-semibold">Event Organizers</h3>
-        <p className="text-muted-foreground text-sm">Manage organizers who can help coordinate and run this event.</p>
+    <Card className="border-border bg-card p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h3 className="text-foreground mb-1 text-base font-semibold sm:text-lg">Event Organizers</h3>
+        <p className="text-muted-foreground text-xs sm:text-sm">Manage organizers who can help coordinate and run this event.</p>
       </div>
       <OrganizersDataTable columns={organizersColumns} data={organizers} onAddOrganizer={handleAddOrganizer} onRemoveOrganizer={handleRemoveOrganizer} />
     </Card>

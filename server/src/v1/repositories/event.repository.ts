@@ -5,6 +5,7 @@ import {
   AddCheckInInterface,
   AddCheckOutInterface,
 } from '../interface/event';
+import { Prisma } from '@prisma/client';
 
 const createEvent = async (event_data: AddEventInterface) => {
   return await prisma.$transaction(async (tx) => {
@@ -316,10 +317,11 @@ const getPaginatedAttendeesByEventId = async (
 ) => {
   const skip = (page - 1) * limit;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const whereClause: any = { event_id };
+  // Build where clause
+  const whereClause: Prisma.attendanceWhereInput = {
+    event_id,
+  };
 
-  // Add search functionality
   if (search) {
     whereClause.OR = [
       {
@@ -333,15 +335,17 @@ const getPaginatedAttendeesByEventId = async (
       {
         student: {
           student_id: {
-            contains: search,
+            equals: Number(search), // better than contains for numeric IDs
           },
         },
       },
       {
-        user: {
-          umindanao_email: {
-            contains: search,
-            mode: 'insensitive',
+        student: {
+          user: {
+            umindanao_email: {
+              contains: search,
+              mode: 'insensitive',
+            },
           },
         },
       },
@@ -352,9 +356,6 @@ const getPaginatedAttendeesByEventId = async (
     prisma.attendance.findMany({
       where: whereClause,
       include: {
-        user: {
-          select: { umindanao_email: true },
-        },
         student: {
           select: {
             id: true,
@@ -366,6 +367,10 @@ const getPaginatedAttendeesByEventId = async (
             profile_picture: true,
             created_at: true,
             updated_at: true,
+            user: {
+              // ✅ now nested under student
+              select: { umindanao_email: true },
+            },
           },
         },
         check_in_by_user: {
@@ -391,7 +396,6 @@ const getAttendeesByEventId = async (event_id: string) => {
   return await prisma.attendance.findMany({
     where: { event_id: event_id },
     include: {
-      user: { select: { umindanao_email: true } },
       student: {
         select: {
           id: true,
@@ -403,6 +407,9 @@ const getAttendeesByEventId = async (event_id: string) => {
           profile_picture: true,
           created_at: true,
           updated_at: true,
+          user: {
+            select: { umindanao_email: true },
+          },
         },
       },
       check_in_by_user: { select: { id: true } },
