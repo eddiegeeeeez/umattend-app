@@ -1,4 +1,4 @@
-const getUserandUpdateUser = {
+const getAndUpdateUser = {
   '/user': {
     get: {
       tags: ['User'],
@@ -103,27 +103,17 @@ const getUserandUpdateUser = {
     put: {
       tags: ['User'],
       summary: 'Update user profile',
-      description:
-        'Update user profile fields such as department and program. At least one of `department` or `program` must be provided.',
+      description: 'Update user profile fields such as department and program',
       security: [{ bearerAuth: [] }],
       requestBody: {
-        required: true,
         content: {
           'application/json': {
             schema: {
               type: 'object',
               properties: {
-                department: {
-                  type: 'string',
-                  description: 'College or department name',
-                },
-                program: {
-                  type: 'string',
-                  description: 'Program or course name',
-                },
+                department: { type: 'string' },
+                program: { type: 'string' },
               },
-              description:
-                'At least one of department or program must be provided',
             },
           },
         },
@@ -144,29 +134,12 @@ const getUserandUpdateUser = {
                       user: {
                         type: 'object',
                         properties: {
-                          id: { type: 'string', example: 'usr_123e4567' },
-                          umindanao_email: {
-                            type: 'string',
-                            example: 'j.doe.202301@umindanao.edu.ph',
-                          },
-                          name: {
-                            type: ['string', 'null'],
-                            example: 'Jane Doe',
-                          },
-                          department: {
-                            type: ['string', 'null'],
-                            example: 'College of Computer Studies',
-                          },
-                          program: {
-                            type: ['string', 'null'],
-                            example: 'BS Computer Science',
-                          },
-                          profile_picture: {
-                            type: ['string', 'null'],
-                            example: 'https://example.com/avatar.jpg',
-                          },
-                          done_onboarding: { type: 'boolean', example: true },
-                          role: { type: 'string', example: 'student' },
+                          id: { type: 'string' },
+                          umindanao_email: { type: 'string' },
+                          name: { type: 'string' },
+                          department: { type: 'string' },
+                          program: { type: 'string' },
+                          done_onboarding: { type: 'boolean' },
                         },
                       },
                     },
@@ -659,7 +632,7 @@ const getUserHostedEvents = {
 };
 
 export const user = {
-  ...getUserandUpdateUser,
+  ...getAndUpdateUser,
   ...onboarding,
   ...getUserAttendedEvents,
   ...getUserAttendedEventsDetailed,
