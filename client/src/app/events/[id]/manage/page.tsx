@@ -16,6 +16,7 @@ import type { Event } from '@/types/events';
 import { getEventByEventIdOptions } from '@/api/client/@tanstack/react-query.gen';
 import { getEventStatus } from '@/lib/events-utils';
 import { formatTimePadded } from '@/lib/utils';
+import { EventQRScanner } from '@/components/event/manage/qr-scanner/event-qr-scanner';
 
 export default function ManageSingleEventPage() {
   const params = useParams();
@@ -109,6 +110,11 @@ export default function ManageSingleEventPage() {
               Attendees
             </TabsTrigger>
 
+            <TabsTrigger value="qr-scanner" className="rounded-md px-4 py-2 text-sm font-medium">
+              <UserCheck className="mr-2 h-4 w-4" />
+              QR Scanner
+            </TabsTrigger>
+
             <TabsTrigger value="organizers" className="rounded-md px-4 py-2 text-sm font-medium">
               <UserCheck className="mr-2 h-4 w-4" />
               Organizers
@@ -117,6 +123,15 @@ export default function ManageSingleEventPage() {
 
           <TabsContent value="details">
             <EventDetails event={event} />
+          </TabsContent>
+
+          <TabsContent value="qr-scanner">
+            <EventQRScanner 
+              eventId={event.id}
+              onAttendeeScanned={(attendeeId) => {
+                console.log("[v0] Attendee scanned:", attendeeId)
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="organizers">
