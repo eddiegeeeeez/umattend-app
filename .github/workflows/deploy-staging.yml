@@ -21,7 +21,7 @@ jobs:
           umask 077
 
           # Write SSH private key from secrets
-          printf '%s\n' "${{ secrets.AZURE_PROD_SSH_KEY }}" > ~/.ssh/id_rsa
+          printf '%s\n' "${{ secrets.AZURE_DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
           # Start SSH agent and add key
@@ -29,13 +29,13 @@ jobs:
           ssh-add ~/.ssh/id_rsa
 
           # Add server to known hosts
-          ssh-keyscan -p ${{ secrets.AZURE_DEPLOY_HOST }} -H ${{ secrets.AZURE_DEPLOY_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p ${{ secrets.AZURE_DEPLOY_PORT }} -H ${{ secrets.AZURE_DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
           # Test SSH connection
           if ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
-            echo "SSH connection successful"
+            echo "✅ SSH connection successful"
           else
-            echo "SSH connection failed — please verify authorized_keys and permissions on the server"
+            echo "❌ SSH connection failed — verify authorized_keys and permissions on the server"
             exit 1
           fi
 
@@ -71,4 +71,17 @@ jobs:
             cd ${{ secrets.STAGING_APP_PATH }}
             
             # Server
-            pm2 describe umattend-server-staging >/dev/null 2>&1 && pm2 restart umattend-serv
+            pm2 describe umattend-server-staging >/dev/null 2>&1 && pm2 restart umattend-server-staging || pm2 start server --name umattend-server-staging -- start
+
+            # Client
+            pm2 describe umattend-client-staging >/dev/null 2>&1 && pm2 restart umattend-client-staging || pm2 start client --name umattend-client-staging -- start
+
+            pm2 save
+          "
+
+      - name: Verify deployment
+        run: |
+          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} "
+            cd ${{ secrets.STAGING_APP_PATH }}
+            pm2 ls
+          "
