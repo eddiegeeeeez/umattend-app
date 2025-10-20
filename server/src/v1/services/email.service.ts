@@ -5,10 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 export async function sendEmail(
   to: string,
   subject: string,
-  text: string,
   html: string
 ): Promise<void> {
-  const emailData: EmailJob = { to, subject, text, html };
+  const emailData: EmailJob = { to, subject, html };
   const jobId = uuidv4();
   await emailQueue.add('send-email', emailData, {
     jobId,

@@ -38,14 +38,13 @@ export const emailQueue = new Queue<EmailJob>('email-queue', {
 const emailWorker = new Worker<EmailJob>(
   'email-queue',
   async (job) => {
-    const { to, subject, text, html } = job.data;
+    const { to, subject, html } = job.data;
 
     try {
       await transporter.sendMail({
         from: process.env.MAIL_USER,
         to,
         subject,
-        text,
         html,
       });
       console.log(`Email sent to ${to}`);

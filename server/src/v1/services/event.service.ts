@@ -19,6 +19,8 @@ import authRepository from '../repositories/auth.repository';
 import { startEventStatusQueue } from '../queues/startEvent.queue';
 import { GetStudentsByEventIdInterface } from '../interface/student';
 import studentRepository from '../repositories/student.repository';
+import { CHECK_IN_EMAIL } from '../template/checkIn.email';
+import { sendEmail } from './email.service';
 
 const addEvent = async (event_data: AddEventInterface) => {
   try {
@@ -109,7 +111,42 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
       throw new NotFoundError('Student ID is required');
     }
 
-    return eventRepository.createCheckInEvent(attendance_data);
+    const checkedIn = await eventRepository.createCheckInEvent(attendance_data);
+
+    if (!checkedIn) {
+      throw new Error('Failed to create check-in record');
+    }
+
+    const studentbyUserId = await studentRepository.getUserByStudentId(
+      attendance_data.student_id
+    );
+
+    if (!studentbyUserId) {
+      throw new NotFoundError('Student user not found');
+    }
+
+    const checkInBy = await studentRepository.getStudentByUserId(
+      checkedIn.check_in_by_user.id
+    );
+
+    if (!checkInBy) {
+      throw new NotFoundError('Check-in record not found');
+    }
+
+    sendEmail(
+      studentbyUserId?.umindanao_email,
+      'Event Check-In Successful',
+      CHECK_IN_EMAIL.replace('{{name}}', checkedIn.student.name)
+        .replace('{{event_name}}', checkedIn.event.title)
+        .replace('{{event_location}}', checkedIn.event.location)
+        .replace(
+          '{{event_date_and_time}}',
+          checkedIn.check_in_at.toLocaleString()
+        )
+        .replace('{{checked_out_by}}', checkInBy.name)
+    );
+
+    return checkedIn;
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
@@ -135,19 +172,55 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
     if (!attendance_data.event_id) {
       throw new NotFoundError('Event ID is required');
     }
-
-    const event = await eventRepository.getEventDetails(
+    const eventDetails = await eventRepository.getEventDetails(
       attendance_data.event_id
     );
-    if (!event) {
+    if (!eventDetails) {
       throw new NotFoundError('Event not found');
     }
-
-    if (event.check_out_required === false) {
-      throw new NoCheckoutRequiredError();
+    if (!eventDetails.check_out_required) {
+      throw new NoCheckoutRequiredError(
+        'This event does not require check-out'
+      );
     }
 
-    return eventRepository.createCheckOutEvent(attendance_data);
+    const checkedOut =
+      await eventRepository.createCheckOutEvent(attendance_data);
+
+    if (!checkedOut) {
+      throw new Error('Failed to create check-out record');
+    }
+
+    const studentbyUserId = await studentRepository.getUserByStudentId(
+      attendance_data.student_id
+    );
+
+    if (!studentbyUserId) {
+      throw new NotFoundError('Student user not found');
+    }
+
+    const checkOutBy = await studentRepository.getStudentByUserId(
+      checkedOut.check_in_by_user.id
+    );
+
+    if (!checkOutBy) {
+      throw new NotFoundError('Check-in record not found');
+    }
+
+    sendEmail(
+      studentbyUserId?.umindanao_email,
+      'Event Check-In Successful',
+      CHECK_IN_EMAIL.replace('{{name}}', checkedOut.student.name)
+        .replace('{{event_name}}', checkedOut.event.title)
+        .replace('{{event_location}}', checkedOut.event.location)
+        .replace(
+          '{{event_date_and_time}}',
+          checkedOut.check_in_at.toLocaleString()
+        )
+        .replace('{{checked_out_by}}', checkOutBy.name)
+    );
+
+    return checkedOut;
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {

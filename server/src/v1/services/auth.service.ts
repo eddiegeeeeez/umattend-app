@@ -16,7 +16,6 @@ import crypto from 'crypto';
 import { JWT_REFRESH_TOKEN_SECRET } from '@/constants/jwt.constants.js';
 
 import { sanitizeKey, extractStudentID } from '@/utils/string.utils.js';
-import { sendEmail } from './email.service.js';
 
 const googleAuthWithCode = async (
   code: string,
@@ -39,13 +38,6 @@ const googleAuthWithCode = async (
       name: googleUser.name,
       profile_picture: googleUser.profile_picture,
     });
-
-    await sendEmail(
-      googleUser.email,
-      'Welcome to UMAttend!',
-      `Hello ${googleUser.name},\n\nWelcome to UMAttend! We're excited to have you on board.\n\nBest regards,\nThe UMAttend Team`,
-      `<h1>Hello ${googleUser.name},</h1><p>Welcome to UMAttend! We're excited to have you on board.</p><p>Best regards,<br>The UMAttend Team</p>`
-    );
   }
 
   await authRepository.updateLoginAndProfile(

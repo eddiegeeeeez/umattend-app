@@ -5,7 +5,6 @@ import {
   HTTPSuccessResponse,
 } from '@/utils/responseHandler';
 import { AddEventRequest } from '../interface/event';
-import { sendEmail } from '../services/email.service';
 import { matchedData, validationResult } from 'express-validator';
 import eventServices from '../services/event.service';
 import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
@@ -75,12 +74,7 @@ const addEvent = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 500, 'Failed to add event');
     }
 
-    sendEmail(
-      umindanao_email,
-      'Event Successfully Created',
-      'Your event has been successfully created.',
-      '<p>Your event has been successfully created.</p>'
-    );
+
 
     return HTTPSuccessResponse(res, 200, 'Event Created', new_event);
   } catch (error: unknown) {
@@ -270,13 +264,6 @@ const createCheckInEvent = async (
       checked_in_by: checkIn.check_in_by,
     };
 
-    sendEmail(
-      umindanao_email,
-      'Check-in Successful',
-      `You have successfully checked in to the event.`,
-      `<p>You have successfully checked in to the event.</p>`
-    );
-
     return HTTPSuccessResponse(res, 200, 'Check-in successful', responseData);
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {
@@ -365,13 +352,6 @@ const createCheckOutEvent = async (
       checked_out_at: checkOut.check_out_at,
       checked_out_by: checkOut.check_out_by,
     };
-
-    sendEmail(
-      umindanao_email,
-      'Check-out Successful',
-      `You have successfully checked out to the event.`,
-      `<p>You have successfully checked out to the event.</p>`
-    );
 
     return HTTPSuccessResponse(res, 200, 'Check-out successful', responseData);
   } catch (error: unknown) {
