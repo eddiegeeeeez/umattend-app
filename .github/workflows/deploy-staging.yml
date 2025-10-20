@@ -19,69 +19,71 @@ jobs:
           set -e
           mkdir -p ~/.ssh
           umask 077
-
-          # Write SSH private key from secrets
           printf '%s\n' "${{ secrets.AZURE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
-          # Start SSH agent and add key
           eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.AZURE_DEPLOY_PORT }} -H ${{ secrets.AZURE_DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} 'echo ✅ SSH OK' || exit 1
 
-          # Add server to known hosts
-          ssh-keyscan -p ${{ secrets.AZURE_DEPLOY_PORT }} -H ${{ secrets.AZURE_DEPLOY_HOST }} >> ~/.ssh/known_hosts
+      - name: Deploy
+        run: |
+          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} << 'DEPLOY_SCRIPT'
+          set -e
+          cd ${{ secrets.STAGING_APP_PATH }}
+          
+          echo "Pulling code..."
+          git fetch --all
+          git reset --hard origin/staging
+          
+          echo "Building server..."
+          cd server
+          npm ci
+          npm run prisma:generate
+          npm run prisma:migrate:deploy
+          npm run build
+          cd ..
+          
+          echo "Building client..."
+          cd client
+          npm ci
+          npm run build
+          cd ..
+          
+          echo "Restarting services..."
+          pm2 restart umattend-server-staging || pm2 start server --name umattend-server-staging -- start
+          pm2 restart umattend-client-staging || pm2 start client --name umattend-client-staging -- start
+          pm2 save
+          
+          echo "Verifying deployment..."
+          pm2 ls
+          sleep 3
+          
+          echo "✅ Deployment complete"
+          DEPLOY_SCRIPT
 
-          # Test SSH connection
-          if ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
-            echo "✅ SSH connection successful"
-          else
-            echo "❌ SSH connection failed — verify authorized_keys and permissions on the server"
-            exit 1
-          fi
-
-      - name: Pull Latest Code
+      - name: Health Check
         run: |
           ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} "
-            cd ${{ secrets.STAGING_APP_PATH }}
-            git fetch --all
-            git reset --hard origin/staging
+          for i in {1..5}; do
+            if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+              echo '✅ Health check passed'
+              exit 0
+            fi
+            echo "Attempt $i/5 waiting for app..."
+            sleep 2
+          done
+          echo '❌ Health check failed'
+          exit 1
           "
 
-      - name: Build Server
+      - name: Deployment Failed
+        if: failure()
         run: |
           ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} "
-            cd ${{ secrets.STAGING_APP_PATH }}/server
-            npm install
-            npm run prisma:generate
-            npm run prisma:migrate:deploy
-            npm run build || true
-          "
-
-      - name: Build Client
-        run: |
-          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} "
-            cd ${{ secrets.STAGING_APP_PATH }}/client
-            npm install
-            npm run build
-          "
-
-      - name: Restart PM2 apps
-        run: |
-          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} "
-            cd ${{ secrets.STAGING_APP_PATH }}
-            
-            # Server
-            pm2 describe umattend-server-staging >/dev/null 2>&1 && pm2 restart umattend-server-staging || pm2 start server --name umattend-server-staging -- start
-
-            # Client
-            pm2 describe umattend-client-staging >/dev/null 2>&1 && pm2 restart umattend-client-staging || pm2 start client --name umattend-client-staging -- start
-
-            pm2 save
-          "
-
-      - name: Verify deployment
-        run: |
-          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} "
-            cd ${{ secrets.STAGING_APP_PATH }}
-            pm2 ls
+          echo 'Rolling back to previous version...'
+          cd ${{ secrets.STAGING_APP_PATH }}
+          git reset --hard HEAD~1
+          pm2 restart all
+          pm2 ls
           "
