@@ -157,6 +157,7 @@ const getLoginHistory = async (user_id: string) => {
   return await prisma.refresh_token.findMany({
     where: { user_id },
     select: {
+      id: true,
       browser: true,
       os: true,
       city: true,
