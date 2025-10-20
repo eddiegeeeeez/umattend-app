@@ -191,7 +191,7 @@ export default function EventDetailsPage() {
                         )}
                       </>
                     ))}
-                  {(event.can_edit) && (
+                  {event.can_edit && (
                     <Button
                       size="lg"
                       variant="outline"
