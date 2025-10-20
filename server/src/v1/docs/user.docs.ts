@@ -1,9 +1,9 @@
-const getUser = {
+const getUserandUpdateUser = {
   '/user': {
     get: {
       tags: ['User'],
       summary: 'Get user by ID',
-      description: 'Retrieve user information by user ID',
+      description: 'Retrieve user information for the authenticated user',
       security: [{ bearerAuth: [] }],
       responses: {
         200: {
@@ -24,14 +24,29 @@ const getUser = {
                       user: {
                         type: 'object',
                         properties: {
-                          id: { type: 'string' },
-                          email: { type: 'string' },
-                          umindanao_email: { type: 'string' },
-                          name: { type: 'string' },
-                          role: { type: 'string' },
-                          department: { type: 'string' },
-                          program: { type: 'string' },
-                          done_onboarding: { type: 'boolean' },
+                          id: { type: 'string', example: 'usr_123e4567' },
+                          umindanao_email: {
+                            type: 'string',
+                            example: 'j.doe.202301@umindanao.edu.ph',
+                          },
+                          name: {
+                            type: ['string', 'null'],
+                            example: 'Jane Doe',
+                          },
+                          role: { type: 'string', example: 'student' },
+                          department: {
+                            type: ['string', 'null'],
+                            example: 'College of Computer Studies',
+                          },
+                          program: {
+                            type: ['string', 'null'],
+                            example: 'BS Computer Science',
+                          },
+                          profile_picture: {
+                            type: ['string', 'null'],
+                            example: 'https://example.com/avatar.jpg',
+                          },
+                          done_onboarding: { type: 'boolean', example: true },
                         },
                       },
                     },
@@ -64,6 +79,126 @@ const getUser = {
                 properties: {
                   success: { type: 'boolean', example: false },
                   message: { type: 'string', example: 'User not found' },
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'Internal server error' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    put: {
+      tags: ['User'],
+      summary: 'Update user profile',
+      description:
+        'Update user profile fields such as department and program. At least one of `department` or `program` must be provided.',
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                department: {
+                  type: 'string',
+                  description: 'College or department name',
+                },
+                program: {
+                  type: 'string',
+                  description: 'Program or course name',
+                },
+              },
+              description:
+                'At least one of department or program must be provided',
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'User profile updated successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'User profile updated' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      user: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string', example: 'usr_123e4567' },
+                          umindanao_email: {
+                            type: 'string',
+                            example: 'j.doe.202301@umindanao.edu.ph',
+                          },
+                          name: {
+                            type: ['string', 'null'],
+                            example: 'Jane Doe',
+                          },
+                          department: {
+                            type: ['string', 'null'],
+                            example: 'College of Computer Studies',
+                          },
+                          program: {
+                            type: ['string', 'null'],
+                            example: 'BS Computer Science',
+                          },
+                          profile_picture: {
+                            type: ['string', 'null'],
+                            example: 'https://example.com/avatar.jpg',
+                          },
+                          done_onboarding: { type: 'boolean', example: true },
+                          role: { type: 'string', example: 'student' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: 'Bad request - no fields to update',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No fields to update' },
+                },
+              },
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'No token provided' },
                 },
               },
             },
@@ -208,103 +343,6 @@ const onboarding = {
   },
 };
 
-const updateUserProfile = {
-  '/user': {
-    put: {
-      tags: ['User'],
-      summary: 'Update user profile',
-      description: 'Update user profile fields such as department and program',
-      security: [{ bearerAuth: [] }],
-      requestBody: {
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                department: { type: 'string' },
-                program: { type: 'string' },
-              },
-            },
-          },
-        },
-      },
-      responses: {
-        200: {
-          description: 'User profile updated successfully',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'User profile updated' },
-                  data: {
-                    type: 'object',
-                    properties: {
-                      user: {
-                        type: 'object',
-                        properties: {
-                          id: { type: 'string' },
-                          umindanao_email: { type: 'string' },
-                          name: { type: 'string' },
-                          department: { type: 'string' },
-                          program: { type: 'string' },
-                          done_onboarding: { type: 'boolean' },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        400: {
-          description: 'Bad request - no fields to update',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'No fields to update' },
-                },
-              },
-            },
-          },
-        },
-        401: {
-          description: 'Unauthorized',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'No token provided' },
-                },
-              },
-            },
-          },
-        },
-        500: {
-          description: 'Internal server error',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: false },
-                  message: { type: 'string', example: 'Internal server error' },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-};
 const getUserAttendedEvents = {
   '/user/events': {
     get: {
@@ -621,9 +659,8 @@ const getUserHostedEvents = {
 };
 
 export const user = {
-  ...getUser,
+  ...getUserandUpdateUser,
   ...onboarding,
-  ...updateUserProfile,
   ...getUserAttendedEvents,
   ...getUserAttendedEventsDetailed,
   ...getUserHostedEvents,
