@@ -10,6 +10,8 @@ import useExchangeCode from '@/hooks/useExchangeCode';
 import { getUserOptions } from '@/api/client/@tanstack/react-query.gen';
 import { useAuthStore } from '@/store/authStore';
 
+//TODO migrate the uri and endpoints to secrets
+
 export default function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -29,7 +31,7 @@ export default function LoginContent() {
   const { data: userData } = useQuery({
     ...getUserOptions(),
     enabled: isAuthenticated(),
-    staleTime: Infinity, 
+    staleTime: Infinity,
     retry: false // Don't refetch unless manually invalidated
   });
 
