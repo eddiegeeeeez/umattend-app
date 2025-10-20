@@ -310,8 +310,8 @@ const getLoginHistory = async (req: Request, res: Response) => {
     }
 
     if (NODE_ENV === 'DEVELOPMENT') {
-      console.log("Un");
-      
+      console.log('Un');
+
       return HTTPErrorResponse(res, 500, error);
     }
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;

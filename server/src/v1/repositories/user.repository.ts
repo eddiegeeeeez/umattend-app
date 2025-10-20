@@ -177,7 +177,11 @@ const getUserHostedEvents = async (user_id: string) => {
   return eventsWithCounts;
 };
 
-const updateUserProfile = async (user_id: string, department?: string, program?: string) => {
+const updateUserProfile = async (
+  user_id: string,
+  department?: string,
+  program?: string
+) => {
   // Update student record for this user. Use updateMany to be safe if student row exists.
   const user = await prisma.user.update({
     where: { id: user_id },

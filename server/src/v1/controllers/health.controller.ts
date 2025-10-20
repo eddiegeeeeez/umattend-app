@@ -29,9 +29,11 @@ export const getHealthDetailed = async (req: Request, res: Response) => {
       nodeVersion: process.version,
       platform: process.platform,
       memory: {
-        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + ' MB',
+        total:
+          Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + ' MB',
         used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB',
-        external: Math.round(process.memoryUsage().external / 1024 / 1024) + ' MB',
+        external:
+          Math.round(process.memoryUsage().external / 1024 / 1024) + ' MB',
       },
       cpu: process.cpuUsage(),
     },
@@ -46,7 +48,7 @@ export const getHealthDetailed = async (req: Request, res: Response) => {
     const start = Date.now();
     await prisma.$queryRaw`SELECT 1`;
     const end = Date.now();
-    
+
     healthCheck.database.status = 'connected';
     healthCheck.database.responseTime = end - start;
   } catch (error) {

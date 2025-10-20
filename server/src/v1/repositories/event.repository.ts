@@ -5,6 +5,7 @@ import {
   AddCheckInInterface,
   AddCheckOutInterface,
 } from '../interface/event';
+import { Prisma } from '@prisma/client';
 
 const createEvent = async (event_data: AddEventInterface) => {
   return await prisma.$transaction(async (tx) => {
@@ -317,7 +318,9 @@ const getPaginatedAttendeesByEventId = async (
   const skip = (page - 1) * limit;
 
   // Build where clause
-  const whereClause: any = { event_id };
+  const whereClause: Prisma.attendanceWhereInput = {
+    event_id,
+  };
 
   if (search) {
     whereClause.OR = [

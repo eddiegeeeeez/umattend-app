@@ -1675,7 +1675,8 @@ const getPaginatedAttendeesByEventId = {
                                 umindanao_email: {
                                   type: ['string', 'null'],
                                   example: 'jane.doe@umindanao.edu.ph',
-                                  description: 'May be null if user email not set',
+                                  description:
+                                    'May be null if user email not set',
                                 },
                                 department: {
                                   type: 'string',
@@ -1704,23 +1705,27 @@ const getPaginatedAttendeesByEventId = {
                                   type: ['string', 'null'],
                                   format: 'date-time',
                                   example: '2025-10-15T09:15:00.000Z',
-                                  description: 'Null if student has not checked in',
+                                  description:
+                                    'Null if student has not checked in',
                                 },
                                 check_out_at: {
                                   type: ['string', 'null'],
                                   format: 'date-time',
                                   example: null,
-                                  description: 'Null if student has not checked out',
+                                  description:
+                                    'Null if student has not checked out',
                                 },
                                 check_in_by: {
                                   type: ['string', 'null'],
                                   example: 'John Admin',
-                                  description: 'Name of admin who checked in student',
+                                  description:
+                                    'Name of admin who checked in student',
                                 },
                                 check_out_by: {
                                   type: ['string', 'null'],
                                   example: null,
-                                  description: 'Name of admin who checked out student',
+                                  description:
+                                    'Name of admin who checked out student',
                                 },
                               },
                             },
