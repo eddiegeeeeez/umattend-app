@@ -11,81 +11,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up SSH
-        env:
-          SSH_ASKPASS: /usr/bin/ssh-askpass
         run: |
           set -e
           mkdir -p ~/.ssh
           umask 077
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+          # Write SSH private key from secrets
+          echo "${{ secrets.AZURE_DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          ASKPASS_SCRIPT=$(mktemp)
-          printf '%s\n' '#!/bin/sh' 'echo "${SSH_PASSPHRASE}"' > "$ASKPASS_SCRIPT"
-          chmod 700 "$ASKPASS_SCRIPT"
-
-          export SSH_ASKPASS="$ASKPASS_SCRIPT"
-          export SSH_PASSPHRASE="${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}"
-
+          # Start SSH agent and add key
           eval "$(ssh-agent -s)"
-          setsid ssh-add ~/.ssh/id_rsa < /dev/null || true
+          ssh-add ~/.ssh/id_rsa
 
-          ssh-keyscan -p ${{ secrets.DEPLOY_PORT }} -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts || true
+          # Add server to known hosts
+          ssh-keyscan -p ${{ secrets.AZURE_DEPLOY_HOST }} -H ${{ secrets.AZURE_DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
-          if ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
-            echo "SSH agent authentication succeeded"
+          # Test SSH connection
+          if ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} 'echo ok' 2>/dev/null; then
+            echo "SSH connection successful"
           else
-            echo "SSH agent auth failed — attempting to remove key passphrase and retry"
-            if [ -n "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" ]; then
-              ssh-keygen -p -P "${{ secrets.SSH_PRIVATE_KEY_PASSPHRASE }}" -N "" -f ~/.ssh/id_rsa || true
-            fi
-            
-            echo "Testing SSH connection with verbose output..."
-            if ssh -vvv -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'echo ok' 2>&1 | tee /tmp/ssh_debug.log; then
-              echo "SSH auth succeeded after removing passphrase"
-            else
-              echo ""
-              echo "=========================================="
-              echo "SSH AUTHENTICATION FAILED"
-              echo "=========================================="
-              echo ""
-              echo "Common causes:"
-              echo "1. Public key not in ~/.ssh/authorized_keys on server"
-              echo "2. Wrong DEPLOY_USER (current: ${{ secrets.DEPLOY_USER }})"
-              echo "3. SSH server config doesn't allow key authentication"
-              echo "4. Home directory or .ssh permissions wrong on server"
-              echo ""
-              echo "To fix:"
-              echo "1. SSH to your server manually"
-              echo "2. Run: mkdir -p ~/.ssh && chmod 700 ~/.ssh"
-              echo "3. Add your public key to ~/.ssh/authorized_keys"
-              echo "4. Run: chmod 600 ~/.ssh/authorized_keys"
-              echo ""
-              echo "Debug output (last 30 lines):"
-              tail -n 30 /tmp/ssh_debug.log || true
-              exit 1
-            fi
+            echo "SSH connection failed — please verify authorized_keys and permissions on the server"
+            exit 1
           fi
-
-          rm -f "$ASKPASS_SCRIPT"
-
 
       - name: Pull Latest Code
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} "
             cd ${{ secrets.STAGING_APP_PATH }}
             git fetch --all
             git reset --hard origin/staging
           "
 
-      - name: Building Server
+      - name: Build Server
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} "
             cd ${{ secrets.STAGING_APP_PATH }}/server
             npm install
             npm run prisma:generate
@@ -95,7 +59,7 @@ jobs:
 
       - name: Build Client
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} "
             cd ${{ secrets.STAGING_APP_PATH }}/client
             npm install
             npm run build
@@ -103,21 +67,8 @@ jobs:
 
       - name: Restart PM2 apps
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
+          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} "
             cd ${{ secrets.STAGING_APP_PATH }}
             
             # Server
-            pm2 describe umattend-server-staging >/dev/null 2>&1 && pm2 restart umattend-server-staging || pm2 start server --name umattend-server-staging -- start
-
-            # Client
-            pm2 describe umattend-client-staging >/dev/null 2>&1 && pm2 restart umattend-client-staging || pm2 start client --name umattend-client-staging -- start
-
-            pm2 save
-          "
-
-      - name: Verify deployment
-        run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
-            cd ${{ secrets.STAGING_APP_PATH }}
-            pm2 ls
-          "
+            pm2 describe umattend-server-staging >/dev/null 2>&1 && pm2 restart umattend-serv
