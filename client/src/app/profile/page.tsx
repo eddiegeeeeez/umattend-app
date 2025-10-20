@@ -237,7 +237,7 @@ const ProfilePage = () => {
                       <div className="min-w-0 flex-1">
                         <h3
                           className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors"
-                          onClick={() => event.id && handlclickHostedEvent(event.id)}
+                          onClick={() => event.id && handlclickAttendedEvent(event.id)}
                         >
                           {event.title}
                         </h3>
