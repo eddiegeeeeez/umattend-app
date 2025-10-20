@@ -18,7 +18,7 @@ const googleAuth = async (req: Request, res: Response) => {
     const url = GoogleAuth.generateGoogleAuthUrl();
 
     console.log(url);
-    
+
     return res.redirect(url);
   } catch (error: unknown) {
     if (NODE_ENV === 'DEVELOPMENT') {
@@ -29,11 +29,10 @@ const googleAuth = async (req: Request, res: Response) => {
       ) as Response;
     }
 
-    return HTTPErrorResponse(
-      res,
-      500,
-      'Failed to generate Google auth URL'
-    ) as Response;
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
@@ -41,8 +40,9 @@ const googleCallback = async (req: Request, res: Response) => {
   try {
     const { code, state } = req.query;
 
-    const currentUri = `${req.protocol}://${req.get('host')}${req.originalUrl.split('?')[0]
-      }`;
+    const currentUri = `${req.protocol}://${req.get('host')}${
+      req.originalUrl.split('?')[0]
+    }`;
 
     const frontendUrl = FRONTEND_URL;
 
@@ -168,6 +168,9 @@ const logoutUser = async (req: Request, res: Response) => {
       ) as Response;
     }
 
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(res, 500, error);
+    }
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
@@ -222,6 +225,9 @@ const refreshAccessToken = async (req: Request, res: Response) => {
       ) as Response;
     }
 
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(res, 500, error);
+    }
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
@@ -278,6 +284,9 @@ const exhangeCode = async (req: Request, res: Response) => {
       ) as Response;
     }
 
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(res, 500, error);
+    }
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
@@ -300,6 +309,11 @@ const getLoginHistory = async (req: Request, res: Response) => {
       ) as Response;
     }
 
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.log("Un");
+      
+      return HTTPErrorResponse(res, 500, error);
+    }
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };

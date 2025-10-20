@@ -25,6 +25,9 @@ const getUserById = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 404, error.message) as Response;
     }
 
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(res, 500, error);
+    }
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
@@ -63,9 +66,13 @@ const onboardUser = async (req: Request, res: Response) => {
     if (error instanceof Error) {
       return HTTPErrorResponse(res, 500, error.message);
     }
-    return HTTPErrorResponse(res, 500, error);
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
+
 const getUserAttendedEvents = async (req: Request, res: Response) => {
   try {
     const { id } = req.user as { id: string };
@@ -92,6 +99,9 @@ const getUserAttendedEvents = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 404, error.message) as Response;
     }
 
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(res, 500, error);
+    }
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
@@ -123,6 +133,9 @@ const getUserAttendedEventsDetailed = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 404, error.message) as Response;
     }
 
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(res, 500, error);
+    }
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
@@ -149,6 +162,9 @@ const getUserHostedEvents = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 404, error.message) as Response;
     }
 
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(res, 500, error);
+    }
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
@@ -162,14 +178,24 @@ const updateUserProfile = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 400, 'No fields to update');
     }
 
-    const updated = await userService.updateUserProfile(user_id, department, program);
+    const updated = await userService.updateUserProfile(
+      user_id,
+      department,
+      program
+    );
 
-    return HTTPSuccessResponse(res, 200, 'User profile updated', { user: updated });
+    return HTTPSuccessResponse(res, 200, 'User profile updated', {
+      user: updated,
+    });
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return HTTPErrorResponse(res, 500, error.message);
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
     }
-    return HTTPErrorResponse(res, 500, error as any);
+
+    if (NODE_ENV === 'DEVELOPMENT') {
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
   }
 };
 
