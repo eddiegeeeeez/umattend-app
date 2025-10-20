@@ -92,6 +92,14 @@ const ProfilePage = () => {
   const attendedEvents = attendedEventsData?.data?.events || [];
   const hostedEvents = hostedEventsData?.data?.events || [];
 
+  const handlclickHostedEvent = (eventId: string) => {
+    window.location.href = `/events/${eventId}/manage`;
+  };
+
+  const handlclickAttendedEvent = (eventId: string) => {
+    window.location.href = `/events/${eventId}`;
+  };
+
   if (!user) {
     return <ProfileSkeleton />;
   }
@@ -223,7 +231,12 @@ const ProfilePage = () => {
                   >
                     <div className="flex flex-col gap-4 p-4">
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors">{event.title}</h3>
+                        <h3
+                          className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors"
+                          onClick={() => event.id && handlclickHostedEvent(event.id)}
+                        >
+                          {event.title}
+                        </h3>
                         <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
                           <div className="from-primary/20 to-primary/5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br">
                             <div className="bg-primary h-2 w-2 rounded-full" />
@@ -268,7 +281,12 @@ const ProfilePage = () => {
                     >
                       <div className="flex flex-col gap-4 p-4">
                         <div className="min-w-0 flex-1">
-                          <h3 className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors">{event.title}</h3>
+                          <h3
+                            className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors"
+                            onClick={() => event.id && handlclickHostedEvent(event.id)}
+                          >
+                            {event.title}
+                          </h3>
                           <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
                             <div className="from-primary/20 to-primary/5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br">
                               <div className="bg-primary h-2 w-2 rounded-full" />
