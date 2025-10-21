@@ -169,6 +169,12 @@ const getLoginHistory = async (user_id: string) => {
   });
 };
 
+const getEventOragazerByUserId = async (user_id: string, event_id: string) => {
+  return await prisma.organizers.findFirst({
+    where: { user_id, event_id },
+  });
+};
+
 const authRepository = {
   createUser,
   updateUser,
@@ -186,6 +192,7 @@ const authRepository = {
   getAuthCode,
   deleteAuthCode,
   getLoginHistory,
+  getEventOragazerByUserId,
 };
 
 export default authRepository;

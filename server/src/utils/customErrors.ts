@@ -41,6 +41,12 @@ export class ForbiddenError extends AppError {
   }
 }
 
+export class OrganizerError extends AppError {
+  constructor(message = 'Organizer operation failed') {
+    super(message, 400, 'OrganizerError');
+  }
+}
+
 export class AccountUpdateError extends AppError {
   constructor(message = 'Account update failed') {
     super(message, 400, 'AccountUpdateError');

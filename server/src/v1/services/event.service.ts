@@ -12,6 +12,7 @@ import {
   NotFoundError,
   ForbiddenError,
   NoCheckoutRequiredError,
+  OrganizerError,
 } from '@/utils/customErrors';
 import { events } from '@prisma/client';
 import { endEventStatusQueue } from '../queues/endEvent.queue';
@@ -222,7 +223,10 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
       CHECK_OUT_EMAIL.replace('{{name}}', checkedOut.student.name)
         .replace('{{event_name}}', checkedOut.event.title)
         .replace('{{event_location}}', checkedOut.event.location)
-        .replace('{{event_date_and_time}}',checkedOut.check_out_at.toLocaleString())
+        .replace(
+          '{{event_date_and_time}}',
+          checkedOut.check_out_at.toLocaleString()
+        )
         .replace('{{checked_out_by}}', checkOutBy.name)
     );
 
@@ -319,6 +323,15 @@ const addOrganizer = async (
 
   if (!user_id) {
     throw new NotFoundError('User ID not found');
+  }
+
+  const existingOrganizer = await eventRepository.checkOrganizer(
+    user_id,
+    event_id
+  );
+
+  if (existingOrganizer) {
+    throw new OrganizerError('User is already an organizer for this event');
   }
 
   return await eventRepository.addOrganizer(user_id, added_by, event_id);
