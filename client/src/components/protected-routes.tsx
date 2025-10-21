@@ -21,15 +21,9 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
       return;
     }
 
-    // Check admin requirement
-    if (requireAdmin && !isAdmin()) {
-      router.push('/forbidden');
-      return;
-    }
-
     // User is authorized
     setIsChecking(false);
-  }, [user, requireAdmin, router, isAdmin, isAuthenticated]);
+  }, [user, requireAdmin, router, isAuthenticated]);
 
   // Show nothing while checking auth (prevents flash of protected content)
   if (isChecking || !isAuthenticated()) {
