@@ -1,0 +1,125 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          set -e
+          mkdir -p ~/.ssh
+          umask 077
+          printf '%s\n' "${{ secrets.AZURE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.AZURE_DEPLOY_PORT }} -H ${{ secrets.AZURE_DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -o BatchMode=yes -o ConnectTimeout=10 -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} 'echo ✅ SSH OK' || exit 1
+
+      - name: Deploy
+        run: |
+          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} << 'DEPLOY_SCRIPT'
+          set -e
+          cd ${{ secrets.STAGING_APP_PATH }}
+          
+          echo "===================="
+          echo "SAVE CURRENT STATE"
+          echo "===================="
+          PREVIOUS_COMMIT=$(git rev-parse HEAD)
+          echo "Current commit: $PREVIOUS_COMMIT"
+          
+          echo ""
+          echo "===================="
+          echo "PULL CODE"
+          echo "===================="
+          git fetch --all
+          git reset --hard origin/staging
+          
+          echo ""
+          echo "===================="
+          echo "BUILD SERVER"
+          echo "===================="
+          cd server
+          npm ci || { echo "npm ci failed"; exit 1; }
+          npm run prisma:generate || { echo "prisma:generate failed"; exit 1; }
+          npm run prisma:migrate:deploy || { echo "prisma:migrate:deploy failed"; exit 1; }
+          npm run build || { echo "server build failed"; exit 1; }
+          cd ..
+          
+          echo ""
+          echo "===================="
+          echo "BUILD CLIENT"
+          echo "===================="
+          cd client
+          npm ci || { echo "npm ci failed"; exit 1; }
+          npm run build || { echo "client build failed"; exit 1; }
+          cd ..
+          
+          echo ""
+          echo "===================="
+          echo "RESTART SERVICES"
+          echo "===================="
+          pm2 restart umattend-server-staging || pm2 start server --name umattend-server-staging -- start
+          pm2 restart umattend-client-staging || pm2 start client --name umattend-client-staging -- start
+          pm2 save
+          
+          echo ""
+          echo "===================="
+          echo "VERIFY DEPLOYMENT"
+          echo "===================="
+          pm2 ls
+          sleep 3
+          
+          echo ""
+          echo "✅ Deployment complete"
+          DEPLOY_SCRIPT
+
+      - name: Rollback on Failure
+        if: failure()
+        run: |
+          ssh -p ${{ secrets.AZURE_DEPLOY_PORT }} ${{ secrets.AZURE_DEPLOY_USER }}@${{ secrets.AZURE_DEPLOY_HOST }} << 'ROLLBACK_SCRIPT'
+          set -e
+          cd ${{ secrets.STAGING_APP_PATH }}
+          
+          echo "===================="
+          echo "ROLLBACK IN PROGRESS"
+          echo "===================="
+          
+          PREVIOUS_COMMIT=$(git rev-parse HEAD)
+          git reset --hard origin/staging
+          # ... build ...
+          # If build fails:
+          git reset --hard $PREVIOUS_COMMIT
+          
+          echo "Rebuilding server..."
+          cd server
+          npm ci
+          npm run build
+          cd ..
+          
+          echo "Rebuilding client..."
+          cd client
+          npm ci
+          npm run build
+          cd ..
+          
+          echo "Restarting services..."
+          pm2 restart umattend-server-staging umattend-client-staging
+          pm2 save
+          
+          echo "Verifying rollback..."
+          pm2 ls
+          
+          echo ""
+          echo "✅ Rollback complete"
+          ROLLBACK_SCRIPT

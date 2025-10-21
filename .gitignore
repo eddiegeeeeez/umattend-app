@@ -21,6 +21,12 @@ pm2-log.json
 # Docker files
 docker-compose.override.yml
 
+# SSL Certificates & Certbot
+certbot/
+nginx/ssl/
+*.pem
+*.crt
+*.key
 
 # Logs
 logs/
@@ -72,3 +78,10 @@ firebase-service-account.json
 # SSH keys
 id_ed25519
 id_ed25519.pub
+
+# Azure credentials
+.azure/
+
+# Google Auth credentials
+google-oauth-client-secrets
+google-oauth-client-secrets.*

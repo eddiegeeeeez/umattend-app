@@ -1,0 +1,204 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { Scan } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
+
+interface EventQRScannerProps {
+  eventId: string;
+  onAttendeeScanned: (attendeeId: string) => void;
+}
+
+export function EventQRScanner({ onAttendeeScanned }: EventQRScannerProps) {
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannedValue, setScannedValue] = useState<string | null>(null);
+  const [showDialog, setShowDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const scanningRef = useRef(false);
+  const lastScannedRef = useRef<string>('');
+  const lastScannedTimeRef = useRef<number>(0);
+  const [jsQRLoaded, setJsQRLoaded] = useState(false);
+
+  // Load jsQR library
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+    script.onload = () => {
+      setJsQRLoaded(true);
+    };
+    script.onerror = () => {
+      console.error('Failed to load jsQR library');
+    };
+    document.head.appendChild(script);
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
+  const startAutoScan = () => {
+    scanningRef.current = true;
+    const scanFrame = () => {
+      if (!scanningRef.current || !videoRef.current || !canvasRef.current) return;
+
+      const context = canvasRef.current.getContext('2d');
+      if (context && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+        context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
+        const imageData = context.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+        const detectedCode = detectQRCode(imageData);
+        if (detectedCode) {
+          const now = Date.now();
+          if (detectedCode !== lastScannedRef.current || now - lastScannedTimeRef.current > 2000) {
+            lastScannedRef.current = detectedCode;
+            lastScannedTimeRef.current = now;
+            setScannedValue(detectedCode);
+            setShowDialog(true);
+            setIsProcessing(true);
+          }
+        }
+      }
+
+      requestAnimationFrame(scanFrame);
+    };
+    scanFrame();
+  };
+
+  const detectQRCode = (imageData: ImageData): string | null => {
+    if (typeof window.jsQR === 'undefined') {
+      return null;
+    }
+
+    const code = window.jsQR(imageData.data, imageData.width, imageData.height);
+    if (code) {
+      return code.data;
+    }
+
+    return null;
+  };
+
+  const startCamera = async () => {
+    try {
+      setIsScanning(true);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => {
+          startAutoScan();
+        };
+      }
+    } catch (error) {
+      console.error('Camera access error:', error);
+      setIsScanning(false);
+    }
+  };
+
+  const stopCamera = () => {
+    scanningRef.current = false;
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      tracks.forEach((track) => track.stop());
+    }
+    setIsScanning(false);
+  };
+
+  const handleConfirmScan = () => {
+    if (scannedValue) {
+      setTimeout(() => {
+        onAttendeeScanned(scannedValue);
+        setShowDialog(false);
+        setIsProcessing(false);
+      }, 1500);
+    }
+  };
+
+  return (
+    <div className="w-full space-y-3 sm:space-y-4 md:space-y-6">
+      {/* Scanner Section */}
+      <Card className="border-border bg-card p-4 sm:p-5 md:p-6">
+        <h3 className="text-foreground mb-3 text-sm font-semibold sm:mb-4 sm:text-base md:text-lg">QR Code Scanner</h3>
+
+        {!isScanning ? (
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <Button onClick={startCamera} className="w-full gap-2 text-sm md:text-base" disabled={!jsQRLoaded}>
+              <Scan className="h-4 w-4" />
+              {jsQRLoaded ? 'Start Camera' : 'Loading QR Scanner...'}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="relative mx-auto aspect-[3/4] w-full max-w-lg overflow-hidden rounded-lg bg-black">
+              <video ref={videoRef} autoPlay playsInline className="h-full w-full object-cover" />
+              <canvas ref={canvasRef} className="hidden" width={640} height={480} />
+
+              <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4 md:p-0">
+                <div className="border-primary xs:h-48 xs:w-48 relative h-40 w-40 rounded-lg border-2 sm:h-56 sm:w-56 md:h-64 md:w-64">
+                  <div className="border-primary absolute top-0 left-0 h-3 w-3 border-t-2 border-l-2 sm:h-4 sm:w-4" />
+                  <div className="border-primary absolute top-0 right-0 h-3 w-3 border-t-2 border-r-2 sm:h-4 sm:w-4" />
+                  <div className="border-primary absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 sm:h-4 sm:w-4" />
+                  <div className="border-primary absolute right-0 bottom-0 h-3 w-3 border-r-2 border-b-2 sm:h-4 sm:w-4" />
+                </div>
+              </div>
+            </div>
+
+            <Button onClick={stopCamera} variant="destructive" className="w-full text-sm md:text-base">
+              Stop Scanning
+            </Button>
+          </div>
+        )}
+      </Card>
+
+      <Dialog
+        open={showDialog && isProcessing}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowDialog(false);
+            setIsProcessing(false);
+          }
+        }}
+      >
+        <DialogContent className="w-[90vw] max-w-sm sm:w-full md:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base sm:text-lg md:text-xl">QR Code Scanned</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm md:text-base">Processing scanned data...</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center gap-3 py-4 sm:gap-4 sm:py-6">
+            <Spinner className="h-6 w-6 sm:h-8 sm:w-8" />
+            <div className="bg-muted w-full rounded-lg p-2.5 sm:p-3 md:p-4">
+              <p className="text-foreground text-center font-mono text-sm font-semibold break-all sm:text-base md:text-lg">{scannedValue}</p>
+            </div>
+            <p className="text-muted-foreground text-center text-xs sm:text-sm">Processing attendee information...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDialog && !isProcessing} onOpenChange={setShowDialog}>
+        <DialogContent className="w-[90vw] max-w-sm sm:w-full md:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base sm:text-lg md:text-xl">QR Code Scanned</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm md:text-base">The following value was detected from the QR code:</DialogDescription>
+          </DialogHeader>
+          <div className="py-3 sm:py-4">
+            <div className="bg-muted rounded-lg p-2.5 sm:p-3 md:p-4">
+              <p className="text-foreground text-center font-mono text-sm font-semibold break-all sm:text-base md:text-lg">{scannedValue}</p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowDialog(false)} className="text-xs sm:text-sm md:text-base">
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmScan} className="text-xs sm:text-sm md:text-base">
+              Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
