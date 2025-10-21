@@ -252,7 +252,11 @@ const createCheckInEvent = async (
     }
 
     if (!checkIn) {
-      return HTTPErrorResponse(res, 400, 'Failed to create check-in or student already checked in or already checked out');
+      return HTTPErrorResponse(
+        res,
+        400,
+        'Failed to create check-in or student already checked in or already checked out'
+      );
     }
 
     const responseData = {
@@ -716,6 +720,38 @@ const exportEventAttendeesToExcel = async (req: Request, res: Response) => {
   }
 };
 
+const getEventAttendanceCount = async (req: Request, res: Response) => {
+  try {
+    const { event_id } = req.params;
+    if (!event_id) {
+      return HTTPErrorResponse(res, 400, 'Event ID is required');
+    }
+    const { totalAttendance, totalCheckedOut } =
+      await eventServices.getTotalAttendanceByEventId(event_id);
+    return HTTPSuccessResponse(
+      res,
+      200,
+      'Event attendance count retrieved successfully',
+      { totalAttendance, totalCheckedOut }
+    );
+  } catch (error: unknown) {
+    if (error instanceof NotFoundError) {
+      return HTTPErrorResponse(res, 404, error.message);
+    }
+    if (error instanceof Error) {
+      return HTTPErrorResponse(res, 500, error.message);
+    }
+    if (NODE_ENV === 'DEVELOPMENT') {
+      console.error(
+        'Unexpected error retrieving event attendance count:',
+        error
+      );
+      return HTTPErrorResponse(res, 500, error);
+    }
+    return HTTPErrorResponse(res, 500, 'Internal server error') as Response;
+  }
+};
+
 const eventController = {
   addEvent,
   deleteEvent,
@@ -730,6 +766,7 @@ const eventController = {
   getAllPastEvents,
   getPaginatedAttendeesByEventId,
   exportEventAttendeesToExcel,
+  getEventAttendanceCount,
 };
 
 export default eventController;

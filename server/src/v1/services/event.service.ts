@@ -518,7 +518,7 @@ const getPaginatedAttendeesByEventId = async (
       search
     );
 
-  if (attendees.length === 0) {
+  if (total === 0) {
     throw new NotFoundError('No attendees found for this event');
   }
 
@@ -619,6 +619,12 @@ const getEventNameById = async (event_id: string): Promise<string> => {
   return eventData.title;
 };
 
+const getTotalAttendanceByEventId = async (
+  event_id: string
+): Promise<{ totalAttendance: number; totalCheckedOut: number }> => {
+  return await eventRepository.getEventAttendanceCount(event_id);
+};
+
 const eventServices = {
   addEvent,
   deleteEvent,
@@ -634,6 +640,7 @@ const eventServices = {
   getAttendeesByEventId,
   getEventNameById,
   getPaginatedAttendeesByEventId,
+  getTotalAttendanceByEventId,
 };
 
 export default eventServices;

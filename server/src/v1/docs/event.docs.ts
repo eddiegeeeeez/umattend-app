@@ -2091,6 +2091,134 @@ const exportEventAttendeesToExcel = {
   },
 };
 
+const getEventAttendanceCount = {
+  '/event/{event_id}/attendance_count': {
+    get: {
+      summary: 'Get event attendance count',
+      description:
+        'Returns the total number of attendees and total checked-out attendees for a specific event.\n\n- Requires authentication.\n- Only accessible by users with roles: **admin** or **csg**.\n- Organizer permission check is enforced.',
+      tags: ['Event'],
+      operationId: 'getEventAttendanceCount',
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          name: 'event_id',
+          in: 'path',
+          required: true,
+          description: 'The unique identifier of the event.',
+          schema: {
+            type: 'string',
+            example: '',
+          },
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Event attendance count retrieved successfully.',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  status: {
+                    type: 'string',
+                    example: 'success',
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Event attendance count retrieved successfully',
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      totalAttendance: {
+                        type: 'integer',
+                        description:
+                          'Total number of attendees who have checked in.',
+                        example: 150,
+                      },
+                      totalCheckedOut: {
+                        type: 'integer',
+                        description:
+                          'Total number of attendees who have checked out.',
+                        example: 120,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        '400': {
+          description: 'Missing event ID parameter.',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  status: {
+                    type: 'string',
+                    example: 'error',
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Event ID is required.',
+                  },
+                },
+              },
+            },
+          },
+        },
+        '404': {
+          description: 'Event not found.',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  status: {
+                    type: 'string',
+                    example: 'error',
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Event not found.',
+                  },
+                },
+              },
+            },
+          },
+        },
+        '500': {
+          description: 'Internal server error.',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  status: {
+                    type: 'string',
+                    example: 'error',
+                  },
+                  message: {
+                    type: 'string',
+                    example: 'Internal server error.',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export const event = {
   ...createAndGetEvent,
   ...updateAndDeleteEvent,
@@ -2102,4 +2230,5 @@ export const event = {
   ...getPaginatedAttendeesByEventId,
   ...getOrganizersByEventId,
   ...exportEventAttendeesToExcel,
+  ...getEventAttendanceCount,
 };

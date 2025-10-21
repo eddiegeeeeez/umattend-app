@@ -222,7 +222,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
         event: true,
         student: true,
         check_in_by_user: true,
-        check_out_by_user: true, 
+        check_out_by_user: true,
       },
     });
   });
@@ -309,7 +309,7 @@ const getOrganizersByEventId = async (event_id: string) => {
   }));
 };
 
-const getPaginatedAttendeesByEventId = async (
+const getPaginatedAttendeesByEventId = async (  
   event_id: string,
   page: number,
   limit: number,
@@ -323,33 +323,42 @@ const getPaginatedAttendeesByEventId = async (
   };
 
   if (search) {
-    whereClause.OR = [
-      {
+    // Build OR conditions incrementally. Only include numeric equality
+    // for student_id when the search term parses to a finite number.
+    const orConditions: Prisma.attendanceWhereInput[] = [];
+
+    orConditions.push({
+      student: {
+        name: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    const parsedId = Number(search);
+    if (!Number.isNaN(parsedId) && Number.isFinite(parsedId)) {
+      orConditions.push({
         student: {
-          name: {
+          student_id: {
+            equals: parsedId,
+          },
+        },
+      });
+    }
+
+    orConditions.push({
+      student: {
+        user: {
+          umindanao_email: {
             contains: search,
             mode: 'insensitive',
           },
         },
       },
-      {
-        student: {
-          student_id: {
-            equals: Number(search), // better than contains for numeric IDs
-          },
-        },
-      },
-      {
-        student: {
-          user: {
-            umindanao_email: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-        },
-      },
-    ];
+    });
+
+    whereClause.OR = orConditions;
   }
 
   const [attendees, total] = await Promise.all([
@@ -419,6 +428,31 @@ const getAttendeesByEventId = async (event_id: string) => {
   });
 };
 
+const getEventAttendanceCount = async (event_id: string) => {
+  const event = await prisma.events.findUnique({
+    where: { id: event_id },
+  });
+
+  if (!event) {
+    throw new NotFoundError('Event not found');
+  }
+
+  const totalAttendance = await prisma.attendance.count({
+    where: { event_id },
+  });
+
+  const totalCheckedOut = await prisma.attendance.count({
+    where: {
+      event_id,
+      NOT: {
+        check_out_at: null,
+      },
+    },
+  });
+
+  return { totalAttendance, totalCheckedOut };
+};
+
 const getEventCheckoutCount = async (event_id: string) => {
   return await prisma.attendance.count({
     where: {
@@ -484,6 +518,7 @@ const eventRepository = {
   getEventCheckinCount,
   getPaginatedAttendeesByEventId,
   checkIfUserAttended,
+  getEventAttendanceCount,
 };
 
 export default eventRepository;

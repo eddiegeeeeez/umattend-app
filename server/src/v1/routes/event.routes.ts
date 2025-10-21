@@ -94,4 +94,12 @@ router.get(
   eventController.exportEventAttendeesToExcel
 );
 
+router.get(
+  '/:event_id/attendance_count',
+  authMiddleware,
+  checkRole('admin', 'csg'),
+  checkOrganizer,
+  eventController.getEventAttendanceCount
+);
+
 export default router;

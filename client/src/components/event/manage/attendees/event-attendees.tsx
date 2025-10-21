@@ -7,7 +7,10 @@ import type { AttendanceRecord } from '@/types/events';
 import { columns } from './data-table/attendance-columns';
 import { AttendanceDataTable } from './data-table/attendance-data-table';
 import EvenAttendeesSkeleton from './event-attendees-skeleton';
-import { getEventByEventIdAttendeesOptions } from '@/api/client/@tanstack/react-query.gen';
+import EventAttendeesStats from './event-attendees-stats';
+import EventAttendeesStatsSkeleton from './event-attendees-stats-skeleton';
+import EventDataTableSkeleton from './event-data-table-skeleton';
+import { getEventAttendanceCountOptions, getEventByEventIdAttendeesOptions } from '@/api/client/@tanstack/react-query.gen';
 import { Event } from '@/api/client/sdk.gen';
 import { formatDateTime } from '@/lib/utils';
 
@@ -17,14 +20,14 @@ interface EventAttendeesProps {
 }
 
 export default function EventAttendees({ eventId }: EventAttendeesProps) {
-  const [search] = useState('');
-  const [page] = useState(1);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const limit = 10;
 
-  // Fetch attendees data from API
   const {
     data: attendeesData,
     isLoading,
+    error,
     refetch
   } = useQuery({
     ...getEventByEventIdAttendeesOptions({
@@ -37,14 +40,28 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
         search: search || undefined
       }
     }),
-    // Enable the query only when we have an eventId
     enabled: !!eventId,
     retry: false
   });
 
+  const {
+    data: attendeesStatsData,
+    isLoading: attendeesStatsIsLoading,
+    refetch: refetchAttendeesStats
+  } = useQuery({
+    ...getEventAttendanceCountOptions({
+      path: {
+        event_id: eventId
+      }
+    }),
+    enabled: !!eventId
+  });
+
   const handleRefresh = () => {
     refetch();
+    refetchAttendeesStats();
   };
+
 
   const handleExport = async () => {
     try {
@@ -56,7 +73,6 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
         }
       });
 
-      // The response.data is a Blob
       const csvBlob = response.data;
 
       if (!csvBlob) {
@@ -65,17 +81,14 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
         return;
       }
 
-      // Create a download link
       const url = window.URL.createObjectURL(csvBlob as Blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `event-${eventId}-attendees.csv`;
 
-      // Trigger download
       document.body.appendChild(link);
       link.click();
 
-      // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
@@ -88,11 +101,6 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
     }
   };
 
-  if (isLoading) {
-    return <EvenAttendeesSkeleton />;
-  }
-
-  // Transform API data to AttendanceRecord format
   const attendanceRecords: AttendanceRecord[] =
     attendeesData?.data?.data
       ?.map((item) => {
@@ -114,49 +122,23 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
       .filter((record): record is AttendanceRecord => record !== null) || [];
 
   const totalStudents = attendeesData?.data?.pagination?.total || 0;
-  const checkedInCount = attendanceRecords.filter((r) => r.checkInAt !== '-').length;
-  const checkedOutCount = attendanceRecords.filter((r) => r.checkOutAt !== '-').length;
+  const totalPages = attendeesData?.data?.pagination?.totalPages || 1;
+
+  const totalStudentsStats = Number(attendeesStatsData?.data?.totalAttendance);
+  const totalCheckedOutStats = Number(attendeesStatsData?.data?.totalCheckedOut);
+
+  if (attendeesStatsIsLoading) {
+    return (
+      <div className="min-h-screen">
+        <EvenAttendeesSkeleton />
+        <EventAttendeesStatsSkeleton />
+        <EventDataTableSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div className="mb-4 grid grid-cols-1 gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 md:mb-8 md:grid-cols-3 md:gap-6">
-        <div className="bg-card border-border rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 md:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-muted-foreground text-xs font-medium sm:text-sm">Total Students</p>
-              <p className="text-foreground mt-1 text-xl font-bold sm:text-2xl md:mt-2 md:text-3xl">{totalStudents}</p>
-            </div>
-            <div className="bg-primary/10 flex size-9 items-center justify-center rounded-full sm:size-10 md:size-12">
-              <Users className="text-primary size-4 sm:size-5 md:size-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border-border rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 md:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-muted-foreground text-xs font-medium sm:text-sm">Checked In</p>
-              <p className="text-foreground mt-1 text-xl font-bold sm:text-2xl md:mt-2 md:text-3xl">{checkedInCount}</p>
-            </div>
-            <div className="flex size-9 items-center justify-center rounded-full bg-green-500/10 sm:size-10 md:size-12">
-              <Calendar className="size-4 text-green-600 sm:size-5 md:size-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border-border rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 md:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-muted-foreground text-xs font-medium sm:text-sm">Checked Out</p>
-              <p className="text-foreground mt-1 text-xl font-bold sm:text-2xl md:mt-2 md:text-3xl">{checkedOutCount}</p>
-            </div>
-            <div className="flex size-9 items-center justify-center rounded-full bg-blue-500/10 sm:size-10 md:size-12">
-              <Calendar className="size-4 text-blue-600 sm:size-5 md:size-6" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 md:mb-8">
         <div>
           <h1 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">Attendance Records</h1>
@@ -178,7 +160,20 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
         </div>
       </div>
 
-      <AttendanceDataTable columns={columns} data={attendanceRecords} />
+      <EventAttendeesStats totalStudents={totalStudentsStats} totalCheckedOut={totalCheckedOutStats} isLoading={attendeesStatsIsLoading} />
+
+      <AttendanceDataTable
+        columns={columns}
+        data={attendanceRecords}
+        search={search}
+        onSearchChange={setSearch}
+        page={page}
+        onPageChange={setPage}
+        totalPages={totalPages}
+        totalRecords={totalStudents}
+        isLoading={isLoading}
+        error={error}
+      />
     </div>
   );
 }
