@@ -143,7 +143,7 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
           '{{event_date_and_time}}',
           checkedIn.check_in_at.toLocaleString()
         )
-        .replace('{{checked_out_by}}', checkInBy.name)
+        .replace('{{checked_in_by}}', checkInBy.name)
     );
 
     return checkedIn;
@@ -209,7 +209,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
 
     sendEmail(
       studentbyUserId?.umindanao_email,
-      'Event Check-In Successful',
+      'Event Check-Out Successful',
       CHECK_IN_EMAIL.replace('{{name}}', checkedOut.student.name)
         .replace('{{event_name}}', checkedOut.event.title)
         .replace('{{event_location}}', checkedOut.event.location)
