@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-neutral-100">
-      <main className="container mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+      <main className="container mx-auto max-w-4xl px-6 py-12">
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3">

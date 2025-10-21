@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Users, Calendar } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -61,7 +61,6 @@ export default function EventAttendees({ eventId }: EventAttendeesProps) {
     refetch();
     refetchAttendeesStats();
   };
-
 
   const handleExport = async () => {
     try {

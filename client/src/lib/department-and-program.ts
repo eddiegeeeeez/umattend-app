@@ -40,7 +40,7 @@ export const DepartmentAndPrograms = {
     'Bachelor of Library and Information Science',
     'Bachelor of Science in Entertainment and Multimedia Computing – Digital Animation',
     'Bachelor of Science in Entertainment and Multimedia Computing – Game Development',
-    'Bachelor of Arts in Multimedia Arts'
+    'Bachelor in Multimedia Arts'
   ],
   'College of Criminal Justice Education': ['Bachelor of Science in Criminology', 'Bachelor of Science in Industrial Security Management'],
   'College of Engineering Education': [

@@ -309,7 +309,7 @@ const getOrganizersByEventId = async (event_id: string) => {
   }));
 };
 
-const getPaginatedAttendeesByEventId = async (  
+const getPaginatedAttendeesByEventId = async (
   event_id: string,
   page: number,
   limit: number,

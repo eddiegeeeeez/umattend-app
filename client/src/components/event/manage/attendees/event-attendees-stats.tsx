@@ -1,12 +1,16 @@
 import React from 'react';
 import { Calendar, Users } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
 import EventAttendeesStatsSkeleton from './event-attendees-stats-skeleton';
-import { getEventAttendanceCountOptions } from '@/api/client/@tanstack/react-query.gen';
 
-export default function EventAttendeesStats({ totalStudents, totalCheckedOut, isLoading }: { totalStudents: number, totalCheckedOut: number, isLoading: boolean }) {
-
-
+export default function EventAttendeesStats({
+  totalStudents,
+  totalCheckedOut,
+  isLoading
+}: {
+  totalStudents: number;
+  totalCheckedOut: number;
+  isLoading: boolean;
+}) {
   if (isLoading) {
     return <EventAttendeesStatsSkeleton />;
   }
