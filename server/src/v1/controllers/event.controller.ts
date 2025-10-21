@@ -74,8 +74,6 @@ const addEvent = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 500, 'Failed to add event');
     }
 
-
-
     return HTTPSuccessResponse(res, 200, 'Event Created', new_event);
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -254,7 +252,7 @@ const createCheckInEvent = async (
     }
 
     if (!checkIn) {
-      return HTTPErrorResponse(res, 400, 'Failed to create check-in');
+      return HTTPErrorResponse(res, 400, 'Failed to create check-in or student already checked in or already checked out');
     }
 
     const responseData = {
@@ -343,7 +341,11 @@ const createCheckOutEvent = async (
     }
 
     if (!checkOut) {
-      return HTTPErrorResponse(res, 400, 'Failed to update check-out');
+      return HTTPErrorResponse(
+        res,
+        400,
+        'Failed to update check-out or student has not checked in yet or already checked out'
+      );
     }
 
     const responseData = {

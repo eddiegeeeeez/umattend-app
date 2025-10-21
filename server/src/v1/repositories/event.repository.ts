@@ -215,14 +215,14 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
         id: existingCheckIn.id,
       },
       data: {
-        check_out_at: check_out_at ?? new Date().toISOString(),
+        check_out_at: check_out_at ?? new Date(),
         check_out_by,
       },
       include: {
         event: true,
         student: true,
         check_in_by_user: true,
-        check_out_by_user: true,
+        check_out_by_user: true, 
       },
     });
   });

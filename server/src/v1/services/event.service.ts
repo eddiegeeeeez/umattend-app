@@ -21,6 +21,7 @@ import { GetStudentsByEventIdInterface } from '../interface/student';
 import studentRepository from '../repositories/student.repository';
 import { CHECK_IN_EMAIL } from '../template/checkIn.email';
 import { sendEmail } from './email.service';
+import { CHECK_OUT_EMAIL } from '../template/checkOut.email';
 
 const addEvent = async (event_data: AddEventInterface) => {
   try {
@@ -191,6 +192,14 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
       throw new Error('Failed to create check-out record');
     }
 
+    if (!checkedOut.check_out_by_user) {
+      throw new NotFoundError('Check-out record not found');
+    }
+
+    if (!checkedOut.check_out_at) {
+      throw new NotFoundError('Check-out date not found');
+    }
+
     const studentbyUserId = await studentRepository.getUserByStudentId(
       attendance_data.student_id
     );
@@ -200,7 +209,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
     }
 
     const checkOutBy = await studentRepository.getStudentByUserId(
-      checkedOut.check_in_by_user.id
+      checkedOut.check_out_by_user.id
     );
 
     if (!checkOutBy) {
@@ -210,13 +219,10 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
     sendEmail(
       studentbyUserId?.umindanao_email,
       'Event Check-Out Successful',
-      CHECK_IN_EMAIL.replace('{{name}}', checkedOut.student.name)
+      CHECK_OUT_EMAIL.replace('{{name}}', checkedOut.student.name)
         .replace('{{event_name}}', checkedOut.event.title)
         .replace('{{event_location}}', checkedOut.event.location)
-        .replace(
-          '{{event_date_and_time}}',
-          checkedOut.check_in_at.toLocaleString()
-        )
+        .replace('{{event_date_and_time}}',checkedOut.check_out_at.toLocaleString())
         .replace('{{checked_out_by}}', checkOutBy.name)
     );
 
