@@ -80,8 +80,6 @@ const addEvent = async (req: Request, res: Response) => {
       return HTTPErrorResponse(res, 500, error.message);
     }
 
-    console.log(error);
-
     if (NODE_ENV === 'DEVELOPMENT') {
       console.error('Error: ', error);
     }

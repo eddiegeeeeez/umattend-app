@@ -17,14 +17,36 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Install dependencies
+      # --- CLIENT ---
+      - name: Install client dependencies
+        working-directory: ./client
         run: npm ci
 
-      - name: Run ESLint
+      - name: Run ESLint (client)
+        working-directory: ./client
         run: npx eslint . --ext .js,.ts,.jsx,.tsx
 
-      - name: Check code formatting with Prettier
+      - name: Check code formatting with Prettier (client)
+        working-directory: ./client
         run: npx prettier --check .
 
-      - name: Type-check with TypeScript
+      - name: Type-check with TypeScript (client)
+        working-directory: ./client
+        run: npx tsc --noEmit
+
+      # --- SERVER ---
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Run ESLint (server)
+        working-directory: ./server
+        run: npx eslint . --ext .js,.ts,.jsx,.tsx
+
+      - name: Check code formatting with Prettier (server)
+        working-directory: ./server
+        run: npx prettier --check .
+
+      - name: Type-check with TypeScript (server)
+        working-directory: ./server
         run: npx tsc --noEmit
