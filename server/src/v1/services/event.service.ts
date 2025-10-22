@@ -48,7 +48,6 @@ const addEvent = async (event_data: AddEventInterface) => {
     ) {
       throw new Error('Validation failed: ' + error.message);
     }
-    console.log(error);
     return false;
   }
 };

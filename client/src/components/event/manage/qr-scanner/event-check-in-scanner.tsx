@@ -25,7 +25,7 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted }: Ev
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scanningRef = useRef(false);
   const lastScannedRef = useRef<string>('');
-  const lastScannedTimeRef = useRef<number>(0);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [jsQRLoaded, setJsQRLoaded] = useState(false);
 
   // Check-in mutation
@@ -36,7 +36,6 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted }: Ev
       setShowDialog(false);
       setIsProcessing(false);
       setScannedValue(null);
-      // Reset scanner for next scan
       lastScannedRef.current = '';
     },
     onError: (error) => {
@@ -45,7 +44,6 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted }: Ev
       const errorMessage = error?.response?.data?.message || 'Failed to check in student';
       toast.error(errorMessage);
       console.error('[Check-In Scanner] Error:', error);
-      // Reset for retry
       setScannedValue(null);
       lastScannedRef.current = '';
     }
@@ -69,6 +67,31 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted }: Ev
     };
   }, []);
 
+  const handleQRCodeDetected = (detectedCode: string) => {
+    if (detectedCode === lastScannedRef.current) {
+      return;
+    }
+
+    lastScannedRef.current = detectedCode;
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      setScannedValue(detectedCode);
+      setShowDialog(true);
+      setIsProcessing(true);
+
+      checkInMutation.mutate({
+        path: {
+          event_id: eventId,
+          qr_code: detectedCode
+        }
+      });
+    }, 300);
+  };
+
   const startAutoScan = () => {
     scanningRef.current = true;
     const scanFrame = () => {
@@ -81,22 +104,7 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted }: Ev
 
         const detectedCode = detectQRCode(imageData);
         if (detectedCode) {
-          const now = Date.now();
-          if (detectedCode !== lastScannedRef.current || now - lastScannedTimeRef.current > 2000) {
-            lastScannedRef.current = detectedCode;
-            lastScannedTimeRef.current = now;
-            setScannedValue(detectedCode);
-            setShowDialog(true);
-            setIsProcessing(true);
-
-            // FIX: Use user_id instead of student_id
-            checkInMutation.mutate({
-              path: {
-                event_id: eventId,
-                qr_code: detectedCode
-              }
-            });
-          }
+          handleQRCodeDetected(detectedCode);
         }
 
         requestAnimationFrame(scanFrame);
@@ -104,6 +112,7 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted }: Ev
     };
     scanFrame();
   };
+
   const detectQRCode = (imageData: ImageData): string | null => {
     if (typeof window.jsQR === 'undefined') {
       return null;
@@ -137,12 +146,24 @@ export function EventCheckInScanner({ eventId, isEventDone, isEventStarted }: Ev
 
   const stopCamera = () => {
     scanningRef.current = false;
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
     if (videoRef.current && videoRef.current.srcObject) {
       const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
       tracks.forEach((track) => track.stop());
     }
     setIsScanning(false);
   };
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   // Show message if event hasn't started or is done
   if (!isEventStarted) {

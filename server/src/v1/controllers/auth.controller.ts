@@ -17,8 +17,6 @@ const googleAuth = async (req: Request, res: Response) => {
   try {
     const url = GoogleAuth.generateGoogleAuthUrl();
 
-    console.log(url);
-
     return res.redirect(url);
   } catch (error: unknown) {
     if (NODE_ENV === 'DEVELOPMENT') {
@@ -310,8 +308,6 @@ const getLoginHistory = async (req: Request, res: Response) => {
     }
 
     if (NODE_ENV === 'DEVELOPMENT') {
-      console.log('Un');
-
       return HTTPErrorResponse(res, 500, error);
     }
     return HTTPErrorResponse(res, 500, 'Internal server error') as Response;

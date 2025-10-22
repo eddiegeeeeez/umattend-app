@@ -69,8 +69,8 @@ jobs:
           echo "===================="
           echo "RESTART SERVICES"
           echo "===================="
-          pm2 restart umattend-server-production || pm2 start server --name umattend-server-production -- start
-          pm2 restart umattend-client-production || pm2 start client --name umattend-client-production -- start
+          pm2 restart umattend-server-production || pm2 start server --name umattend-server-production --env PORT=8080
+          pm2 restart umattend-client-production || pm2 start client --name umattend-client-production --env PORT=8000
           pm2 save
           
           echo ""

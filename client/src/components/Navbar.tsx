@@ -99,7 +99,7 @@ const Navbar = () => {
                 </Avatar>
               )}
             </PopoverTrigger>
-            <PopoverContent className="w-64 rounded-xl border border-gray-200 p-0 shadow-lg">
+            <PopoverContent className="mt-3 w-64 rounded-xl border border-gray-200 p-0 shadow-lg" align="end">
               <div className="flex items-center gap-3 border-b px-4 py-3">
                 <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium">
                   <Avatar className="h-8 w-8">
@@ -120,6 +120,12 @@ const Navbar = () => {
                   View Profile
                 </div>
                 <div
+                  className="hover:bg-muted cursor-pointer justify-start bg-transparent px-4 py-3 text-left text-xs font-normal transition-colors"
+                  onClick={() => router.push('/profile/settings')}
+                >
+                  Account Settings
+                </div>
+                <div
                   className="hover:bg-muted cursor-pointer justify-start bg-transparent px-4 py-3 text-left text-xs font-normal transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                   onClick={logoutUser}
                   style={{ opacity: logoutMutation.isPending ? 0.5 : 1 }}
@@ -136,8 +142,10 @@ const Navbar = () => {
         <SheetContent side="left" className="w-[280px]">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <div className="bg-primary h-5 w-5 rounded" />
-              UMAttend
+              <h1 className="font-bold text-balance">
+                <span className="text-yellow-500">UM</span>
+                <span className="text-foreground">Attend</span>
+              </h1>
             </SheetTitle>
           </SheetHeader>
           <nav className="mx-3 flex flex-col gap-4">
