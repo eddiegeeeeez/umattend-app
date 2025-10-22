@@ -142,8 +142,10 @@ const Navbar = () => {
         <SheetContent side="left" className="w-[280px]">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <div className="bg-primary h-5 w-5 rounded" />
-              UMAttend
+              <h1 className="font-bold text-balance">
+                <span className="text-yellow-500">UM</span>
+                <span className="text-foreground">Attend</span>
+              </h1>
             </SheetTitle>
           </SheetHeader>
           <nav className="mx-3 flex flex-col gap-4">
