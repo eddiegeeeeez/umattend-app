@@ -15,9 +15,7 @@ export default function EventsSkeleton() {
           {/* Timeline Dot and Line */}
           <div className="relative flex flex-shrink-0 flex-col items-center">
             <div className="h-2 w-2 flex-shrink-0 rounded-full bg-neutral-700" />
-            {!(index === [1, 2, 3, 4, 5].length - 1) && (
-              <div className="mx-auto mt-1 w-0.5 flex-1 border-l-2 border-neutral-200" aria-hidden />
-            )}
+            {!(index === [1, 2, 3, 4, 5].length - 1) && <div className="mx-auto mt-1 w-0.5 flex-1 border-l-2 border-neutral-200" aria-hidden />}
           </div>
 
           {/* Card Skeleton */}
@@ -30,7 +28,7 @@ export default function EventsSkeleton() {
                 </div>
 
                 {/* Title Skeleton */}
-                <Skeleton className="mb-2 h-[22px] w-full max-w-[200px] sm:h-[35px] sm:max-w-none sm:w-3/4" />
+                <Skeleton className="mb-2 h-[22px] w-full max-w-[200px] sm:h-[35px] sm:w-3/4 sm:max-w-none" />
 
                 {/* Location and Attendees Skeleton */}
                 <div className="mb-1 flex flex-col gap-2 sm:flex-row sm:gap-4">
