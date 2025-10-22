@@ -35,7 +35,7 @@ const EventContent = ({ event, isLast = false, onCardClick }: EventContentProps)
       >
         <CardContent className="flex h-full flex-col justify-between sm:px-8 sm:py-3">
           <div className="flex flex-1 flex-col justify-center gap-2">
-            <div className="sm:mb-1 flex sm:items-center sm:flex-row gap-x-3">
+            <div className="flex gap-x-3 sm:mb-1 sm:flex-row sm:items-center">
               <span className="text-muted-foreground text-xs/10 sm:text-sm">
                 {startTime} - {endTime}
               </span>
