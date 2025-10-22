@@ -104,14 +104,3 @@ jobs:
           else
             echo "All code quality checks passed successfully!"
           fi
-
-      # ------------------ REQUEST REVIEW ------------------
-      - name: Request Review
-        if: always()
-        uses: peter-evans/create-or-update-comment@v5
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Automated code quality check completed.
-            Please review the PR.
-          reactions: '+1'
