@@ -240,7 +240,7 @@ const ProfilePage = () => {
                 {attendedEvents.map((event) => (
                   <div
                     key={event.id}
-                    className="group cursor-pointer border-border bg-card hover:border-primary/50 relative overflow-hidden rounded-xl border shadow-md transition-all duration-300 hover:shadow-xl"
+                    className="group border-border bg-card hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-xl border shadow-md transition-all duration-300 hover:shadow-xl"
                     onClick={() => event.id && handlclickAttendedEvent(event.id)}
                   >
                     <div className="flex flex-col gap-4 p-4">
