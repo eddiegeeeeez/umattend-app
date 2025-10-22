@@ -17,10 +17,15 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      # --- CLIENT ---
+      # ------------------ CLIENT ------------------
       - name: Install client dependencies
         working-directory: ./client
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: Run ESLint (client)
         working-directory: ./client
@@ -34,10 +39,15 @@ jobs:
         working-directory: ./client
         run: npx tsc --noEmit
 
-      # --- SERVER ---
+      # ------------------ SERVER ------------------
       - name: Install server dependencies
         working-directory: ./server
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: Run ESLint (server)
         working-directory: ./server
