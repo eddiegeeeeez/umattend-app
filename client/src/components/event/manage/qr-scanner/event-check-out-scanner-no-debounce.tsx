@@ -25,7 +25,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted }: E
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scanningRef = useRef(false);
   const lastScannedRef = useRef<string>('');
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastScannedTimeRef = useRef<number>(0);
   const [jsQRLoaded, setJsQRLoaded] = useState(false);
 
   // Check-out mutation
@@ -36,6 +36,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted }: E
       setShowDialog(false);
       setIsProcessing(false);
       setScannedValue(null);
+      // Reset scanner for next scan
       lastScannedRef.current = '';
     },
     onError: (error) => {
@@ -44,6 +45,7 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted }: E
       const errorMessage = error?.response?.data?.message || 'Failed to check out student';
       toast.error(errorMessage);
       console.error('[Check-Out Scanner] Error:', error);
+      // Reset for retry
       setScannedValue(null);
       lastScannedRef.current = '';
     }
@@ -67,31 +69,6 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted }: E
     };
   }, []);
 
-  const handleQRCodeDetected = (detectedCode: string) => {
-    if (detectedCode === lastScannedRef.current) {
-      return;
-    }
-
-    lastScannedRef.current = detectedCode;
-
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      setScannedValue(detectedCode);
-      setShowDialog(true);
-      setIsProcessing(true);
-
-      checkOutMutation.mutate({
-        path: {
-          event_id: eventId,
-          qr_code: detectedCode
-        }
-      });
-    }, 300);
-  };
-
   const startAutoScan = () => {
     scanningRef.current = true;
     const scanFrame = () => {
@@ -104,7 +81,21 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted }: E
 
         const detectedCode = detectQRCode(imageData);
         if (detectedCode) {
-          handleQRCodeDetected(detectedCode);
+          const now = Date.now();
+          if (detectedCode !== lastScannedRef.current || now - lastScannedTimeRef.current > 2000) {
+            lastScannedRef.current = detectedCode;
+            lastScannedTimeRef.current = now;
+            setScannedValue(detectedCode);
+            setShowDialog(true);
+            setIsProcessing(true);
+
+            checkOutMutation.mutate({
+              path: {
+                event_id: eventId,
+                qr_code: detectedCode
+              }
+            });
+          }
         }
       }
 
@@ -147,24 +138,12 @@ export function EventCheckOutScanner({ eventId, isEventDone, isEventStarted }: E
 
   const stopCamera = () => {
     scanningRef.current = false;
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
     if (videoRef.current && videoRef.current.srcObject) {
       const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
       tracks.forEach((track) => track.stop());
     }
     setIsScanning(false);
   };
-
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, []);
 
   // Show message if event hasn't started or is done
   if (!isEventStarted) {

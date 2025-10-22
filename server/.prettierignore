@@ -1,6 +1,11 @@
 node_modules/
 dist/
 src/generated/
+src/v1/static
 *.js
 firebase-service-account.json
 package-lock.json
+package.json
+tsconfig.json
+.prettierrc.json
+README.md
