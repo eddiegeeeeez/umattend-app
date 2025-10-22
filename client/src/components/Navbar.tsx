@@ -99,7 +99,7 @@ const Navbar = () => {
                 </Avatar>
               )}
             </PopoverTrigger>
-            <PopoverContent className="w-64 rounded-xl border border-gray-200 p-0 shadow-lg">
+            <PopoverContent className="mt-3 w-64 rounded-xl border border-gray-200 p-0 shadow-lg" align="end">
               <div className="flex items-center gap-3 border-b px-4 py-3">
                 <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium">
                   <Avatar className="h-8 w-8">
@@ -118,6 +118,12 @@ const Navbar = () => {
                   onClick={() => router.push('/profile')}
                 >
                   View Profile
+                </div>
+                <div
+                  className="hover:bg-muted cursor-pointer justify-start bg-transparent px-4 py-3 text-left text-xs font-normal transition-colors"
+                  onClick={() => router.push('/profile/settings')}
+                >
+                  Account Settings
                 </div>
                 <div
                   className="hover:bg-muted cursor-pointer justify-start bg-transparent px-4 py-3 text-left text-xs font-normal transition-colors disabled:cursor-not-allowed disabled:opacity-50"
