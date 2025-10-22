@@ -209,11 +209,11 @@ const ProfilePage = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {canHostEvents && (
             <TabsList className="text-muted-foreground mb-6 inline-flex h-11 items-center justify-center gap-x-2 rounded-lg bg-neutral-200 p-1">
-              <TabsTrigger value="attended" className="rounded-md px-4 py-2 text-sm font-medium">
+              <TabsTrigger value="attended" className="rounded-md px-3 py-2 text-sm font-medium sm:px-4">
                 <Calendar className="mr-2 h-4 w-4" />
                 Attended Events
               </TabsTrigger>
-              <TabsTrigger value="hosted" className="rounded-md px-4 py-2 text-sm font-medium">
+              <TabsTrigger value="hosted" className="rounded-md px-3 py-2 text-sm font-medium sm:px-4">
                 <Calendar className="mr-2 h-4 w-4" />
                 Hosted Events
               </TabsTrigger>
