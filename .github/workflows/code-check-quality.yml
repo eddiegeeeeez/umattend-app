@@ -16,7 +16,6 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          # Ensure setup-node can detect lockfiles in a monorepo layout
           cache-dependency-path: |
             client/package-lock.json
             client/yarn.lock
@@ -34,14 +33,20 @@ jobs:
           fi
 
       - name: Run ESLint (client)
+        id: eslint_client
+        continue-on-error: true
         working-directory: ./client
         run: npx eslint . --ext .js,.ts,.jsx,.tsx
 
       - name: Check code formatting with Prettier (client)
+        id: prettier_client
+        continue-on-error: true
         working-directory: ./client
         run: npx prettier --check .
 
       - name: Type-check with TypeScript (client)
+        id: tsc_client
+        continue-on-error: true
         working-directory: ./client
         run: npx tsc --noEmit
 
@@ -56,13 +61,57 @@ jobs:
           fi
 
       - name: Run ESLint (server)
+        id: eslint_server
+        continue-on-error: true
         working-directory: ./server
         run: npx eslint . --ext .js,.ts,.jsx,.tsx
 
       - name: Check code formatting with Prettier (server)
+        id: prettier_server
+        continue-on-error: true
         working-directory: ./server
         run: npx prettier --check .
 
       - name: Type-check with TypeScript (server)
+        id: tsc_server
+        continue-on-error: true
         working-directory: ./server
         run: npx tsc --noEmit
+
+      # ------------------ SUMMARY ------------------
+      - name: Summarize results
+        if: always()
+        run: |
+          echo "----- CLIENT CHECKS -----"
+          echo "ESLint (client): ${{ steps.eslint_client.outcome }}"
+          echo "Prettier (client): ${{ steps.prettier_client.outcome }}"
+          echo "TypeScript (client): ${{ steps.tsc_client.outcome }}"
+          echo ""
+          echo "----- SERVER CHECKS -----"
+          echo "ESLint (server): ${{ steps.eslint_server.outcome }}"
+          echo "Prettier (server): ${{ steps.prettier_server.outcome }}"
+          echo "TypeScript (server): ${{ steps.tsc_server.outcome }}"
+
+          # Fail the workflow if any check failed
+          if [ "${{ steps.eslint_client.outcome }}" = "failure" ] || \
+             [ "${{ steps.prettier_client.outcome }}" = "failure" ] || \
+             [ "${{ steps.tsc_client.outcome }}" = "failure" ] || \
+             [ "${{ steps.eslint_server.outcome }}" = "failure" ] || \
+             [ "${{ steps.prettier_server.outcome }}" = "failure" ] || \
+             [ "${{ steps.tsc_server.outcome }}" = "failure" ]; then
+            echo "One or more code quality checks failed."
+            exit 1
+          else
+            echo "All code quality checks passed successfully!"
+          fi
+
+      # ------------------ REQUEST REVIEW ------------------
+      - name: Request Review
+        if: always()
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Automated code quality check completed.
+            Please review the PR.
+          reactions: '+1'
