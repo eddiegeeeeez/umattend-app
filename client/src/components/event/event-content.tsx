@@ -33,16 +33,18 @@ const EventContent = ({ event, isLast = false, onCardClick }: EventContentProps)
         className="hover:bg-primary/10 focus-within:bg-primary/10 mb-4 flex flex-1 cursor-pointer rounded-2xl shadow-md transition-all duration-200 ease-in-out focus-within:scale-[1.025] focus-within:shadow-xl hover:scale-[1.025] hover:shadow-xl sm:mb-6"
         onClick={onCardClick}
       >
-        <CardContent className="flex h-full flex-col justify-between sm:px-8 sm:py-3">
+        <CardContent className="flex h-full flex-col justify-between px-8 pr-5 sm:py-3">
           <div className="flex flex-1 flex-col justify-center gap-2">
-            <div className="flex gap-x-3 sm:mb-1 sm:flex-row sm:items-center">
-              <span className="text-muted-foreground text-xs/10 sm:text-sm">
-                {startTime} - {endTime}
-              </span>
-              <Badge variant="outline" className={`border text-xs ${getStatusColor(eventStatus)}`}>
-                {eventStatus === 'ongoing' && <span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-green-600" />}
-                {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1)}
-              </Badge>
+            <div className="mb-1 flex items-center gap-x-3">
+              <div className="flex flex-row items-center gap-x-3">
+                <span className="text-muted-foreground text-xs sm:text-sm">
+                  {startTime} - {endTime}
+                </span>
+                <Badge variant="outline" className={`border text-xs ${getStatusColor(eventStatus)}`}>
+                  {eventStatus === 'ongoing' && <span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-green-600" />}
+                  {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1)}
+                </Badge>
+              </div>
             </div>
             <h3 className="text-foreground mb-2 text-lg leading-tight font-semibold">{title}</h3>
             <div className="mb-1 flex flex-col gap-4 sm:flex-row">
