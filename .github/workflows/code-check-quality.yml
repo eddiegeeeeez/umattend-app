@@ -16,6 +16,12 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+          # Ensure setup-node can detect lockfiles in a monorepo layout
+          cache-dependency-path: |
+            client/package-lock.json
+            client/yarn.lock
+            server/package-lock.json
+            server/yarn.lock
 
       # ------------------ CLIENT ------------------
       - name: Install client dependencies
