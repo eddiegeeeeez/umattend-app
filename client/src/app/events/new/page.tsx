@@ -26,10 +26,10 @@ import { generateTimeOptions, getDefaultStartTime, addOneHour, parseTimeToMinute
 
 const createEventSchema = z
   .object({
-    title: z.string().min(1, 'Event title is required').max(255, 'Title is too long'),
-    description: z.string().min(10, 'Description must be at least 10 characters').max(5000, 'Description is too long'),
-    department: z.string().min(1, 'Department is required'),
-    location: z.string().min(1, 'Location is required').max(500, 'Location is too long'),
+    title: z.string().min(1, 'Event title is required').max(140, 'Title is too long'),
+    description: z.string().min(10, 'Description must be at least 10 characters').max(500, 'Description is too long'),
+    department: z.string().min(10, 'Department is required'),
+    location: z.string().min(10, 'Location is required').max(140, 'Location is too long'),
     startDate: z.date(),
     startTime: z.string(),
     endDate: z.date(),
@@ -138,7 +138,6 @@ export default function CreateEventPage() {
       } else if (error.message) {
         errorMessage = error.message;
       }
-
       const statusCode = response?.status;
 
       if (statusCode === 403) {
@@ -147,6 +146,15 @@ export default function CreateEventPage() {
         toast.error('Please log in to create events');
         router.push('/');
       } else {
+        const { title, description, location } = form.getValues();
+
+        if (description.length > 500) errorMessage = 'Description is too long';
+        if (description.length < 20) errorMessage = 'Description is too short';
+        if (title.length > 140) errorMessage = 'Title is too long';
+        if (title.length < 10) errorMessage = 'Title is too short';
+        if (location.length > 140) errorMessage = 'Location is too long';
+        if (location.length < 5) errorMessage = 'Location is too short';
+
         toast.error(errorMessage);
       }
     }
