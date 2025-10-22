@@ -208,7 +208,7 @@ const ProfilePage = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {canHostEvents && (
-            <TabsList className="text-muted-foreground mb-6 inline-flex h-11 items-center justify-center gap-x-2 rounded-lg bg-neutral-200 p-1">
+            <TabsList className="text-muted-foreground mb-6 inline-flex h-11 w-full items-center justify-center gap-x-2 rounded-lg bg-neutral-200 p-1 sm:w-96">
               <TabsTrigger value="attended" className="rounded-md px-3 py-2 text-sm font-medium sm:px-4">
                 <Calendar className="mr-2 h-4 w-4" />
                 Attended Events
@@ -240,16 +240,12 @@ const ProfilePage = () => {
                 {attendedEvents.map((event) => (
                   <div
                     key={event.id}
-                    className="group border-border bg-card hover:border-primary/50 relative overflow-hidden rounded-xl border shadow-md transition-all duration-300 hover:shadow-xl"
+                    className="group cursor-pointer border-border bg-card hover:border-primary/50 relative overflow-hidden rounded-xl border shadow-md transition-all duration-300 hover:shadow-xl"
+                    onClick={() => event.id && handlclickAttendedEvent(event.id)}
                   >
                     <div className="flex flex-col gap-4 p-4">
                       <div className="min-w-0 flex-1">
-                        <h3
-                          className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors"
-                          onClick={() => event.id && handlclickAttendedEvent(event.id)}
-                        >
-                          {event.title}
-                        </h3>
+                        <h3 className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors">{event.title}</h3>
                         <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
                           <div className="from-primary/20 to-primary/5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br">
                             <div className="bg-primary h-2 w-2 rounded-full" />
@@ -290,16 +286,12 @@ const ProfilePage = () => {
                   {hostedEvents.map((event) => (
                     <div
                       key={event.id}
-                      className="group border-border bg-card hover:border-primary/50 relative overflow-hidden rounded-xl border shadow-md transition-all duration-300 hover:shadow-xl"
+                      className="group border-border bg-card hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-xl border shadow-md transition-all duration-300 hover:shadow-xl"
+                      onClick={() => event.id && handlclickHostedEvent(event.id)}
                     >
                       <div className="flex flex-col gap-4 p-4">
                         <div className="min-w-0 flex-1">
-                          <h3
-                            className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors"
-                            onClick={() => event.id && handlclickHostedEvent(event.id)}
-                          >
-                            {event.title}
-                          </h3>
+                          <h3 className="text-foreground group-hover:text-primary mb-2 truncate text-lg font-bold transition-colors">{event.title}</h3>
                           <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
                             <div className="from-primary/20 to-primary/5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br">
                               <div className="bg-primary h-2 w-2 rounded-full" />
