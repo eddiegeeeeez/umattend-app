@@ -1,4 +1,3 @@
-//TODO migrate the uri and endpoints to secrets
 'use client';
 
 import { useEffect } from 'react';
@@ -10,26 +9,6 @@ import useExchangeCode from '@/hooks/useExchangeCode';
 import { getUserOptions } from '@/api/client/@tanstack/react-query.gen';
 import { useAuthStore } from '@/store/authStore';
 
-//TODO migrate the uri and endpoints to secrets
-
-//TODO migrate the uri and endpoints to secrets
-
-//TODO migrate the uri and endpoints to secrets
-
-//TODO migrate the uri and endpoints to secrets
-
-//TODO migrate the uri and endpoints to secrets
-
-//TODO migrate the uri and endpoints to secrets
-
-//TODO migrate the uri and endpoints to secrets
-
-//TODO migrate the uri and endpoints to secrets
-
-//TODO migrate the uri and endpoints to secrets
-
-//TODO migrate the uri and endpoints to secrets
-
 export default function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,7 +18,6 @@ export default function LoginContent() {
 
   const handleGoogleLogin = async () => {
     router.push('/api/v1/auth/google');
-    // router.push('/events');
   };
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
