@@ -39,8 +39,8 @@ export interface Event {
   is_done?: boolean;
   checkin_count?: number;
   checkout_count?: number;
-  checkOutCount?: number;
-  checkInCount?: number;
+  checkOutCount: number;
+  checkInCount: number;
 }
 
 /**
