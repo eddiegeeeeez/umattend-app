@@ -14,7 +14,7 @@ case "$ENV" in
   staging)
     COMPOSE_FILE="docker-compose.staging.yml"
     SERVER_CONTAINER="umattend_server_staging"
-    SERVER_PORT="4001"
+    SERVER_PORT="4000"
     CLIENT_IMAGE="umattend-client:staging"
     SERVER_IMAGE="umattend-server:staging"
     ;;
