@@ -1,4 +1,4 @@
-import { NotFoundError } from '@/utils/customErrors';
+import { NotFoundError, ForbiddenError, ConflictError, BadRequestError } from '@/utils/customErrors';
 import prisma from '../../configs/prisma.config';
 import {
   AddEventInterface,
@@ -39,6 +39,28 @@ const deleteEvent = async (eventId: string) => {
 
     if (existing.is_done) {
       throw new Error('Cannot delete a completed event.');
+    }
+
+    // Count checks are inside the transaction so a concurrent check-in cannot
+    // slip between the check and the DELETE.
+    const checkinCount = await tx.attendance.count({
+      where: { event_id: eventId },
+    });
+    if (checkinCount > 0) {
+      throw new ForbiddenError(
+        'Cannot delete event with existing check-ins. Please contact support.'
+      );
+    }
+
+    if (existing.check_out_required) {
+      const checkoutCount = await tx.attendance.count({
+        where: { event_id: eventId, NOT: { check_out_at: null } },
+      });
+      if (checkoutCount > 0) {
+        throw new ForbiddenError(
+          'Cannot delete event with existing check-outs. Please contact support.'
+        );
+      }
     }
 
     return tx.events.delete({
@@ -137,6 +159,18 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
       throw new Error('Event has already ended');
     }
 
+    // Capacity check is inside the transaction to prevent overbooking under
+    // concurrent check-ins — two simultaneous scans would otherwise both read
+    // count < capacity and both insert.
+    if (event.capacity !== null && event.capacity !== undefined) {
+      const currentCount = await tx.attendance.count({
+        where: { event_id },
+      });
+      if (currentCount >= event.capacity) {
+        throw new Error('Event has reached its maximum capacity');
+      }
+    }
+
     const student = await tx.student.findUnique({
       where: { student_id },
     });
@@ -153,7 +187,7 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
     });
 
     if (existingCheckIn) {
-      throw new Error('Student already checked in for this event');
+      throw new ConflictError('Student is already checked in to this event');
     }
 
     return await tx.attendance.create({
@@ -203,11 +237,11 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
     });
 
     if (!existingCheckIn) {
-      throw new Error('Student has not checked in for this event');
+      throw new BadRequestError('Student has not checked in to this event');
     }
 
     if (existingCheckIn.check_out_at) {
-      throw new Error('Student has already checked out for this event');
+      throw new ConflictError('Student has already checked out of this event');
     }
 
     return await tx.attendance.update({
@@ -401,6 +435,84 @@ const getPaginatedAttendeesByEventId = async (
   return { attendees, total };
 };
 
+/**
+ * Mass check-out students for an event.
+ * Returns updated records and lists of student_ids that were already checked out or not checked in.
+ */
+const massCheckOutStudents = async (
+  event_id: string,
+  student_ids: number[],
+  check_out_by: string,
+  check_out_at?: Date
+) => {
+  return await prisma.$transaction(async (tx) => {
+    // fetch existing attendance rows for the given student ids
+    const existing = await tx.attendance.findMany({
+      where: {
+        event_id,
+        student_id: { in: student_ids },
+      },
+    });
+
+    const existingMap = new Map<number, (typeof existing)[number]>();
+    existing.forEach((e) => existingMap.set(e.student_id, e));
+
+    const notCheckedIn: number[] = [];
+    const alreadyCheckedOut: number[] = [];
+    const toUpdateIds: string[] = [];
+
+    for (const sid of student_ids) {
+      const rec = existingMap.get(sid);
+      if (!rec) {
+        // Student has no attendance record for this event — skip and log
+        notCheckedIn.push(sid);
+        console.log(
+          `massCheckOut: student ${sid} not checked in for event ${event_id}, skipping`
+        );
+        continue;
+      }
+      if (rec.check_out_at) {
+        // Student already checked out — treat as pass, log and continue
+        alreadyCheckedOut.push(sid);
+        console.log(
+          `massCheckOut: student ${sid} already checked out for event ${event_id}, skipping`
+        );
+        continue;
+      }
+      toUpdateIds.push(rec.id);
+    }
+
+    if (toUpdateIds.length > 0) {
+      await tx.attendance.updateMany({
+        where: { id: { in: toUpdateIds } },
+        data: {
+          check_out_at: check_out_at ?? new Date(),
+          check_out_by,
+        },
+      });
+    }
+
+    const updatedRecords = await tx.attendance.findMany({
+      where: {
+        id: { in: toUpdateIds },
+      },
+      include: {
+        event: true,
+        student: true,
+        check_in_by_user: true,
+        check_out_by_user: true,
+      },
+    });
+
+    return {
+      updatedRecords,
+      alreadyCheckedOut,
+      notCheckedIn,
+      updatedCount: updatedRecords.length,
+    };
+  });
+};
+
 const getAttendeesByEventId = async (event_id: string) => {
   return await prisma.attendance.findMany({
     where: { event_id: event_id },
@@ -519,6 +631,7 @@ const eventRepository = {
   getPaginatedAttendeesByEventId,
   checkIfUserAttended,
   getEventAttendanceCount,
+  massCheckOutStudents,
 };
 
 export default eventRepository;

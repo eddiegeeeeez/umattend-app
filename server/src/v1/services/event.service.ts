@@ -9,6 +9,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
 import {
+  AppError,
   NotFoundError,
   ForbiddenError,
   NoCheckoutRequiredError,
@@ -66,23 +67,7 @@ const deleteEvent = async (
     throw new ForbiddenError('You are not authorized to delete this event');
   }
 
-  const hasCheckedIn = await eventRepository.getEventCheckinCount(event.id);
-
-  if (hasCheckedIn > 0) {
-    throw new ForbiddenError(
-      'Cannot delete event with existing check-ins. Please contact support.'
-    );
-  }
-  let hasCheckedOut = 0;
-
-  if (event.check_out_required) {
-    hasCheckedOut = await eventRepository.getEventCheckoutCount(event.id);
-    if (hasCheckedOut > 0) {
-      throw new ForbiddenError(
-        'Cannot delete event with existing check-outs. Please contact support.'
-      );
-    }
-  }
+  // Count checks are enforced atomically inside the repository transaction
   await eventRepository.deleteEvent(eventId);
   return true;
 };
@@ -98,10 +83,17 @@ const updateEvent = async (eventId: string, event_data: AddEventInterface) => {
   }
   const updated_event = await eventRepository.updateEvent(eventId, event_data);
 
-  await startEventStatusQueue.remove(`event-start-${updated_event.id}`);
-  await endEventStatusQueue.remove(`event-done-${updated_event.id}`);
-  await scheduleStartEventStatusJob(updated_event);
-  await scheduleEndEventStatusJob(updated_event);
+  // Remove existing jobs best-effort — ignore "job not found" errors so a
+  // concurrent update or missing job doesn't abort the whole operation.
+  await Promise.allSettled([
+    startEventStatusQueue.remove(`event-start-${updated_event.id}`),
+    endEventStatusQueue.remove(`event-done-${updated_event.id}`),
+  ]);
+
+  await Promise.all([
+    scheduleStartEventStatusJob(updated_event),
+    scheduleEndEventStatusJob(updated_event),
+  ]);
 
   return updated_event;
 };
@@ -134,7 +126,7 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
       throw new NotFoundError('Check-in record not found');
     }
 
-    sendEmail(
+    await sendEmail(
       studentbyUserId?.umindanao_email,
       'Event Check-In Successful',
       CHECK_IN_EMAIL.replace('{{name}}', checkedIn.student.name)
@@ -149,6 +141,9 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
 
     return checkedIn;
   } catch (error: unknown) {
+    if (error instanceof AppError) {
+      throw error;
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
         throw new Error('Unique constraint failed');
@@ -216,7 +211,7 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
       throw new NotFoundError('Check-in record not found');
     }
 
-    sendEmail(
+    await sendEmail(
       studentbyUserId?.umindanao_email,
       'Event Check-Out Successful',
       CHECK_OUT_EMAIL.replace('{{name}}', checkedOut.student.name)
@@ -231,6 +226,9 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
 
     return checkedOut;
   } catch (error: unknown) {
+    if (error instanceof AppError) {
+      throw error;
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
         throw new Error('Unique constraint failed');
@@ -247,6 +245,107 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
     }
     console.error(error);
     return false;
+  }
+};
+
+const massCheckOutStudents = async (
+  event_id: string,
+  student_ids: number[],
+  check_out_by: string,
+  checkout_time?: string | Date
+) => {
+  try {
+    if (!event_id) {
+      throw new NotFoundError('Event ID is required');
+    }
+
+    const eventDetails = await eventRepository.getEventDetails(event_id);
+    if (!eventDetails) {
+      throw new NotFoundError('Event not found');
+    }
+    if (!eventDetails.check_out_required) {
+      throw new NoCheckoutRequiredError(
+        'This event does not require check-out'
+      );
+    }
+
+    // Determine the check_out_at to use for the batch.
+    let checkOutAt: Date;
+
+    if (checkout_time instanceof Date) {
+      checkOutAt = checkout_time;
+    } else if (
+      typeof checkout_time === 'string' &&
+      /^\d{1,2}:\d{2}$/.test(checkout_time)
+    ) {
+      // If given as HH:MM, interpret as local time in Philippines (Asia/Manila, UTC+08:00)
+      // and apply it to the event date (prefer start_time, else today).
+      const baseDate = eventDetails.start_time
+        ? new Date(eventDetails.start_time)
+        : new Date();
+      const [hhStr, mmStr] = checkout_time.split(':');
+      const hh = String(parseInt(hhStr, 10)).padStart(2, '0');
+      const mm = String(parseInt(mmStr, 10)).padStart(2, '0');
+      const y = baseDate.getFullYear();
+      const m = String(baseDate.getMonth() + 1).padStart(2, '0');
+      const d = String(baseDate.getDate()).padStart(2, '0');
+      // Build an ISO string with +08:00 offset so Date parses it as the correct UTC instant
+      const iso = `${y}-${m}-${d}T${hh}:${mm}:00+08:00`;
+      checkOutAt = new Date(iso);
+    } else if (typeof checkout_time === 'string') {
+      const parsed = new Date(checkout_time);
+      if (isNaN(parsed.getTime())) {
+        throw new Error('Invalid checkout_time format');
+      }
+      checkOutAt = parsed;
+    } else {
+      checkOutAt = new Date();
+    }
+
+    const result = await eventRepository.massCheckOutStudents(
+      event_id,
+      student_ids,
+      check_out_by,
+      checkOutAt
+    );
+
+    // send emails for updated records
+    for (const rec of result.updatedRecords) {
+      try {
+        const studentbyUserId = await studentRepository.getUserByStudentId(
+          rec.student.student_id
+        );
+        const checkOutBy = rec.check_out_by_user?.id
+          ? await studentRepository.getStudentByUserId(rec.check_out_by_user.id)
+          : null;
+
+        if (studentbyUserId && rec.check_out_at && checkOutBy) {
+          await sendEmail(
+            studentbyUserId.umindanao_email,
+            'Event Check-Out Successful',
+            CHECK_OUT_EMAIL.replace('{{name}}', rec.student.name)
+              .replace('{{event_name}}', rec.event.title)
+              .replace('{{event_location}}', rec.event.location)
+              .replace(
+                '{{event_date_and_time}}',
+                rec.check_out_at.toLocaleString()
+              )
+              .replace('{{checked_out_by}}', checkOutBy.name)
+          );
+        }
+      } catch (err) {
+        console.warn(
+          'Failed to send check-out email for student',
+          rec.student.student_id,
+          err
+        );
+      }
+    }
+
+    return result;
+  } catch (error: unknown) {
+    console.error(error);
+    throw error;
   }
 };
 
@@ -333,7 +432,19 @@ const addOrganizer = async (
     throw new OrganizerError('User is already an organizer for this event');
   }
 
-  return await eventRepository.addOrganizer(user_id, added_by, event_id);
+  try {
+    return await eventRepository.addOrganizer(user_id, added_by, event_id);
+  } catch (error) {
+    // A concurrent request inserted the same organizer between our check and
+    // this insert — treat the unique constraint violation as a duplicate error.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new OrganizerError('User is already an organizer for this event');
+    }
+    throw error;
+  }
 };
 
 const removeOrganizer = async (umindanao_email: string, event_id: string) => {
@@ -631,6 +742,7 @@ const eventServices = {
   getAllEvents,
   createCheckInEvent,
   createCheckOutEvent,
+  massCheckOutStudents,
   addOrganizer,
   removeOrganizer,
   getOrganizersByEventId,
