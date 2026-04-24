@@ -9,6 +9,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { NODE_ENV } from '../../constants/app.constants';
 import {
+  AppError,
   NotFoundError,
   ForbiddenError,
   NoCheckoutRequiredError,
@@ -140,6 +141,9 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
 
     return checkedIn;
   } catch (error: unknown) {
+    if (error instanceof AppError) {
+      throw error;
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
         throw new Error('Unique constraint failed');
@@ -222,6 +226,9 @@ const createCheckOutEvent = async (attendance_data: AddCheckOutInterface) => {
 
     return checkedOut;
   } catch (error: unknown) {
+    if (error instanceof AppError) {
+      throw error;
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
         throw new Error('Unique constraint failed');
