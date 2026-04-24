@@ -1,4 +1,4 @@
-import { NotFoundError } from '@/utils/customErrors';
+import { NotFoundError, ForbiddenError } from '@/utils/customErrors';
 import prisma from '../../configs/prisma.config';
 import {
   AddEventInterface,
@@ -39,6 +39,28 @@ const deleteEvent = async (eventId: string) => {
 
     if (existing.is_done) {
       throw new Error('Cannot delete a completed event.');
+    }
+
+    // Count checks are inside the transaction so a concurrent check-in cannot
+    // slip between the check and the DELETE.
+    const checkinCount = await tx.attendance.count({
+      where: { event_id: eventId },
+    });
+    if (checkinCount > 0) {
+      throw new ForbiddenError(
+        'Cannot delete event with existing check-ins. Please contact support.'
+      );
+    }
+
+    if (existing.check_out_required) {
+      const checkoutCount = await tx.attendance.count({
+        where: { event_id: eventId, NOT: { check_out_at: null } },
+      });
+      if (checkoutCount > 0) {
+        throw new ForbiddenError(
+          'Cannot delete event with existing check-outs. Please contact support.'
+        );
+      }
     }
 
     return tx.events.delete({
@@ -135,6 +157,18 @@ const createCheckInEvent = async (attendance_data: AddCheckInInterface) => {
 
     if (event.is_done) {
       throw new Error('Event has already ended');
+    }
+
+    // Capacity check is inside the transaction to prevent overbooking under
+    // concurrent check-ins — two simultaneous scans would otherwise both read
+    // count < capacity and both insert.
+    if (event.capacity !== null && event.capacity !== undefined) {
+      const currentCount = await tx.attendance.count({
+        where: { event_id },
+      });
+      if (currentCount >= event.capacity) {
+        throw new Error('Event has reached its maximum capacity');
+      }
     }
 
     const student = await tx.student.findUnique({
