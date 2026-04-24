@@ -88,3 +88,6 @@ google-oauth-client-secrets.*
 
 #backups
 db_backup
+
+#agents
+.claude/
