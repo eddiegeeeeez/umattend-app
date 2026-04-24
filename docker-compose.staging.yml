@@ -9,9 +9,11 @@ services:
     container_name: umattend_client_staging
     restart: unless-stopped
     expose:
-      - "3001"
+      - "3000"
+    env_file:
+      - ./client/.env.staging
     environment:
-      PORT: "3001"
+      PORT: "3000"
       NODE_ENV: production
     networks:
       - umattend_net
@@ -27,7 +29,7 @@ services:
     env_file:
       - ./server/.env.staging
     environment:
-      PORT: "4001"
+      PORT: "4000"
     networks:
       - umattend_net
 
